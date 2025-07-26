@@ -1,0 +1,26 @@
+<!-- Full page wrapper -->
+<div class="flex flex-col min-h-screen">
+  <!-- Navbar (always top) -->
+  <header class="w-full z-10">
+    <app-navbar></app-navbar>
+  </header>
+
+  <!-- Main content layout -->
+  <div class="flex flex-1">
+    <!-- Sidebar (left on desktop only) -->
+    <aside class="hidden lg:block w-64 bg-white shadow-md">
+      <app-sidebar></app-sidebar>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-4 pt-20 pb-20 bg-gray-50">
+      <!-- ↑ pb-20 ensures mobile nav doesn’t overlap -->
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile only) -->
+  <footer class="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+    <app-sidebar></app-sidebar>
+  </footer>
+</div>

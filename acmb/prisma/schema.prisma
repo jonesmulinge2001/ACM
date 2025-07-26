@@ -1,0 +1,233 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String        @id @default(uuid())
+  email                String        @unique
+  password             String
+  name                 String
+  role                 UserRole      @default(STUDENT)
+  phone                String?       @unique
+  status               AccountStatus @default(ACTIVE)
+  profile              Profile?
+  likes                Like[]
+  followers            Follow[]      @relation("followers")
+  following            Follow[]      @relation("following")
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  isVerified           Boolean       @default(false)
+  resetToken           String?
+  interactions  Interaction[] 
+  resetTokenExpiresAt  DateTime?
+  verifyToken          String
+  verifyTokenExpiresAt DateTime?
+  isDeleted            Boolean       @default(false)
+  deletedAt            DateTime?
+
+  // Relations
+  posts       Post[]
+  requests    Request[]
+  comments    Comment[]
+  commentLikes CommentLike[] 
+  profileViewsMade  ProfileView[] @relation("Viewer")
+  profileViewsReceived  ProfileView[] @relation("Viewed")
+}
+
+model Profile {
+  id            String   @id @default(uuid())
+  name          String
+  institution   String
+  academicLevel String
+  skills        String[]
+  bio           String?
+  profileImage  String?
+  coverPhoto    String?
+  course       String? 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  postLikes Like[]
+  interests     String[]
+  // Relation to User
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // indexes
+  @@index([skills], type: Gin)
+  @@index([interests], type: Gin)
+  @@index([institution])
+  @@index([course])
+  @@index([academicLevel])
+}
+
+model Follow {
+  id          String @id @default(uuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("following", fields: [followerId], references: [id])
+  following User @relation("followers", fields: [followingId], references: [id])
+}
+
+model ProfileView {
+  id  String  @id @default(uuid())
+  viewerId  String
+  viewedId  String
+  createdAt DateTime @default(now())
+
+  viewer  User  @relation("Viewer", fields: [viewerId], references: [id])
+  viewed  User  @relation("Viewed", fields: [viewedId], references: [id])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  body      String?
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  likes     Like[]
+  interactions Interaction[]
+  type      PostType @default(GENERAL)
+  comments  Comment[]
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+  tags      PostTag[]
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+}
+
+
+model Like {
+  id  String @id @default(uuid())
+  userId  String
+  postId  String
+  profileId   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  profile Profile? @relation(fields: [profileId], references: [id])
+
+  deleted   Boolean  @default(false)
+  @@unique([userId, postId]) // prevent duplicate likes
+}
+
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId  String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  deleted   Boolean  @default(false)
+  likes      CommentLike[] 
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+}
+
+model Request {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  status      RequestStatus
+  createdAt   DateTime      @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Interaction {
+  id          String @id @default(uuid())
+  userId      String
+  postId      String
+  type        interactionType
+  createdAt   DateTime @default(now())
+
+  user        User  @relation(fields: [userId], references: [id])
+  post        Post  @relation(fields: [postId], references: [id])
+}
+
+model CommentLike {
+  id          String @id @default(uuid())
+  userId      String
+  commentId   String
+  createdAt   DateTime @default(now())
+  
+  user        User    @relation(fields: [userId], references: [id])
+  comment     Comment @relation(fields: [commentId], references: [id])
+  @@unique([userId, commentId]) // prevent duplicate likes
+}
+
+model Tag {
+  id      String @id  @default(uuid())
+  name    String  @unique
+  posts   PostTag[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post   Post @relation(fields: [postId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+
+enum interactionType {
+  LIKE
+  COMMENT
+  VIEW
+}
+
+
+enum UserRole {
+  ADMIN
+  STUDENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Visibility {
+  PUBLIC
+  STUDENTS_ONLY
+  PRIVATE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CLOSED
+}
+
+enum PostType {
+  GENERAL
+  ACADEMIC
+  OPPORTUNITY
+  RESOURCE
+}

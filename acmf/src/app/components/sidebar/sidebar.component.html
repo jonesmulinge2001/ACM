@@ -1,0 +1,29 @@
+<!-- Desktop Sidebar -->
+<div class="hidden lg:block fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] overflow-y-auto bg-white shadow-md p-4">
+  <ul class="space-y-2">
+    <li *ngFor="let item of navItems">
+      <a [routerLink]="item.link"
+         [ngClass]="{
+           'bg-blue-50 text-blue-600': isActiveRoute(item.link)
+         }"
+         class="flex items-center p-3 gap-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all cursor-pointer">
+        <span class="material-icons">{{ item.icon }}</span>
+        <span class="font-medium">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+  
+  <!-- Mobile Bottom Navigation -->
+  <div class="lg:hidden flex justify-around items-center bg-white border-t py-2 px-4 shadow-md">
+    <a *ngFor="let item of navItems"
+       [routerLink]="item.link"
+       [ngClass]="{
+         'text-blue-600': isActiveRoute(item.link)
+       }"
+       class="flex flex-col items-center justify-center text-gray-700 cursor-pointer">
+      <span class="material-icons text-2xl">{{ item.icon }}</span>
+      <span class="text-xs mt-1">{{ item.label }}</span>
+    </a>
+  </div>

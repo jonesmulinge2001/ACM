@@ -1,0 +1,61 @@
+### Create a Post
+POST http://localhost:3000/post
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+{
+  "title": "Celebrating a milestone in coding",
+  "body": "It was really a great journey at Teach2Give",
+  "tags": ["nestjs", "angular", "typescript"],
+  "fileUrl": "https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg"
+}
+
+###
+
+### Get All Posts
+GET http://localhost:3000/post
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+###
+
+### Get a Post by ID
+GET http://localhost:3000/post/40865a03-f06e-4f19-ac5e-9b55f354ea9e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+###
+
+### Update a Post by ID
+PATCH http://localhost:3000/post/40865a03-f06e-4f19-ac5e-9b55f354ea9e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+{
+  "title": "Updated Post Title",
+  "body": "Updated content goes here.",
+  "tags": ["backend", "nestjs"],
+  "fileUrl": "https://res.cloudinary.com/demo/image/upload/v1234567890/updated.jpg"
+}
+
+###
+
+### Delete a Post by ID
+DELETE http://localhost:3000/post/abc123-post-id
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+### get post by type
+GET http://localhost:3000/post/general
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0Nzc5MDEsImV4cCI6MTc1MzU2NDMwMX0.spPj2NFobTNZtkijPnv2Vh98NyIpj9pe_328XJqlEqk
+Content-Type: application/json
+
+### 
+GET http://localhost:3000/posts/academic
+
+###
+GET http://localhost:3000/posts/resource
+
+
+###
+GET http://localhost:3000/posts/opportunity

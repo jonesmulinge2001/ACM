@@ -1,0 +1,50 @@
+<div class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-4 py-3 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center space-x-2">
+      <img src="academeet.jpeg" alt="academeet logo" class="h-8 w-8 rounded-full object-cover" />
+      <span class="text-xl font-bold text-blue-600 hidden sm:inline">Academeet</span>
+    </div>
+  
+    <!-- Search Bar (hidden on small screens) -->
+    <div class="hidden sm:flex items-center flex-1 max-w-xl mx-6 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
+      <span class="material-icons text-gray-500 mr-2">search</span>
+      <input
+        type="search"
+        placeholder="Search students, posts, resources..."
+        class="flex-1 bg-transparent outline-none text-sm text-gray-700"
+      />
+    </div>
+  
+    <!-- Engagement Icons -->
+    <div class="flex items-center space-x-4">
+      <!-- Search icon (only on small screens) -->
+      <span class="material-icons text-gray-500 text-2xl cursor-pointer sm:hidden">search</span>
+  
+      <!-- Notification with red dot -->
+      <div class="relative">
+        <span class="material-icons text-gray-500 text-2xl cursor-pointer">notifications</span>
+        <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+      </div>
+  
+      <!-- Chat -->
+      <span class="material-icons text-gray-500 text-2xl cursor-pointer">chat</span>
+  
+      <!-- User Profile -->
+      <ng-container *ngIf="isLoggedIn; else guestlinksMobile">
+        <div class="flex items-center space-x-2">
+          <img
+            [src]="userImage"
+            routerLink="/my-profile"
+            class="w-8 h-8 rounded-full cursor-pointer object-cover"
+            alt="user"
+          />
+          <span class="text-sm hidden sm:inline">{{ userName }}</span>
+        </div>
+      </ng-container>
+  
+      <ng-template #guestlinksMobile>
+        <!-- Guest view, e.g., login link -->
+      </ng-template>
+    </div>
+  </div>
+  

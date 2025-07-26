@@ -1,0 +1,28 @@
+### Create a comment
+POST http://localhost:3000/comments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1MzQ4MjYwMywiZXhwIjoxNzUzNTY5MDAzfQ.CEn4XKF8-xANZRTdyZlmCCCSfBKSYv6NdwkKG-KLLH8
+Content-Type: application/json
+
+{
+  "postId": "40865a03-f06e-4f19-ac5e-9b55f354ea9e",
+  "content": "This is my comment on the post!"
+}
+
+### Get comments for a post
+GET http://localhost:3000/comments/40865a03-f06e-4f19-ac5e-9b55f354ea9e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1MzQ4MjYwMywiZXhwIjoxNzUzNTY5MDAzfQ.CEn4XKF8-xANZRTdyZlmCCCSfBKSYv6NdwkKG-KLLH8
+Content-Type: application/json
+
+
+### Edit a comment
+PATCH http://localhost:3000/comments/8401b2ac-b810-4c40-8efd-c66b0b8ba67b
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1MzQ4MjYwMywiZXhwIjoxNzUzNTY5MDAzfQ.CEn4XKF8-xANZRTdyZlmCCCSfBKSYv6NdwkKG-KLLH8
+Content-Type: application/json
+
+{
+  "content": "Updated content of the comment"
+}
+
+### 🔴 Delete a comment
+DELETE http://localhost:3000/comments/clu4ktbfe0001f5b1t30r53a1
+Authorization: Bearer 
