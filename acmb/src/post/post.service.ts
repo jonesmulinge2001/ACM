@@ -7,10 +7,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PostType, Prisma, PrismaClient } from 'generated/prisma';
+import { Post, PostType, Prisma, PrismaClient } from 'generated/prisma';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostDto } from 'src/interfaces/post.interface';
+import dayjs from 'dayjs'; 
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
@@ -296,4 +297,22 @@ export class PostService {
     });
     return posts.map((post) => this.toPostDto(post));
   }
+
+  //>>> trnding
+async getTrendingPosts(): Promise<Post[]> {
+  return this.prisma.post.findMany({
+    where: {
+      createdAt: {
+        gte: dayjs().subtract(7, 'day').toDate(), // last 7 days
+      },
+    },
+    orderBy: {
+      likes: {
+        _count: 'desc',
+      }
+    },
+    take: 10,
+  });
+}
+
 }

@@ -3,6 +3,9 @@
  
 /* eslint-disable prettier/prettier */
  
+ 
+/* eslint-disable prettier/prettier */
+ 
 /* eslint-disable prettier/prettier */
 import {
   Body,
@@ -110,4 +113,13 @@ export class PostController {
   getOpportunityPosts() {
     return this.postService.getPostByType(PostType.OPPORTUNITY);
   }
+
+  // posts.controller.ts
+@Get('trending')
+@UseGuards(AuthGuard('jwt'))
+@RequirePermissions(Permission.CREATE_POST)
+async getTrending() {
+  return this.postService.getTrendingPosts();
+}
+
 }
