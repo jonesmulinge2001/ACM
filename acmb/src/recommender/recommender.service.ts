@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+ 
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+ 
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
@@ -117,6 +117,7 @@ export class RecommenderService {
     };
   }
 
+  //>>> recommend similar posts to a user
   async recommendSimilarPosts(postId: string) {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },

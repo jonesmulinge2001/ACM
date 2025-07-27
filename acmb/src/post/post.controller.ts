@@ -13,7 +13,9 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -23,6 +25,7 @@ import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostType } from 'generated/prisma';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('post')
 export class PostController {
@@ -32,8 +35,14 @@ export class PostController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
-  async createPost(@Req() req: RequestWithUser, @Body() dto: CreatePostDto) {
-    return this.postService.createPost(req.user.id, dto);
+  @UseInterceptors(FileInterceptor('file'))
+  async createPost(
+    @Req() req: RequestWithUser,
+    @Body() dto: CreatePostDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    console.log('Received file:', file); 
+    return this.postService.createPost(req.user.id, dto, file);
   }
 
   //>>> get all posts

@@ -33,12 +33,15 @@ export class PostService {
 
     // Upload file to Cloudinary (if exists)
     if (file) {
-      const uploaded = await this.cloudinary.uploadImage(
-        file,
-        'POST_IMAGE' as AcademeetUploadType,
-      );
-      fileUrl = uploaded.secure_url;
+      try {
+        const uploaded = await this.cloudinary.uploadImage(file, 'POST_IMAGE' as AcademeetUploadType);
+        console.log('Cloudinary response:', uploaded);
+        fileUrl = uploaded.secure_url;
+      } catch (err) {
+        console.error('File upload failed:', err);
+      }
     }
+    
 
     // Correctly structure the tag connections via PostTag
     const createTags =
@@ -98,9 +101,12 @@ export class PostService {
           select: {
             id: true,
             name: true,
+
             profile: {
               select: {
                 profileImage: true,
+                institution: true,
+                academicLevel: true,
               },
             },
           },
@@ -132,7 +138,7 @@ export class PostService {
         name: post.author.name,
         profileImage: post.author.profile?.profileImage,
       },
-      tags: post.tags?.map((pt) => pt.tag?.name) ?? [], // ✅ Corrected
+      tags: post.tags?.map((pt) => pt.tag?.name) ?? [],
     };
   }
 

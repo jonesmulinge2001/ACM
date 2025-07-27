@@ -19,4 +19,8 @@ export class CreatePostDto {
   @IsOptional()
   @IsEnum(PostType, { message: 'type must be one of GENERAL, ACADEMIC, OPPORTUNITY, RESOURCE' })
   type?: PostType; 
+
+  @IsOptional()
+  @IsString()
+  fileUrl?: string;
 }
