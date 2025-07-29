@@ -7,11 +7,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Post, PostType, Prisma, PrismaClient } from 'generated/prisma';
+import { PostType, Prisma, PrismaClient } from 'generated/prisma';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostDto } from 'src/interfaces/post.interface';
-import dayjs from 'dayjs'; 
+import dayjs from 'dayjs';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
@@ -19,7 +19,6 @@ import {
 
 @Injectable()
 export class PostService {
-
   private prisma = new PrismaClient();
 
   constructor(private cloudinary: AcademeetCloudinaryService) {}
@@ -35,14 +34,16 @@ export class PostService {
     // Upload file to Cloudinary (if exists)
     if (file) {
       try {
-        const uploaded = await this.cloudinary.uploadImage(file, 'POST_IMAGE' as AcademeetUploadType);
+        const uploaded = await this.cloudinary.uploadImage(
+          file,
+          AcademeetUploadType.POST_IMAGE,
+        );
         console.log('Cloudinary response:', uploaded);
         fileUrl = uploaded.secure_url;
       } catch (err) {
         console.error('File upload failed:', err);
       }
     }
-    
 
     // Correctly structure the tag connections via PostTag
     const createTags =
@@ -62,7 +63,7 @@ export class PostService {
         body: dto.body,
         fileUrl,
         authorId: userId,
-        type: dto.type || 'GENERAL',
+        type: (dto.type?.toUpperCase() as PostType) || PostType.GENERAL,
         tags: {
           create: createTags,
         },
@@ -97,7 +98,7 @@ export class PostService {
         fileUrl: true,
         createdAt: true,
         updatedAt: true,
-        type: true, 
+        type: true,
         author: {
           select: {
             id: true,
@@ -119,10 +120,9 @@ export class PostService {
         },
       },
     });
-  
+
     return posts.map((post) => this.toPostDto(post));
   }
-  
 
   // Helper method to convert Prisma post to PostDto
   private toPostDto(post: any): PostDto {
@@ -138,6 +138,8 @@ export class PostService {
         id: post.author.id,
         name: post.author.name,
         profileImage: post.author.profile?.profileImage,
+        institution: post.author.profile?.institution,
+        academicLevel: post.author.profile?.academicLevel,
       },
       tags: post.tags?.map((pt) => pt.tag?.name) ?? [],
     };
@@ -174,6 +176,8 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
+                institution: true,
+                academicLevel: true,
               },
             },
           },
@@ -281,16 +285,16 @@ export class PostService {
           select: {
             id: true,
             name: true,
-            profile: { select: 
-              { 
-                profileImage: true 
-              } 
+            profile: {
+              select: {
+                profileImage: true,
+              },
             },
           },
         },
         tags: {
-          include: { 
-            tag: true 
+          include: {
+            tag: true,
           },
         },
       },
@@ -298,21 +302,49 @@ export class PostService {
     return posts.map((post) => this.toPostDto(post));
   }
 
-  //>>> trnding
-async getTrendingPosts(): Promise<Post[]> {
-  return this.prisma.post.findMany({
-    where: {
-      createdAt: {
-        gte: dayjs().subtract(7, 'day').toDate(), // last 7 days
+  //>>> trending
+  async getTrendingPosts(): Promise<PostDto[]> {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        createdAt: {
+          gte: dayjs().subtract(7, 'day').toDate(),
+        },
+        isDeleted: false,
       },
-    },
-    orderBy: {
-      likes: {
-        _count: 'desc',
-      }
-    },
-    take: 10,
-  });
-}
-
+      orderBy: {
+        likes: {
+          _count: 'desc',
+        },
+      },
+      take: 20,
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        fileUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        type: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: {
+                profileImage: true,
+                institution: true,
+                academicLevel: true,
+              },
+            },
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
+    return posts.map((post) => this.toPostDto(post));
+  }
 }

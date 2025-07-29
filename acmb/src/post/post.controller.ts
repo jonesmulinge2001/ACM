@@ -56,6 +56,15 @@ export class PostController {
     return this.postService.getAllPosts();
   }
 
+  
+  // posts.controller.ts
+@Get('trending')
+@UseGuards(AuthGuard('jwt'))
+@RequirePermissions(Permission.CREATE_POST)
+async getTrending() {
+  return this.postService.getTrendingPosts();
+}
+
   //>>> get post by id
   @Get(':postId')
   @UseGuards(AuthGuard('jwt'))
@@ -114,12 +123,5 @@ export class PostController {
     return this.postService.getPostByType(PostType.OPPORTUNITY);
   }
 
-  // posts.controller.ts
-@Get('trending')
-@UseGuards(AuthGuard('jwt'))
-@RequirePermissions(Permission.CREATE_POST)
-async getTrending() {
-  return this.postService.getTrendingPosts();
-}
 
 }

@@ -14,6 +14,8 @@ export interface PostDto {
       id: string;
       name: string;
       profileImage?: string;
+      institution: string;
+      academicLevel: string;
     };
     tags?: string[];
   }

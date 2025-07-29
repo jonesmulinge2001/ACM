@@ -47,5 +47,13 @@ import { RequirePermissions } from 'src/decorator/permissions.decorator';
     async getFollowing(@Param('userId') userId: string){
       return this.followService.getFollowing(userId);
     }
+
+    @Get(':userId/stats')
+    @RequirePermissions(Permission.CREATE_PROFILE)
+    async getFollowStats(@Param('userId') userId: string) {
+      const followers = await this.followService.getFollowersCount(userId);
+      const following = await this.followService.getFollowingCount(userId);
+      return { followers, following };  
+    }
   }
   
