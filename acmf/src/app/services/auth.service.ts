@@ -1,9 +1,10 @@
-import { GenericResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, VerifyEmailRequest } from './../interfaces';
+import { GenericResponse, LoginRequest, LoginResponse, Profile, RegisterRequest, RegisterResponse, ResetPasswordRequest, VerifyEmailRequest } from './../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { ProfileService } from './profile.service';
 
 
 @Injectable({
@@ -15,10 +16,14 @@ export class AuthService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
+  private currentUserSubject = new BehaviorSubject<Profile | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
   constructor(
     private http: HttpClient,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private profileService: ProfileService
   ) { }
 
   // api callls
@@ -86,6 +91,12 @@ export class AuthService {
         localStorage.setItem('role', user.role);
         localStorage.setItem('userId', user.id);
         this.toastr.success('Login successful', 'Welcome back');
+
+        this.profileService.getMyProfile().subscribe({
+          next: (profile) => {
+            this.setCurrentUser(profile);
+          }
+        });
 
         if (user.role === 'ADMIN') {
           this.router.navigate(['/admin/dashboard']);
@@ -181,5 +192,13 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
+  }
+
+  setCurrentUser(profile: Profile): void {
+    this.currentUserSubject.next(profile);
+  }
+
+  getCurrentuser(): Profile | null {
+    return this.currentUserSubject.value;
   }
 }

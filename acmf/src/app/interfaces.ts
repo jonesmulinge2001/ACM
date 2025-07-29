@@ -62,6 +62,10 @@ export interface Profile {
     interests: string[],
     profileImage?: string;
     coverPhoto: string | null;
+
+    followersCount?: number;
+    followingCount?: number;
+    viewsCount?: number;
     createdAt?: string;
     updatedAt?: string;
     userId: string;
@@ -91,7 +95,9 @@ export interface ProfileView {
   export interface Author {
     id: string;
     name: string;
-    profileImage: string | null;
+    profileImage?: string | null;
+    institution?: string;
+    academicLevel?: string;
   }
   
   export interface Post {
@@ -101,7 +107,9 @@ export interface ProfileView {
     fileUrl?: string;
     createdAt: string;
     updatedAt: string;
+    type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
     author: Author;
+    tags?: string[];
   }
   
   
@@ -116,4 +124,31 @@ export interface Follow {
   following?: {
     profile: Profile;
   };
+}
+
+export interface CommentUserProfile {
+  profileImage: string;
+  institution: string;
+}
+
+export interface CommentUser {
+  id: string;
+  name: string;
+  profile: CommentUserProfile;
+}
+
+export interface Comment {
+  id: string;
+  body: string;
+  postId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
+  user: CommentUser
+}
+
+export interface CommentResponse {
+  total: number;
+  comments: Comment[];
 }

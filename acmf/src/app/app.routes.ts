@@ -12,6 +12,7 @@ import { ResourcesComponent } from './components/resources/resources.component';
 import { CreateComponent } from './components/create/create.component';
 import { OpportunitiesComponent } from './components/opportunities/opportunities.component';
 import { UpdateProfileComponent } from './components/profile/update-profile/update-profile.component';
+import { PostComponent } from './components/post/post.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -29,6 +30,6 @@ export const routes: Routes = [
     
     {path: 'network', component: NetworkComponent},
     {path: 'resources', component: ResourcesComponent},
-    {path: 'create', component: CreateComponent},
+    {path: 'create', component:PostComponent},
     {path: 'opportunities', component: OpportunitiesComponent}
 ];

@@ -13,7 +13,7 @@ export class SidebarComponent implements OnInit {
   showSidebar = true;
 
   navItems = [
-    { label: 'Home', link: '/home', icon: 'home' },
+    { label: 'Feed', link: '/home', icon: 'dynamic_feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
     { label: 'Resources', link: '/resources', icon: 'work' },

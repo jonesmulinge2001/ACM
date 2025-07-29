@@ -23,7 +23,7 @@ export class FollowService {
   followUser(userId: string): Observable<Follow> {
     return this.http.post<Follow>(`${this.followUser}/${userId}`, {}, {
       headers: this.getAuthHeaders(),
-    })
+    });
   }
 
   unFollowUser(userId: string): Observable<{ count: number }> {
@@ -35,19 +35,26 @@ export class FollowService {
   getFollowers(userId: string): Observable<Follow[]> {
     return this.http.get<Follow[]>(`${this.followurl}/followers/${userId}`,  {
       headers: this.getAuthHeaders()
-    })
+    });
   }
 
   getFollowing(userId: string): Observable<Follow[]> {
     return this.http.get<Follow[]>(`${this.followurl}/following/${userId}`, {
       headers: this.getAuthHeaders()
-    })
+    });
   }
 
   getProfileViewers(userId: string): Observable<ProfileView[]> {
     return this.http.get<ProfileView[]>(`http://localhost:3000/profile-views/${userId}/recent`, {
       headers: this.getAuthHeaders()
-    })
+    });
   }
   
+  getFollowStats(userId: string): Observable<{ followers: number; following: number}> {
+    return this.http.get<{ followers: number; following: number}>(
+      `http://localhost:3000/follow/${userId}/stats`, {
+        headers: this.getAuthHeaders(),
+      }
+    );
+  }
 }
