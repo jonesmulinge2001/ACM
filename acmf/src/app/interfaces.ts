@@ -215,3 +215,16 @@ export interface PostLikeResponse {
   totalLikes: number;
   likes: PostLike[];
 }
+
+export interface DashboardOverview {
+  usersCount: number;
+  postsCount: number;
+  bursariesCount: number;
+  reportsCount: number;
+}
+
+export interface ApiErrorPayload {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+}
