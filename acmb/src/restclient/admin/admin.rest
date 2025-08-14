@@ -1,0 +1,3 @@
+### get dashboard overview
+GET  http://localhost:3000/dashboard-overview/overview
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTUxOTUxMzAsImV4cCI6MTc1NTI4MTUzMH0.pwi6virfygE-6eDX7vVSspHOZ-lkhdR77uZN0wFpBNk

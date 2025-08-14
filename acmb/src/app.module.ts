@@ -22,6 +22,10 @@ import { CommentLikeModule } from './comment-like/comment-like.module';
 import { CommentLikeService } from './comment-like/comment-like.service';
 import { PostModule } from './post/post.module';
 import { AcademicResourceModule } from './academic-resource/academic-resource.module';
+import { DashboardOverviewModule } from './admin/dashboard-overview/dashboard-overview.module';
+import { DashboardOverviewController } from './admin/dashboard-overview/dashboard-overview.controller';
+import { DashboardOverviewService } from './admin/dashboard-overview/dashboard-overview.service';
+
 
 @Module({
   imports: [
@@ -40,8 +44,9 @@ import { AcademicResourceModule } from './academic-resource/academic-resource.mo
     CommentLikeModule,
     PostModule,
     AcademicResourceModule,
+    DashboardOverviewModule,
   ],
-  controllers: [AppController, RecommenderController],
-  providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService],
+  controllers: [AppController, RecommenderController, DashboardOverviewController],
+  providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService, DashboardOverviewService],
 })
 export class AppModule {}
