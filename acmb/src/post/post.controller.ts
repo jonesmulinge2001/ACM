@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -16,6 +16,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -61,6 +62,18 @@ export class PostController {
   @RequirePermissions(Permission.CREATE_POST)
   async getTrending(@Req() req: RequestWithUser) {
     return this.postService.getTrendingPosts(req.user.id); 
+  }
+
+  
+  @Get('infinite')
+  @UseGuards(AuthGuard('jwt'))
+  @RequirePermissions(Permission.CREATE_POST)
+  async getInfinite(
+    @Req() req: RequestWithUser,
+    @Query('limit') limit = 10,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postService.getInfinitePosts(req.user.id, Number(limit), cursor);
   }
 
   @Get(':postId')
@@ -147,4 +160,7 @@ export class PostController {
     const currentUserId = req.user.id;
     return this.postService.getPostsByUser(userId, currentUserId);
   }
+
+  
+
 }

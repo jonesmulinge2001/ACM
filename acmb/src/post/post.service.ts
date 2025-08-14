@@ -397,4 +397,48 @@ export class PostService {
 
     return posts.map((post) => this.toPostDto(post, currentUserId));
   }
+
+  //>>> infinite scroll
+  async getInfinitePosts(
+    currentUserId: string,
+    limit: number,
+    cursor?: string, // last post ID from previous page
+  ): Promise<{ posts: PostDto[]; nextCursor?: string }> {
+    const posts = await this.prisma.post.findMany({
+      where: { isDeleted: false },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1, // fetch one extra to check if there's more
+      skip: cursor ? 1 : 0, // skip the cursor item itself
+      cursor: cursor ? { id: cursor } : undefined,
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: {
+                profileImage: true,
+                institution: true,
+                academicLevel: true,
+              },
+            },
+          },
+        },
+        tags: { include: { tag: true } },
+        likes: true,
+      },
+    });
+  
+    let nextCursor: string | undefined = undefined;
+    if (posts.length > limit) {
+      const nextItem = posts.pop(); // remove the extra item
+      nextCursor = nextItem?.id;
+    }
+  
+    return {
+      posts: posts.map((post) => this.toPostDto(post, currentUserId)),
+      nextCursor,
+    };
+  }
+  
 }
