@@ -22,6 +22,7 @@
     "file-saver": "^2.0.5",
     "material-icons": "^1.13.14",
     "ngx-countup": "^13.2.0",
+    "ngx-infinite-scroll": "^19.0.0",
     "ngx-skeleton-loader": "^11.2.1",
     "ngx-timeago": "^3.0.0",
     "ngx-toastr": "^19.0.0",

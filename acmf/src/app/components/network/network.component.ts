@@ -1,12 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
-
 import { Follow, Profile } from '../../interfaces';
 import { ProfileService } from '../../services/profile.service';
 import { CommonModule } from '@angular/common';
 import { StudentCardComponent } from "../shared/student-card/student-card.component";
 import { FollowService } from '../../services/follow.service';
 import { Router } from '@angular/router';
-
 
 @Component({
   imports: [CommonModule, StudentCardComponent],
@@ -33,7 +31,6 @@ export class NetworkComponent implements OnInit {
     private router: Router
   ) {}
 
-
   ngOnInit() {
     this.currentUserId = localStorage.getItem('userId') || '';
     this.fetchAllData();
@@ -42,22 +39,40 @@ export class NetworkComponent implements OnInit {
   fetchAllData() {
     this.loading = true;
 
-    this.profileService.getAllProfiles().subscribe(all => {
+    const allProfiles$ = this.profileService.getAllProfiles();
+    const following$ = this.followService.getFollowing(this.currentUserId);
+    const followers$ = this.followService.getFollowers(this.currentUserId);
+
+    const startTime = Date.now();
+    let completedRequests = 0;
+
+    const finishLoading = () => {
+      completedRequests++;
+      if (completedRequests === 3) {
+        const elapsed = Date.now() - startTime;
+        const remaining = 2000 - elapsed;
+        setTimeout(() => {
+          this.loading = false;
+        }, remaining > 0 ? remaining : 0);
+      }
+    };
+
+    allProfiles$.subscribe(all => {
       this.allProfiles = all.filter(p => p.userId !== this.currentUserId);
+      finishLoading();
     });
 
-    this.followService.getFollowing(this.currentUserId).subscribe(f => {
+    following$.subscribe(f => {
       this.following = f;
+      finishLoading();
     });
-    
-    this.followService.getFollowers(this.currentUserId).subscribe(f => {
+
+    followers$.subscribe(f => {
       this.followers = f;
-      this.loading = false;
+      finishLoading();
     });
-    
   }
 
-  // Helper to know if the user is followed
   isUserFollowing(userId: string): boolean {
     return this.following.some(f => f.followingId === userId);
   }
@@ -73,7 +88,6 @@ export class NetworkComponent implements OnInit {
       this.fetchAllData();
     });
   }
-  
 
   getDisplayedProfiles(): Profile[] {
     if (this.selectedTab === 'all') {
@@ -85,8 +99,4 @@ export class NetworkComponent implements OnInit {
     }
     return [];
   }
-
-
-  
-  
 }

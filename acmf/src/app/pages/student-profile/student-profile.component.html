@@ -1,7 +1,7 @@
 <!-- ✅ SKELETON (when loading) -->
 <div
   *ngIf="isLoading"
-  class="w-full max-w-5xl mx-auto p-4 transition-opacity duration-500 ease-in min-h-[600px]"
+  class="w-full max-w-5xl mx-auto p-4 min-h-[600px] animate-fadeIn"
 >
   <!-- Cover photo skeleton -->
   <ngx-skeleton-loader
@@ -11,21 +11,15 @@
   ></ngx-skeleton-loader>
 
   <!-- Profile image and name skeleton -->
-  <div class="flex items-center space-x-4 -mt-16 px-4">
+  <div class="flex items-center gap-4 -mt-16 px-4">
     <ngx-skeleton-loader
       count="1"
       appearance="circle"
       [theme]="{ width: '96px', height: '96px', 'border-radius': '9999px' }"
     ></ngx-skeleton-loader>
     <div class="flex-1 space-y-2">
-      <ngx-skeleton-loader
-        count="1"
-        [theme]="{ height: '20px', width: '60%' }"
-      ></ngx-skeleton-loader>
-      <ngx-skeleton-loader
-        count="1"
-        [theme]="{ height: '16px', width: '40%' }"
-      ></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="1" [theme]="{ height: '20px', width: '60%' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="1" [theme]="{ height: '16px', width: '40%' }"></ngx-skeleton-loader>
     </div>
   </div>
 
@@ -39,11 +33,8 @@
 
   <!-- Bio and stats skeleton -->
   <div class="space-y-2 px-4 mt-4">
-    <ngx-skeleton-loader
-      count="2"
-      [theme]="{ height: '16px', width: '100%' }"
-    ></ngx-skeleton-loader>
-    <div class="flex space-x-2">
+    <ngx-skeleton-loader count="2" [theme]="{ height: '16px', width: '100%' }"></ngx-skeleton-loader>
+    <div class="flex gap-2">
       <ngx-skeleton-loader
         count="3"
         [theme]="{ height: '14px', width: '80px', 'border-radius': '9999px' }"
@@ -52,14 +43,11 @@
   </div>
 
   <!-- Tabs skeleton -->
-  <div class="flex space-x-4 border-b pb-2 mt-6 px-4">
-    <ngx-skeleton-loader
-      count="3"
-      [theme]="{ height: '24px', width: '60px' }"
-    ></ngx-skeleton-loader>
+  <div class="flex gap-4 border-b pb-2 mt-6 px-4">
+    <ngx-skeleton-loader count="3" [theme]="{ height: '24px', width: '60px' }"></ngx-skeleton-loader>
   </div>
 
-  <!-- Posts skeleton cards -->
+  <!-- Posts skeleton -->
   <div class="px-4 space-y-4 mt-4">
     <ngx-skeleton-loader
       count="2"
@@ -68,253 +56,219 @@
   </div>
 </div>
 
-<!-- PROFILE (when data is loaded) -->
+<!-- ✅ PROFILE -->
 <div
   *ngIf="!isLoading && userProfile"
-  class="w-full max-w-5xl mx-auto p-4 transition-opacity duration-500 ease-in opacity-100"
+  class="w-full max-w-5xl mx-auto p-4 animate-fadeIn"
 >
   <!-- Cover Photo -->
-<div class="relative h-48 rounded-lg overflow-hidden shadow">
-  <img
-    [src]="userProfile.coverPhoto || 'https://via.placeholder.com/1200x300'"
-    alt="Cover Photo"
-    class="w-full h-full object-cover"
-  />
-</div>
+  <div class="relative h-48 rounded-lg overflow-hidden shadow-sm">
+    <img
+      [src]="userProfile.coverPhoto || 'https://via.placeholder.com/1200x300'"
+      alt="Cover Photo"
+      class="w-full h-full object-cover"
+    />
+  </div>
 
-<!-- Profile Info Section -->
-<div class="flex items-start space-x-4 px-4 relative">
-  <!-- Profile Image -->
-  <img
-    [src]="userProfile.profileImage || 'https://via.placeholder.com/150'"
-    alt="Profile"
-    class="w-24 h-24 rounded-full border-4 border-white shadow -mt-12 z-50"
-  />
+  <!-- Profile Info -->
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between px-4 relative">
+    <div class="flex items-start gap-4 -mt-12">
+      <img
+        [src]="userProfile.profileImage || 'https://via.placeholder.com/150'"
+        alt="Profile"
+        class="w-24 h-24 rounded-full border-4 border-white shadow-md"
+      />
+      <div>
+        <h2 class="text-2xl font-semibold text-gray-900">{{ userProfile.name }}</h2>
+        <p class="text-sm text-gray-600">{{ userProfile.academicLevel }} - {{ userProfile.institution }}</p>
+        <p class="text-xs text-gray-500">{{ userProfile.course }}</p>
+      </div>
+    </div>
 
-  <!-- User Details -->
-  <div class="mt-2">
-    <h2 class="text-xl font-bold">{{ userProfile.name }}</h2>
-    <p class="text-sm text-gray-600">
-      {{ userProfile.academicLevel }} - {{ userProfile.institution }}
+    <!-- Follow Button -->
+    <div class="mt-4 md:mt-0">
+      <button
+        (click)="toggleFollow()"
+        class="px-5 py-2 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-300 transition"
+      >
+        {{ isFollowing ? "Unfollow" : "Follow" }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Bio -->
+  <div class="mt-4 px-4">
+    <p class="text-gray-800 text-sm leading-relaxed">
+      {{ getShortBio(userProfile.bio) }}
+      <a
+        *ngIf="hasLongBio()"
+        href="#"
+        (click)="toggleReadMore($event)"
+        class="text-blue-600 hover:underline"
+      >
+        {{ showFullBio ? 'Read less' : 'Read more' }}
+      </a>
     </p>
-    <p class="text-xs text-gray-500">{{ userProfile.course }}</p>
-  </div>
-</div>
-
-
-  <!-- Follow Button -->
-  <div class="flex justify-end mt-2">
-    <button
-      (click)="toggleFollow()"
-      class="px-4 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-    >
-      {{ isFollowing ? "Unfollow" : "Follow" }}
-    </button>
   </div>
 
-  <!-- Bio & Stats -->
-
-  <p>
-    {{ getShortBio(userProfile.bio) }}
-    <a
-      *ngIf="hasLongBio()"
-      href="#"
-      (click)="toggleReadMore($event)"
-      class="text-blue-600 hover:underline"
-    >
-      {{ showFullBio ? 'Read less' : 'Read more' }}
-    </a>
-  </p>
-  
-  <div class="flex space-x-6 mt-2 text-sm text-gray-600">
-    
-    <div>
-      
-      <strong>{{ followers.length }}</strong> Followers
-    </div>
-    <div>
-      <strong>{{ following.length }}</strong> Following
-    </div>
-    <div>
-      <strong>{{ userProfile.viewsCount || 0 }}</strong> Profile Views
-    </div>
+  <!-- Stats -->
+  <div class="flex gap-6 mt-4 px-4 text-sm text-gray-600">
+    <div><strong>{{ followers.length }}</strong> Followers</div>
+    <div><strong>{{ following.length }}</strong> Following</div>
+    <div><strong>{{ userProfile.viewsCount || 0 }}</strong> Profile Views</div>
   </div>
-  <div class="mt-2">
-    <span class="text-sm text-gray-500">Skills: </span>
+
+  <!-- Skills & Interests -->
+  <div class="mt-4 px-4">
+    <span class="text-sm text-gray-500">Skills:</span>
     <span
       *ngFor="let skill of userProfile.skills"
-      class="inline-block bg-gray-200 px-2 py-1 rounded text-sm mr-1"
-      >{{ skill }}</span
-    >
+      class="inline-block bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-xs font-medium mr-1 transition"
+    >{{ skill }}</span>
   </div>
-  <div class="mt-2">
-    <span class="text-sm text-gray-500">Interests: </span>
+  <div class="mt-2 px-4">
+    <span class="text-sm text-gray-500">Interests:</span>
     <span
       *ngFor="let interest of userProfile.interests"
-      class="inline-block bg-purple-200 px-2 py-1 rounded text-sm mr-1"
-      >{{ interest }}</span
-    >
+      class="inline-block bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded-full text-xs font-medium mr-1 transition"
+    >{{ interest }}</span>
   </div>
-</div>
 
-<!-- Tabs -->
-<div class="mt-6">
-  <nav class="flex space-x-4 border-b pb-2">
-    <button
-      class="font-semibold p-2 rounded-lg"
-      [ngClass]="{
-        'text-blue-600 bg-[#dbeafe] border-b-2': activeTab === 'posts'
-      }"
-      (click)="activeTab = 'posts'"
-    >
-      Posts
-    </button>
-    <button
-      class="font-semibold p-2 rounded-lg"
-      [ngClass]="{
-        'text-blue-600 bg-[#dbeafe] border-b-2': activeTab === 'followers'
-      }"
-      (click)="activeTab = 'followers'"
-    >
-      Followers
-    </button>
-    <button
-      class="font-semibold p-2 rounded-lg"
-      [ngClass]="{
-        'text-blue-600 bg-[#dbeafe] border-b-2': activeTab === 'following'
-      }"
-      (click)="activeTab = 'following'"
-    >
-      Following
-    </button>
-  </nav>
+  <!-- Tabs -->
+  <div class="mt-6 px-4">
+    <nav class="flex gap-6 border-b">
+      <button
+        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
+        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'posts' }"
+        (click)="activeTab = 'posts'"
+      >
+        Posts
+      </button>
+      <button
+        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
+        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'followers' }"
+        (click)="activeTab = 'followers'"
+      >
+        Followers
+      </button>
+      <button
+        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
+        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'following' }"
+        (click)="activeTab = 'following'"
+      >
+        Following
+      </button>
+    </nav>
 
-  <div class="mt-4">
-    <!-- Posts Tab -->
-    <div *ngIf="activeTab === 'posts'">
-      <div *ngIf="userPosts.length > 0; else noPosts">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div
-            *ngFor="let post of userPosts"
-            class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition p-4 flex flex-col"
-          >
-            <!-- Author section -->
-            <div class="flex items-center mb-3">
+    <!-- Tab Content -->
+    <div class="mt-4">
+      <!-- Posts Tab -->
+      <div *ngIf="activeTab === 'posts'">
+        <ng-container *ngIf="userPosts.length > 0; else noPosts">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              *ngFor="let post of userPosts"
+              class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition p-4 flex flex-col"
+            >
+              <!-- Author -->
+              <div class="flex items-center mb-3">
+                <img
+                  [src]="post.author.profileImage || 'assets/default-avatar.png'"
+                  alt="{{ post.author.name }}"
+                  class="w-10 h-10 rounded-full object-cover mr-3 border"
+                />
+                <div>
+                  <p class="font-semibold text-gray-900">{{ post.author.name }}</p>
+                  <p class="text-xs text-gray-500">{{ post.author.institution }} • {{ post.createdAt | date: "mediumDate" }}</p>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-lg font-semibold text-gray-900">{{ post.title }}</h3>
+
+              <!-- Body -->
+              <p class="mt-2 text-sm text-gray-800">{{ getShortBody(post.id, post.body) }}</p>
+              <a
+                *ngIf="hasLongBody(post.body)"
+                href="#"
+                (click)="togglePostReadMore($event, post.id)"
+                class="text-blue-600 text-xs mt-1 hover:underline"
+              >
+                {{ showFullBody[post.id] ? 'Read less' : 'Read more' }}
+              </a>
+
+              <!-- Image -->
               <img
-                [src]="post.author.profileImage || 'assets/default-avatar.png'"
-                alt="{{ post.author.name }}"
-                class="w-10 h-10 rounded-full object-cover mr-3 border"
+                *ngIf="post.fileUrl"
+                [src]="post.fileUrl"
+                alt="Post image"
+                class="mt-3 w-full max-h-64 object-cover rounded-lg border"
               />
-              <div>
-                <p class="font-semibold text-gray-900">{{ post.author.name }}</p>
-                <p class="text-xs text-gray-500">
-                  {{ post.author.institution }} • {{ post.createdAt | date: "mediumDate" }}
-                </p>
+
+              <!-- Tags -->
+              <div *ngIf="post.tags?.length" class="mt-3 flex flex-wrap gap-2">
+                <span
+                  *ngFor="let tag of post.tags"
+                  class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
+                >
+                  {{ tag }}
+                </span>
               </div>
             </div>
-    
-            <!-- Post title -->
-            <h3 class="text-lg font-semibold text-gray-900">{{ post.title }}</h3>
-    
-            <!-- Post body with read more -->
-            <p class="mt-2 text-sm text-gray-800">
-              {{ getShortBody(post.id, post.body) }}
-            </p>
-            <a
-              *ngIf="hasLongBody(post.body)"
-              href="#"
-              (click)="togglePostReadMore($event, post.id)"
-              class="text-blue-600 text-xs mt-1 hover:underline"
-            >
-              {{ showFullBody[post.id] ? 'Read less' : 'Read more' }}
-            </a>
-    
-            <!-- Post image -->
-            <img
-              *ngIf="post.fileUrl"
-              [src]="post.fileUrl"
-              alt="Post image"
-              class="mt-3 w-full max-h-64 object-cover rounded-lg border"
-            />
-    
-            <!-- Tags -->
-            <div *ngIf="post.tags?.length" class="mt-3 flex flex-wrap gap-2">
-              <span
-                *ngFor="let tag of post.tags"
-                class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
-              >
-                {{ tag }}
-              </span>
-            </div>
           </div>
-        </div>
+        </ng-container>
+        <ng-template #noPosts>
+          <p class="text-gray-500">No posts yet.</p>
+        </ng-template>
       </div>
-    
-      <ng-template #noPosts>
-        <p class="text-gray-500">No posts yet.</p>
-      </ng-template>
-    </div>
-    
-    
-    
-    
 
-    <!-- Followers Tab -->
-    <div *ngIf="activeTab === 'followers'">
-      <div *ngIf="followers.length > 0; else noFollowers">
-        <div *ngFor="let f of followers" class="mb-3">
-          <a
-            [routerLink]="['/profile', f.follower?.profile?.userId]"
-            class="flex items-center space-x-3 hover:bg-gray-100 p-2 rounded transition"
-          >
-            <img
-              [src]="
-                f.follower?.profile?.profileImage ||
-                'https://via.placeholder.com/40'
-              "
-              class="w-10 h-10 rounded-full"
-            />
-            <div>
-              <p class="font-medium">{{ f.follower?.profile?.name }}</p>
-              <p class="text-xs text-gray-500">
-                {{ f.follower?.profile?.institution }}
-              </p>
-            </div>
-          </a>
-        </div>
+      <!-- Followers Tab -->
+      <div *ngIf="activeTab === 'followers'">
+        <ng-container *ngIf="followers.length > 0; else noFollowers">
+          <div *ngFor="let f of followers" class="mb-3">
+            <a
+              [routerLink]="['/profile', f.follower?.profile?.userId]"
+              class="flex items-center gap-3 hover:bg-gray-50 p-2 rounded transition"
+            >
+              <img
+                [src]="f.follower?.profile?.profileImage || 'https://via.placeholder.com/40'"
+                class="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p class="font-medium">{{ f.follower?.profile?.name }}</p>
+                <p class="text-xs text-gray-500">{{ f.follower?.profile?.institution }}</p>
+              </div>
+            </a>
+          </div>
+        </ng-container>
+        <ng-template #noFollowers>
+          <p class="text-gray-500">No followers yet.</p>
+        </ng-template>
       </div>
-      <ng-template #noFollowers>
-        <p class="text-gray-500">No followers yet.</p>
-      </ng-template>
-    </div>
 
-    <!-- Following Tab -->
-    <div *ngIf="activeTab === 'following'">
-      <div *ngIf="following.length > 0; else noFollowing">
-        <div *ngFor="let f of following" class="mb-3">
-          <a
-            [routerLink]="['/profile', f.following?.profile?.userId]"
-            class="flex items-center space-x-3 hover:bg-gray-100 p-2 rounded transition"
-          >
-            <img
-              [src]="
-                f.following?.profile?.profileImage ||
-                'https://via.placeholder.com/40'
-              "
-              class="w-10 h-10 rounded-full"
-            />
-            <div>
-              <p class="font-medium">{{ f.following?.profile?.name }}</p>
-              <p class="text-xs text-gray-500">
-                {{ f.following?.profile?.institution }}
-              </p>
-            </div>
-          </a>
-        </div>
+      <!-- Following Tab -->
+      <div *ngIf="activeTab === 'following'">
+        <ng-container *ngIf="following.length > 0; else noFollowing">
+          <div *ngFor="let f of following" class="mb-3">
+            <a
+              [routerLink]="['/profile', f.following?.profile?.userId]"
+              class="flex items-center gap-3 hover:bg-gray-50 p-2 rounded transition"
+            >
+              <img
+                [src]="f.following?.profile?.profileImage || 'https://via.placeholder.com/40'"
+                class="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p class="font-medium">{{ f.following?.profile?.name }}</p>
+                <p class="text-xs text-gray-500">{{ f.following?.profile?.institution }}</p>
+              </div>
+            </a>
+          </div>
+        </ng-container>
+        <ng-template #noFollowing>
+          <p class="text-gray-500">Not following anyone yet.</p>
+        </ng-template>
       </div>
-      <ng-template #noFollowing>
-        <p class="text-gray-500">Not following anyone yet.</p>
-      </ng-template>
     </div>
   </div>
 </div>

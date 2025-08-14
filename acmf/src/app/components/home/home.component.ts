@@ -1,4 +1,4 @@
-import { RouterModule, RouterLink } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { Comment, Post, Profile } from '../../interfaces';
 import { PostService } from '../../services/post.service';
@@ -14,6 +14,9 @@ import { NumberShortPipe } from '../../pipes/number-short.pipe';
 import { EditPostComponent } from '../edit-post/edit-post.component';
 import { CountUpDirective } from '../../directives/count-up/count-up.component';
 import { LikeService } from '../../services/like.service';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { forkJoin, timer } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -28,18 +31,16 @@ import { LikeService } from '../../services/like.service';
     TimeagoModule,
     ResourceUploadModalComponent,
     EditPostComponent,
+    InfiniteScrollModule,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
   trendingPosts: Post[] = [];
-  recentPosts: Post[] = [];
   recommendedPosts: Post[] = [];
   profiles: Profile[] = [];
   followingIds: string[] = [];
-  mainFeedPosts: Post[] = [];
-
 
   loggedInUserId = localStorage.getItem('userId');
   loading = true;
@@ -56,102 +57,18 @@ export class HomeComponent implements OnInit {
   replyInputs: { [commentId: string]: string } = {};
   repliesVisible: { [commentId: string]: boolean } = {};
 
-  // --- Edit modal / action menu state (new) ---
   actionMenuOpen: { [postId: string]: boolean } = {};
   showEditModal = false;
   selectedPostForEdit?: Post | null;
 
-  // toggle small action menu (three-dot). stopPropagation to avoid card clicks.
-  openActionMenu(postId: string, event: MouseEvent) {
-    event.stopPropagation();
-    // close other menus and toggle this one
-    this.actionMenuOpen = {};
-    this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
-  }
-
-  // open edit modal (only owner)
-  openEditModal(post: Post) {
-    // ownership check using loggedInUserId from localStorage
-    if (post.author.id !== this.loggedInUserId) {
-      this.toastr.warning('You are not allowed to edit this post');
-      this.actionMenuOpen[post.id] = false;
-      return;
-    }
-
-    // clone post so direct form edits don't mutate list until saved
-    this.selectedPostForEdit = { ...post };
-    this.showEditModal = true;
-    this.actionMenuOpen[post.id] = false;
-  }
-
-  // close modal without saving
-  onCloseEditModal() {
-    this.showEditModal = false;
-    this.selectedPostForEdit = undefined;
-  }
-
-  // when modal emits "save" with updated post object
-  onPostSave(formData: FormData) {
-    // ensure we still have a selected post to get its id
-    if (!this.selectedPostForEdit) {
-      this.toastr.error('No post selected to update');
-      return;
-    }
-
-    // use the stored selectedPostForEdit.id to send update
-    this.postService
-      .updatePostWithFile(this.selectedPostForEdit.id, formData)
-      .subscribe({
-        next: (updatedPost: Post) => {
-          // update the post in local lists with the server-returned Post
-          this.updatePostInLists(updatedPost);
-          this.toastr.success('Post updated successfully');
-          this.onCloseEditModal();
-        },
-        error: (err) => {
-          console.error('Failed to update post', err);
-          this.toastr.error('Failed to update post');
-        },
-      });
-  }
-
-  // delete flow with ownership check
-  confirmDeletePost(post: Post) {
-    if (post.author.id !== this.loggedInUserId) {
-      this.toastr.warning('You are not allowed to delete this post');
-      return;
-    }
-
-    if (!confirm('Delete this post? This action cannot be undone.')) return;
-
-    this.postService.deletePost(post.id).subscribe({
-      next: () => {
-        // remove from local lists
-        this.trendingPosts = this.trendingPosts.filter((p) => p.id !== post.id);
-        this.recentPosts = this.recentPosts.filter((p) => p.id !== post.id);
-        this.recommendedPosts = this.recommendedPosts.filter(
-          (p) => p.id !== post.id
-        );
-        this.toastr.success('Post deleted');
-      },
-      error: () => this.toastr.error('Failed to delete post'),
-    });
-  }
-
-  // helper: find and replace updated post in any of the feed arrays
-  private updatePostInLists(updated: Post) {
-    const replace = (arr?: Post[]) => {
-      if (!Array.isArray(arr)) return;
-      const idx = arr.findIndex((p) => p.id === updated.id);
-      if (idx > -1) arr[idx] = { ...arr[idx], ...updated };
-    };
-    replace(this.trendingPosts);
-    replace(this.recentPosts);
-    replace(this.recommendedPosts);
-  }
-  
+  posts: Post[] = [];
+  nextCursor?: string | null = undefined;
+  isLoading = false;
+  limit = 10;
 
   likingInProgress = new Set<string>();
+
+  expandedPosts: { [postId: string]: boolean } = {};
 
   constructor(
     private postService: PostService,
@@ -164,7 +81,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.loadFeedPosts();
+    this.loadMorePosts(); // initial load via infinite scroll array
 
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
@@ -185,6 +102,63 @@ export class HomeComponent implements OnInit {
     }
 
     this.loadProfilesWithFollowStats();
+    this.loadTrendingAndRecommended();
+  }
+
+  loadMorePosts() {
+    if (this.isLoading || this.nextCursor === null) return;
+  
+    this.isLoading = true;
+    this.loading = true; // show skeleton loader
+  
+    // Wrap the HTTP request and a 2-second timer
+    forkJoin({
+      posts: this.postService.getInfinitePosts(this.limit, this.nextCursor),
+      delay: timer(2000)
+    })
+    .pipe(
+      finalize(() => {
+        this.isLoading = false;
+        this.loading = false;
+      })
+    )
+    .subscribe({
+      next: ({ posts }) => {
+        this.posts = [...this.posts, ...posts.posts];
+        this.injectLikesCount(posts.posts);
+  
+        posts.posts.forEach((post) => {
+          this.commentService.getCommentCount(post.id).subscribe({
+            next: (response) => (this.commentCounts[post.id] = response.total),
+            error: () => (this.commentCounts[post.id] = 0),
+          });
+        });
+  
+        this.nextCursor = posts.nextCursor ?? null;
+      },
+      error: () => {
+        this.toastr.error('Failed to load more posts');
+      },
+    });
+  }
+
+  loadTrendingAndRecommended() {
+    this.postService.getTrendingPosts().subscribe({
+      next: (posts) => {
+        this.trendingPosts = posts;
+        this.injectLikesCount(this.trendingPosts);
+      },
+      error: () => {
+        this.toastr.error('Failed to load trending posts');
+      },
+    });
+
+    this.postService.getRecommendedPostsForUser().subscribe({
+      next: (posts) => {
+        this.recommendedPosts = posts;
+        this.injectLikesCount(this.recommendedPosts);
+      },
+    });
   }
 
   isFollowing(userId: string): boolean {
@@ -211,82 +185,10 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  loadFeedPosts(): void {
-    this.loading = true;
-
- // Load All Posts for main feed
-this.postService.getAllPosts().subscribe({
-  next: (posts) => {
-    this.mainFeedPosts = posts;
-    this.injectLikesCount(this.mainFeedPosts);
-
-    // Load comment counts for each post in the feed
-    this.mainFeedPosts.forEach((post) => {
-      this.commentService.getCommentCount(post.id).subscribe({
-        next: (response) => (this.commentCounts[post.id] = response.total),
-        error: () => (this.commentCounts[post.id] = 0),
-      });
-    });
-  },
-  error: () => {
-    this.toastr.error('Failed to load all posts');
-  },
-});
-
-
-    // Load Recent Posts
-    this.postService.getAllPosts().subscribe({
-      next: (posts) => {
-        this.recentPosts = posts;
-        this.injectLikesCount(this.recentPosts);
-      },
-    });
-
-    // Load Trending Posts
-this.postService.getTrendingPosts().subscribe({
-  next: (posts) => {
-    this.trendingPosts = posts;
-    this.injectLikesCount(this.trendingPosts);
-  },
-  error: () => {
-    this.toastr.error('Failed to load trending posts');
-  }
-});
-
-
-    // Load Recommended Posts
-    this.postService.getRecommendedPostsForUser().subscribe({
-      next: (posts) => {
-        this.recommendedPosts = posts;
-        this.injectLikesCount(this.recommendedPosts);
-      },
-      complete: () => (this.loading = false),
-    });
-  }
-
-  
-
-  //>>> for injecting total likes to each post
-  private injectLikesCount(posts: Post[] | Post) {
-    if (!posts) return;
-
-    if (!Array.isArray(posts)) {
-      posts = [posts];
-    }
-
-    posts.forEach((post) => {
-      this.likeService.getPostLikes(post.id).subscribe({
-        next: (likeData) => (post.likesCount = likeData.likes.length),
-        error: () => (post.likesCount = 0),
-      });
-    });
-  }
-
   private loadProfilesWithFollowStats(): void {
     this.profileService.getAllProfiles().subscribe({
       next: (profiles) => {
         this.profiles = profiles;
-
         this.profiles.forEach((profile) => {
           if (profile.id) {
             this.followService.getFollowStats(profile.id).subscribe({
@@ -305,17 +207,14 @@ this.postService.getTrendingPosts().subscribe({
 
   toggleComments(postId: string) {
     this.commentVisible[postId] = !this.commentVisible[postId];
-
     if (this.commentVisible[postId] && !this.comments[postId]) {
       this.commentLoading[postId] = true;
-
       this.commentService.getComments(postId).subscribe({
         next: (response) => {
           this.comments[postId] = response.comments;
           this.commentCounts[postId] = response.total;
           this.commentLoading[postId] = false;
 
-          // Extract replies for each top-level comment
           for (const comment of response.comments) {
             if (comment.replies && comment.replies.length > 0) {
               this.replies[comment.id] = comment.replies;
@@ -364,10 +263,6 @@ this.postService.getTrendingPosts().subscribe({
     });
   }
 
-  loadReplies(commentId: string): void {
-    this.repliesVisible[commentId] = !this.repliesVisible[commentId];
-  }
-
   submitReply(commentId: string): void {
     const reply = this.replyInputs[commentId]?.trim();
     if (!reply) return;
@@ -389,8 +284,6 @@ this.postService.getTrendingPosts().subscribe({
     if (!this.userProfile?.id || this.likingInProgress.has(post.id)) return;
 
     const wasLiked = post.likedByCurrentUser ?? false;
-
-    // Optimistic UI update
     post.likedByCurrentUser = !wasLiked;
     post.likesCount = (post.likesCount || 0) + (wasLiked ? -1 : 1);
 
@@ -405,12 +298,8 @@ this.postService.getTrendingPosts().subscribe({
         this.likingInProgress.delete(post.id);
       },
       error: (error) => {
-        // Special handling for backend 400 error: "You already liked this post"
         const message = error?.error?.message || '';
         if (!wasLiked && message.includes('already liked')) {
-          console.error('Like failed:', error);
-
-          // Try to unlike instead — in case frontend and backend got out of sync
           this.likeService.unLikePost(post.id).subscribe({
             next: () => {
               post.likedByCurrentUser = false;
@@ -418,7 +307,6 @@ this.postService.getTrendingPosts().subscribe({
               this.likingInProgress.delete(post.id);
             },
             error: () => {
-              // Total rollback
               post.likedByCurrentUser = wasLiked;
               post.likesCount = (post.likesCount || 0) + (wasLiked ? 1 : -1);
               this.toastr.error('Failed to update like');
@@ -426,7 +314,6 @@ this.postService.getTrendingPosts().subscribe({
             },
           });
         } else {
-          // Total rollback
           post.likedByCurrentUser = wasLiked;
           post.likesCount = (post.likesCount || 0) + (wasLiked ? 1 : -1);
           this.toastr.error('Failed to update like');
@@ -435,4 +322,105 @@ this.postService.getTrendingPosts().subscribe({
       },
     });
   }
+
+  openActionMenu(postId: string, event: MouseEvent) {
+    event.stopPropagation();
+    this.actionMenuOpen = {};
+    this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
+  }
+
+  openEditModal(post: Post) {
+    if (post.author.id !== this.loggedInUserId) {
+      this.toastr.warning('You are not allowed to edit this post');
+      this.actionMenuOpen[post.id] = false;
+      return;
+    }
+    this.selectedPostForEdit = { ...post };
+    this.showEditModal = true;
+    this.actionMenuOpen[post.id] = false;
+  }
+
+  onCloseEditModal() {
+    this.showEditModal = false;
+    this.selectedPostForEdit = undefined;
+  }
+
+  onPostSave(formData: FormData) {
+    if (!this.selectedPostForEdit) {
+      this.toastr.error('No post selected to update');
+      return;
+    }
+    this.postService
+      .updatePostWithFile(this.selectedPostForEdit.id, formData)
+      .subscribe({
+        next: (updatedPost: Post) => {
+          this.updatePostInList(updatedPost);
+          this.toastr.success('Post updated successfully');
+          this.onCloseEditModal();
+        },
+        error: () => {
+          this.toastr.error('Failed to update post');
+        },
+      });
+  }
+
+  confirmDeletePost(post: Post) {
+    if (post.author.id !== this.loggedInUserId) {
+      this.toastr.warning('You are not allowed to delete this post');
+      return;
+    }
+    if (!confirm('Delete this post? This action cannot be undone.')) return;
+
+    this.postService.deletePost(post.id).subscribe({
+      next: () => {
+        this.posts = this.posts.filter((p) => p.id !== post.id);
+        this.trendingPosts = this.trendingPosts.filter((p) => p.id !== post.id);
+        this.recommendedPosts = this.recommendedPosts.filter(
+          (p) => p.id !== post.id
+        );
+        this.toastr.success('Post deleted');
+      },
+      error: () => this.toastr.error('Failed to delete post'),
+    });
+  }
+
+  private injectLikesCount(posts: Post[] | Post) {
+    if (!posts) return;
+    if (!Array.isArray(posts)) {
+      posts = [posts];
+    }
+    posts.forEach((post) => {
+      this.likeService.getPostLikes(post.id).subscribe({
+        next: (likeData) => (post.likesCount = likeData.likes.length),
+        error: () => (post.likesCount = 0),
+      });
+    });
+  }
+
+  private updatePostInList(updated: Post) {
+    const idx = this.posts.findIndex((p) => p.id === updated.id);
+    if (idx > -1) this.posts[idx] = { ...this.posts[idx], ...updated };
+  }
+
+  isExpanded(postId: string): boolean {
+    return !!this.expandedPosts[postId];
+  }
+
+  
+toggleReadMore(postId: string) {
+  this.expandedPosts[postId] = !this.expandedPosts[postId];
+}
+
+getPostPreview(postBody: string | undefined, postId: string): string {
+  if (!postBody) return '';
+
+  const words = postBody.split(' ');
+  if (words.length <= 10 || this.isExpanded(postId)) {
+    return postBody;
+  }
+  return words.slice(0, 10).join(' ') + '...';
+}
+
+
+
 }

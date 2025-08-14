@@ -87,4 +87,15 @@ export class PostService {
       headers: this.getAuthHeaders(),
     });
   }
+
+getInfinitePosts(limit: number, cursor?: string): Observable<{ posts: Post[]; nextCursor?: string }> {
+  let params: any = { limit };
+  if (cursor) params.cursor = cursor;
+
+  return this.http.get<{ posts: Post[]; nextCursor?: string }>(
+    `${this.baseUrl}/infinite`,
+    { params }
+  );
+}
+
 }

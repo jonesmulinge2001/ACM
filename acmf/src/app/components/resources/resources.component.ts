@@ -18,6 +18,8 @@ export class ResourcesComponent implements OnInit {
   selectedYear = '';
   years = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
 
+  loading = false;
+
   constructor(private resourceService: AcademicResourceService) {}
 
   ngOnInit(): void {
@@ -25,11 +27,15 @@ export class ResourcesComponent implements OnInit {
   }
 
   fetchResources(): void {
-    this.resourceService
-      .searchResources(this.searchTerm, this.selectedCourse, this.selectedInstitution, this.selectedYear)
-      .subscribe((data) => {
-        this.resources = data;
-      });
+    this.loading = true; // Start loading
+    setTimeout(() => { // Artificial 2s delay
+      this.resourceService
+        .searchResources(this.searchTerm, this.selectedCourse, this.selectedInstitution, this.selectedYear)
+        .subscribe((data) => {
+          this.resources = data;
+          this.loading = false; // Done loading
+        });
+    }, 2000);
   }
 
   onDownload(resource: AcademicResource): void {
