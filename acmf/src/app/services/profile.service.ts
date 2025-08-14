@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Follow, Profile, ProfileView } from '../interfaces';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -56,7 +57,9 @@ export class ProfileService {
   getMyProfile(): Observable<Profile> {
     return this.http.get<Profile>(`${this.baseUrl}/me`, {
       headers: this.getAuthHeaders(),
-    });
+    }).pipe(
+      delay(2000) 
+    );
   }
 
   getAllProfiles(searchTerm?: string): Observable<Profile[]> {
@@ -93,10 +96,6 @@ export class ProfileService {
       headers: this.getAuthHeaders()
     })
   }
+  
 
-  // getProfileViewers(userId: string): Observable<ProfileView[]> {
-  //   return this.http.get<ProfileView[]>(`http://localhost:3000/profile-views/${userId}/recent`, {
-  //     headers: this.getAuthHeaders()
-  //   })
-  // }
 }

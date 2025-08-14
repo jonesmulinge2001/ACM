@@ -1,11 +1,43 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AcademicResource } from '../../interfaces';
+import { AcademicResourceService } from '../../services/academic-resource.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   selector: 'app-resources',
-  imports: [],
   templateUrl: './resources.component.html',
-  styleUrl: './resources.component.css'
 })
-export class ResourcesComponent {
+export class ResourcesComponent implements OnInit {
+  resources: AcademicResource[] = [];
+  searchTerm = '';
+  selectedCourse = '';
+  selectedInstitution = '';
+  selectedYear = '';
+  years = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
 
+  constructor(private resourceService: AcademicResourceService) {}
+
+  ngOnInit(): void {
+    this.fetchResources();
+  }
+
+  fetchResources(): void {
+    this.resourceService
+      .searchResources(this.searchTerm, this.selectedCourse, this.selectedInstitution, this.selectedYear)
+      .subscribe((data) => {
+        this.resources = data;
+      });
+  }
+
+  onDownload(resource: AcademicResource): void {
+    this.resourceService.downloadResourceFile(resource);
+  }
+  
+
+  onFilterChange(): void {
+    this.fetchResources();
+  }
 }

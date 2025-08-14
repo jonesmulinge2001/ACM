@@ -18,7 +18,23 @@ export class SidebarComponent implements OnInit {
     { label: 'Create', link: '/create', icon: 'add_circle' },
     { label: 'Resources', link: '/resources', icon: 'work' },
     { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
+    { label: 'UniTok', link: '/unitok', icon: 'play_circle_filled' },
   ];
+
+  getIconGradient(label: string): string {
+    const gradients: { [key: string]: string } = {
+      Feed: 'from-pink-500 to-red-500',
+      Network: 'from-indigo-500 to-purple-500',
+      Create: 'from-green-500 to-emerald-500',
+      Resources: 'from-blue-500 to-cyan-500',
+      Opportunities: 'from-yellow-500 to-orange-500',
+      UniTok: 'from-rose-500 to-pink-500',
+    };
+  
+    const gradient = gradients[label] || 'from-gray-500 to-gray-700';
+    return `bg-gradient-to-r ${gradient}`;
+  }
+  
 
   constructor(private router: Router) {}
 

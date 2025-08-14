@@ -13,6 +13,8 @@ import { CreateComponent } from './components/create/create.component';
 import { OpportunitiesComponent } from './components/opportunities/opportunities.component';
 import { UpdateProfileComponent } from './components/profile/update-profile/update-profile.component';
 import { PostComponent } from './components/post/post.component';
+import { ResourceUploadModalComponent } from './components/resource-upload-modal/resource-upload-modal.component';
+import { StudentProfileComponent } from './pages/student-profile/student-profile.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -27,9 +29,11 @@ export const routes: Routes = [
     {path: 'create-profile', component: CreateProfileComponent},
     {path: 'my-profile', component: MyProfileComponent},
     {path: 'update-profile', component: UpdateProfileComponent},
+    {path: 'profile/:id', component: StudentProfileComponent},
     
     {path: 'network', component: NetworkComponent},
     {path: 'resources', component: ResourcesComponent},
     {path: 'create', component:PostComponent},
+    {path: 'upload-academic-resource', component: ResourceUploadModalComponent},
     {path: 'opportunities', component: OpportunitiesComponent}
 ];

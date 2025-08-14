@@ -1,110 +1,210 @@
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 px-4">
-  <!-- Left: Feed -->
-  <div class="lg:col-span-2 space-y-6">
-    <div
-      *ngFor="let post of trendingPosts"
-      class="bg-white rounded-2xl shadow border p-4"
+<!-- Welcome Banner -->
+<div
+  class="rounded-xl px-6 py-8 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200"
+>
+  <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
+    Welcome to Academeet!
+  </h1>
+  <p class="text-sm md:text-base text-gray-700 mb-4">
+    Connect with fellow students, share resources, and discover opportunities
+    to grow your academic journey.
+  </p>
+
+  <div class="flex flex-wrap gap-3">
+    <button
+      routerLink="/create"
+      class="bg-blue-600 text-white font-medium px-5 py-1.5 rounded-full hover:bg-blue-700 transition"
     >
-      <!-- Author -->
-      <div class="flex items-center gap-3 mb-3">
-        <img
-          [src]="post.author.profileImage || 'assets/default-avatar.png'"
-          alt="Profile"
-          class="w-10 h-10 rounded-full object-cover"
-        />
+      Share Your First Post
+    </button>
+
+    <button
+      (click)="showUpload = true"
+      class="bg-gray-100 text-gray-800 font-medium px-5 py-1.5 rounded-full hover:bg-gray-200 transition"
+    >
+      Upload Resource
+    </button>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<app-resource-upload-modal
+  *ngIf="showUpload"
+  (closeModal)="showUpload = false"
+></app-resource-upload-modal>
+
+<!-- Edit Post Modal -->
+<app-edit-post
+  *ngIf="showEditModal && selectedPostForEdit"
+  [post]="selectedPostForEdit"
+  [showModal]="showEditModal"
+  (close)="onCloseEditModal()"
+  (save)="onPostSave($event)"
+></app-edit-post>
+
+<!-- Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 px-4">
+  <!-- Feed -->
+  <div class="lg:col-span-2 space-y-4">
+    <div
+      *ngFor="let post of mainFeedPosts"
+      class="bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition p-4"
+    >
+      <!-- Header -->
+      <div class="flex items-start gap-3 mb-3 relative">
+        <a [routerLink]="['/profile', post.author.id]">
+          <img
+            [src]="post.author.profileImage || 'assets/default-avatar.png'"
+            alt="Profile"
+            class="w-10 h-10 rounded-full object-cover border border-gray-300"
+          />
+        </a>
+
         <div>
-          <p class="font-semibold text-sm text-gray-900">{{ post.author.name }}</p>
+          <a
+            [routerLink]="['/student', post.author.id]"
+            class="font-medium text-sm text-gray-900 hover:text-blue-600"
+          >
+            {{ post.author.name }}
+          </a>
           <p class="text-xs text-gray-500">
-            {{ post.author.institution || '' }} • {{ post.author.academicLevel || '' }}
+            {{ post.author.institution || "" }} •
+            {{ post.author.academicLevel || "" }}
           </p>
+          <span class="text-xs text-gray-400">
+            {{ post.createdAt | timeago }}
+          </span>
+        </div>
+
+        <!-- Action Menu -->
+        <div class="ml-auto">
+          <button
+            *ngIf="post.author.id === loggedInUserId"
+            (click)="openActionMenu(post.id, $event)"
+            class="p-1 rounded-full hover:bg-gray-100"
+          >
+            <i class="ri-more-2-fill text-gray-500"></i>
+          </button>
+
+          <div
+            *ngIf="actionMenuOpen[post.id]"
+            class="origin-top-right absolute right-0 top-8 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+          >
+            <button
+              class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+              (click)="openEditModal(post)"
+            >
+              Edit post
+            </button>
+            <button
+              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              (click)="confirmDeletePost(post)"
+            >
+              Delete post
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Title & Body -->
-      <h2 class="text-lg font-semibold text-gray-800">{{ post.title }}</h2>
-      <p class="text-gray-700 mt-1 text-sm line-clamp-4">{{ post.body }}</p>
+      <!-- Content -->
+      <h2 class="text-base font-semibold text-gray-800 leading-tight mb-1">
+        {{ post.title }}
+      </h2>
+      <p class="text-gray-700 text-sm mb-2 line-clamp-4">
+        {{ post.body }}
+      </p>
+
+      <span
+        class="bg-blue-50 text-blue-700 px-3 py-0.5 rounded-full text-xs font-medium"
+      >
+        {{ post.type }}
+      </span>
+
+      <!-- Tags -->
+      <div class="flex gap-2 flex-wrap mt-3">
+        <span
+          *ngFor="let tag of post.tags || []"
+          class="bg-gray-100 text-gray-700 px-3 py-0.5 rounded-full text-xs font-medium hover:bg-gray-200 cursor-pointer"
+        >
+          #{{ tag }}
+        </span>
+      </div>
 
       <!-- Image -->
       <div *ngIf="post.fileUrl" class="mt-3">
         <img
           [src]="post.fileUrl"
           alt="Post image"
-          class="rounded-xl max-h-60 w-full object-cover"
+          class="rounded-lg w-full max-h-80 object-cover border border-gray-200"
         />
       </div>
 
-      <!-- Tags -->
-      <div class="flex gap-2 flex-wrap mt-4">
-        <span
-          *ngFor="let tag of post.tags || []"
-          class="bg-blue-50 text-blue-700 px-3 py-0.5 rounded-full text-xs font-medium"
+      <!-- Actions -->
+      <div
+        class="mt-4 border-t border-gray-100 pt-2 flex items-center gap-6 text-sm text-gray-600"
+      >
+        <!-- Like -->
+        <button
+          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+          (click)="togglePostLike(post)"
         >
-          #{{ tag }}
-        </span>
+          <i
+            [class]="'ri-heart-' + (post.likedByCurrentUser ? 'fill' : 'line')"
+          ></i>
+          <span>{{ post.likesCount | numberShort }}</span>
+        </button>
+
+        <!-- Comment -->
+        <button
+          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+          (click)="toggleComments(post.id)"
+        >
+          <i class="ri-chat-3-line"></i>
+          <span>{{ commentCounts[post.id] || 0 | numberShort }}</span>
+        </button>
+
+        <!-- Share -->
+        <button
+          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+        >
+          <i class="ri-share-line"></i>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Right: Suggested Profiles-->
+  <!-- Trending Posts -->
   <div class="hidden lg:block space-y-4">
-    <h2 class="text-lg font-semibold text-gray-800">Suggested Profiles</h2>
-
-    <div *ngFor="let profile of profiles" class="bg-white rounded-2xl shadow border p-4 space-y-3">
-      <div class="flex items-center gap-4">
+    <h2 class="text-base font-semibold text-gray-800">Trending Posts</h2>
+    <div
+      *ngFor="let post of trendingPosts"
+      class="bg-white rounded-lg shadow border border-gray-200 p-4 space-y-3 hover:shadow-md transition"
+    >
+      <div class="flex items-center gap-3">
         <img
-          [src]="profile.profileImage || 'assets/default-avatar.png'"
+          [src]="post.author.profileImage || 'assets/default-avatar.png'"
           alt="Profile Image"
-          class="w-12 h-12 rounded-full object-cover"
+          class="w-10 h-10 rounded-full object-cover border border-gray-300"
         />
         <div>
-          <p class="text-sm font-bold text-gray-900">{{ profile.name }}</p>
-          <p class="text-xs text-gray-600">{{ profile.course }}</p>
-          <p class="text-xs text-gray-500">{{ profile.institution }}</p>
+          <p class="text-sm font-medium text-gray-900">{{ post.author.name }}</p>
+          <p class="text-xs text-gray-500">
+            {{ post.author.institution }} • {{ post.author.academicLevel }}
+          </p>
+          <p class="text-xs text-gray-400">{{ post.createdAt | timeago }}</p>
         </div>
       </div>
 
-      <p class="text-sm text-gray-700 line-clamp-3">
-        {{ profile.bio }}
-      </p>
+      <h3 class="text-sm font-semibold text-gray-800">{{ post.title }}</h3>
+      <p class="text-xs text-gray-700 line-clamp-3">{{ post.body }}</p>
 
-      <!-- Skills -->
-      <div>
-        <h4 class="text-xs font-medium text-gray-800">Skills</h4>
-        <div class="flex flex-wrap gap-2 mt-1">
-          <span
-            *ngFor="let skill of profile.skills"
-            class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs"
-          >
-            {{ skill }}
-          </span>
-        </div>
+      <div *ngIf="post.fileUrl" class="mt-2">
+        <img
+          [src]="post.fileUrl"
+          alt="Post image"
+          class="rounded-lg w-full max-h-72 object-cover border border-gray-200"
+        />
       </div>
-
-      <!-- Stats -->
-      <div class="flex justify-between text-center text-xs text-gray-700">
-        <div>
-          <p class="font-bold text-sm">{{ profile.followersCount || 0 }}</p>
-          <p class="text-[10px] text-gray-500">Followers</p>
-        </div>
-        <div>
-          <p class="font-bold text-sm">{{ profile.followingCount || 0 }}</p>
-          <p class="text-[10px] text-gray-500">Following</p>
-        </div>
-        <div>
-          <p class="font-bold text-sm">{{ profile.viewsCount || 0 }}</p>
-          <p class="text-[10px] text-gray-500">Views</p>
-        </div>
-      </div>
-
-      <!-- Action -->
-      <button
-        *ngIf="!isFollowing(profile.id!)"
-        class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-sm font-medium flex justify-center items-center gap-2"
-        (click)="follow(profile.id!)"
-      >
-        <i class="ri-user-add-line text-base"></i>
-        Follow
-      </button>
     </div>
   </div>
 </div>

@@ -21,7 +21,7 @@ export class FollowService {
   }
 
   followUser(userId: string): Observable<Follow> {
-    return this.http.post<Follow>(`${this.followUser}/${userId}`, {}, {
+    return this.http.post<Follow>(`${this.followurl}/${userId}`, {}, {
       headers: this.getAuthHeaders(),
     });
   }

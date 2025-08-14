@@ -42,4 +42,33 @@ export class CommentService {
       headers: this.getAuthHeaders()
     });
   }
+  getCommentCount(postId: string) {
+    return this.http.get<{total: number}>(`${this.baseUrl}/${postId}/count`)
+  }
+
+  likeComment(commentId: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(
+      `${this.baseUrl}/${commentId}/like`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
+  }
+  
+  unlikeComment(commentId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.baseUrl}/${commentId}/unlike`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+  
+  
+  replyToComment(commentId: string, text: string): Observable<Comment> {
+    return this.http.post<Comment>(
+      `${this.baseUrl}/${commentId}/reply`,
+      { text },
+      { headers: this.getAuthHeaders() }
+    );
+  }
+  
 }
+

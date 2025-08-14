@@ -1,0 +1,194 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+>
+  <div
+    class="bg-white rounded-2xl shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto p-6"
+  >
+    <h2 class="text-xl font-semibold mb-4">Upload Academic Resource</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+      <!-- Title -->
+      <div>
+        <input
+          type="text"
+          formControlName="title"
+          placeholder="Title"
+          class="w-full p-2 border rounded"
+        />
+        <p
+          *ngIf="getControl('title')?.touched && getControl('title')?.invalid"
+          class="text-sm text-red-500"
+        >
+          Title is required.
+        </p>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <textarea
+          formControlName="description"
+          placeholder="Description"
+          rows="3"
+          class="w-full p-2 border rounded"
+        ></textarea>
+        <p
+          *ngIf="
+            getControl('description')?.touched &&
+            getControl('description')?.invalid
+          "
+          class="text-sm text-red-500"
+        >
+          Description is required.
+        </p>
+      </div>
+
+      <!-- Course -->
+      <div>
+        <input
+          type="text"
+          formControlName="course"
+          placeholder="Course"
+          class="w-full p-2 border rounded"
+        />
+        <p
+          *ngIf="getControl('course')?.touched && getControl('course')?.invalid"
+          class="text-sm text-red-500"
+        >
+          Course is required.
+        </p>
+      </div>
+
+      <!-- Unit Name -->
+      <div>
+        <input
+          type="text"
+          formControlName="unitName"
+          placeholder="Unit Name"
+          class="w-full p-2 border rounded"
+        />
+        <p
+          *ngIf="
+            getControl('unitName')?.touched && getControl('unitName')?.invalid
+          "
+          class="text-sm text-red-500"
+        >
+          Unit Name is required.
+        </p>
+      </div>
+
+      <!-- Semester & Year -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <input
+            type="text"
+            formControlName="semester"
+            placeholder="Semester"
+            class="w-full p-2 border rounded"
+          />
+          <p
+            *ngIf="
+              getControl('semester')?.touched && getControl('semester')?.invalid
+            "
+            class="text-sm text-red-500"
+          >
+            Semester is required.
+          </p>
+        </div>
+        <div>
+          <input
+            type="text"
+            formControlName="year"
+            placeholder="Year"
+            class="w-full p-2 border rounded"
+          />
+          <p
+            *ngIf="getControl('year')?.touched && getControl('year')?.invalid"
+            class="text-sm text-red-500"
+          >
+            Year is required.
+          </p>
+        </div>
+      </div>
+
+      <!-- Institution -->
+      <div>
+        <input
+          type="text"
+          formControlName="institution"
+          placeholder="Institution"
+          class="w-full p-2 border rounded"
+        />
+        <p
+          *ngIf="
+            getControl('institution')?.touched &&
+            getControl('institution')?.invalid
+          "
+          class="text-sm text-red-500"
+        >
+          Institution is required.
+        </p>
+      </div>
+
+      <!-- Styled Upload Section -->
+      <div
+        class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center"
+      >
+        <div class="flex justify-center space-x-4 mb-2">
+          <label
+            class="cursor-pointer inline-flex items-center bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium px-4 py-2 rounded-lg transition"
+          >
+            <span class="material-icons mr-2">attach_file</span> Attach File
+            <input type="file" hidden (change)="onFileSelected($event)" />
+          </label>
+        </div>
+        <p class="text-sm text-gray-500">
+          Upload images, documents, or resources to share with the community
+        </p>
+
+        <!-- File Preview -->
+        <div
+          *ngIf="selectedFile"
+          class="flex items-center space-x-3 mt-4 justify-center"
+        >
+          <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+            <span class="material-icons">insert_drive_file</span>
+          </div>
+          <div class="text-left">
+            <p class="text-sm font-medium text-gray-800 truncate max-w-[200px]">
+              {{ selectedFile.name }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ selectedFile.size / 1024 | number : "1.0-1" }} KB
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="removeSelectedFile()"
+            class="text-gray-400 hover:text-red-500"
+            title="Remove"
+          >
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end space-x-2 pt-2">
+        <button
+          type="button"
+          (click)="closeModal.emit()"
+          class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-sm font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium"
+        >
+          {{ isSubmitting ? "Uploading..." : "Upload" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

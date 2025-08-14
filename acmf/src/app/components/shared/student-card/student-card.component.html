@@ -1,0 +1,65 @@
+<div
+  class="bg-white shadow-md p-4 rounded-2xl relative hover:shadow-xl transition cursor-pointer"
+  (click)="navigateToProfile()"
+>
+  <div class="absolute top-4 right-4 z-10" (click)="$event.stopPropagation()">
+    <button
+      *ngIf="!isFollowing"
+      (click)="handleFollow()"
+      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-lg text-sm"
+    >
+      <i class="ri-user-add-line text-base"></i>
+      Link Up
+    </button>
+    <button
+      *ngIf="isFollowing"
+      (click)="handleUnfollow()"
+      class="bg-gray-200 hover:bg-gray-400 text-black px-4 py-1 rounded-lg text-sm"
+    >
+      <i class="ri-user-add-line text-base"></i>
+      UnLink
+    </button>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <img
+      [src]="profile.profileImage || '/assets/default-avatar.png'"
+      class="w-10 h-10 rounded-full object-cover"
+      alt="avatar"
+    />
+    <div>
+      <h3 class="text-md font-semibold">{{ profile.name }}</h3>
+      <p class="text-sm text-gray-500">
+        {{ profile.academicLevel }} • {{ profile.institution }}
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-3 text-sm text-gray-700">
+    <p>
+      {{ getShortBio(profile.bio) }}
+      <button
+        *ngIf="profile.bio && profile.bio.split(' ').length > 8"
+        class="text-blue-500 underline text-xs"
+        (click)="toggleReadMore($event)"
+      >
+        {{ profile.showFullBio ? "Read less" : "Read more" }}
+      </button>
+    </p>
+
+    <div class="mt-2 flex flex-wrap gap-2">
+      <span
+        *ngFor="let skill of profile.skills"
+        class="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs"
+      >
+        #{{ skill }}
+      </span>
+    </div>
+  </div>
+
+  <div class="mt-4 text-xs text-gray-600 flex justify-between border-t pt-2">
+    <span>{{ profile.followersCount || 0 }} Followers</span>
+    <span>{{ profile.followingCount || 0 }} Following</span>
+    <span>Joined {{ profile.createdAt | date : "MMM yyyy" }}</span>
+  </div>
+</div>

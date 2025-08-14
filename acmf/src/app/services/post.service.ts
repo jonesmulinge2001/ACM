@@ -50,7 +50,7 @@ export class PostService {
   }
 
   getPostsByType(
-    type: 'genera' | 'academic' | 'resource' | 'opportunity'
+    type: 'general' | 'academic' | 'resource' | 'opportunity'
   ): Observable<Post[]> {
     return this.http
       .get<{ success: boolean; message: string; data: Post[] }>(
@@ -80,5 +80,11 @@ export class PostService {
         { headers: this.getAuthHeaders() }
       )
       .pipe(map((response) => response.data));
+  }
+
+  getPostsByUserId(userId: string): Observable<Post[]> {
+    return this.http.get<Post[]>(`${this.baseUrl}/user/${userId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }
