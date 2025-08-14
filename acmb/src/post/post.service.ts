@@ -6,7 +6,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PostType, Prisma, PrismaClient } from 'generated/prisma';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
@@ -34,7 +34,7 @@ export class PostService {
     // Upload file to Cloudinary (if exists)
     if (file) {
       try {
-        const uploaded = await this.cloudinary.uploadImage(
+        const uploaded = await this.cloudinary.uploadMedia(
           file,
           AcademeetUploadType.POST_IMAGE,
         );
@@ -85,7 +85,7 @@ export class PostService {
     return this.toPostDto(post);
   }
 
-  async getAllPosts(): Promise<PostDto[]> {
+  async getAllPosts(currentUserId: string): Promise<PostDto[]> {
     const posts = await this.prisma.post.findMany({
       where: {
         isDeleted: false,
@@ -121,11 +121,12 @@ export class PostService {
       },
     });
 
-    return posts.map((post) => this.toPostDto(post));
+    return posts.map((post) => this.toPostDto(post, currentUserId));
   }
 
   // Helper method to convert Prisma post to PostDto
-  private toPostDto(post: any): PostDto {
+  private toPostDto(post: any, currentUserId?: string): PostDto {
+    const likes = post.likes ?? [];
     return {
       id: post.id,
       title: post.title,
@@ -142,6 +143,8 @@ export class PostService {
         academicLevel: post.author.profile?.academicLevel,
       },
       tags: post.tags?.map((pt) => pt.tag?.name) ?? [],
+      likesCount: likes.length,
+      likedByCurrentUser: !!likes.find((like) => like.userId === currentUserId),
     };
   }
 
@@ -165,7 +168,7 @@ export class PostService {
   }
 
   //>>> get post by id
-  async getPostById(postId: string): Promise<PostDto> {
+  async getPostById(postId: string, currentUserId?: string): Promise<PostDto> {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
       include: {
@@ -192,7 +195,7 @@ export class PostService {
     if (!post || post.isDeleted) {
       throw new NotFoundException('Post not found');
     }
-    return this.toPostDto(post);
+    return this.toPostDto(post, currentUserId);
   }
 
   //>>> update post
@@ -213,12 +216,18 @@ export class PostService {
 
     let fileUrl: string | undefined;
     if (file) {
-      const uploaded = await this.cloudinary.uploadImage(
-        file,
-        'POST_IMAGE' as AcademeetUploadType,
-      );
-      fileUrl = uploaded.secure_url;
+      try {
+        const uploaded = await this.cloudinary.uploadMedia(
+          file,
+          AcademeetUploadType.POST_IMAGE,
+        );
+        fileUrl = uploaded.secure_url;
+      } catch (err) {
+        console.error('Cloudinary upload error:', err);
+        throw new InternalServerErrorException('Failed to upload file');
+      }
     }
+    
 
     const updatedTags = dto.tags?.map((tagName) => ({
       tag: {
@@ -264,7 +273,10 @@ export class PostService {
   }
 
   //>>> return posts depending on tpe
-  async getPostByType(type: PostType): Promise<PostDto[]> {
+  async getPostByType(
+    type: PostType,
+    currentUserId: string,
+  ): Promise<PostDto[]> {
     const posts = await this.prisma.post.findMany({
       where: {
         type,
@@ -299,11 +311,11 @@ export class PostService {
         },
       },
     });
-    return posts.map((post) => this.toPostDto(post));
+    return posts.map((post) => this.toPostDto(post, currentUserId));
   }
 
-  //>>> trending
-  async getTrendingPosts(): Promise<PostDto[]> {
+  //>>> trending posts
+  async getTrendingPosts(currentUserId: string): Promise<PostDto[]> {
     const posts = await this.prisma.post.findMany({
       where: {
         createdAt: {
@@ -345,6 +357,44 @@ export class PostService {
         },
       },
     });
-    return posts.map((post) => this.toPostDto(post));
+    return posts.map((post) => this.toPostDto(post, currentUserId));
+  }
+
+  async getPostsByUser(
+    userId: string,
+    currentUserId: string,
+  ): Promise<PostDto[]> {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        authorId: userId,
+        isDeleted: false,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: {
+                profileImage: true,
+                institution: true,
+                academicLevel: true,
+              },
+            },
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        likes: true,
+      },
+    });
+
+    return posts.map((post) => this.toPostDto(post, currentUserId));
   }
 }

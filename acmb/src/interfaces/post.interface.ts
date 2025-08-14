@@ -18,5 +18,8 @@ export interface PostDto {
       academicLevel: string;
     };
     tags?: string[];
+
+    likesCount: number;
+    likedByCurrentUser: boolean;
   }
   

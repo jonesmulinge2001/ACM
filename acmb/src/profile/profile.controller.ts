@@ -92,6 +92,13 @@ import {
     async getAllProfiles(@Query('search') search?: string) {
       return this.profileService.getAllProfiles(search)
     }
+
+    @Get(':id')
+    @RequirePermissions(Permission.MANAGE_PROFILE)
+    getProfileById(@Param('id') id: string) {
+  return this.profileService.getProfileById(id);
+}
+
   }
   
   

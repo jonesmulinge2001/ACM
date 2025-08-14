@@ -1,0 +1,27 @@
+### upload academic resource
+POST http://localhost:3000/academic-resources
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDE1MTc0MiwiZXhwIjoxNzU0MjM4MTQyfQ.VV_0cxzX_IjNcI7wHpddxFRUuFI0xNB8sjiFAjwyTtE
+Content-Type: application/json
+
+{
+  "title": "Intro to Machine Learning",
+  "description": "These are class notes for ML",
+  "course": "Computer Science",
+  "unitName": "Machine Learning",
+  "semester": "Semester 2",
+  "year": "Year 3",
+  "institution": "Chuka University",
+  "fileUrl": "https://res.cloudinary.com/yourfile.pdf"
+}
+
+### get all resources
+GET  http://localhost:3000/academic-resources
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDE1MTc0MiwiZXhwIjoxNzU0MjM4MTQyfQ.VV_0cxzX_IjNcI7wHpddxFRUuFI0xNB8sjiFAjwyTtE
+Content-Type: application/json
+
+
+### Search / Filter Academic Resources
+
+GET http://localhost:3000/academic-resources?search=software engineering
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDE1MTc0MiwiZXhwIjoxNzU0MjM4MTQyfQ.VV_0cxzX_IjNcI7wHpddxFRUuFI0xNB8sjiFAjwyTtE
+Content-Type: application/json

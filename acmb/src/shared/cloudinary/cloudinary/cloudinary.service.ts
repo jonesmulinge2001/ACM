@@ -22,6 +22,7 @@ export interface AcademeetUploadConfig {
 export enum AcademeetUploadType {
   PROFILE_IMAGE = 'profile_image',
   POST_IMAGE = 'post_image',
+  POST_VIDEO = 'post_video',
   COURSE_BANNER = 'course_banner',
   RESOURCE_FILE = 'resource_file',
 }
@@ -88,12 +89,20 @@ export class AcademeetCloudinaryService {
         allowedFormats: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'jpg', 'png'],
         folder: 'academeet/resources/files',
       },
+      [AcademeetUploadType.POST_VIDEO]: {
+        uploadType: AcademeetUploadType.POST_VIDEO,
+        maxSizeBytes: 50 * 1024 * 1024,
+        allowedFormats: ['mp4', 'mov', 'avi', 'mkv', 'webm'],
+        folder: 'academeet/posts/videos',
+        
+      },
+      
     };
 
     return configs[uploadType];
   }
 
-  async uploadImage(
+  async uploadMedia(
     file: Express.Multer.File,
     uploadType: AcademeetUploadType,
   ): Promise<CloudinaryUploadResult> {
@@ -135,4 +144,47 @@ export class AcademeetCloudinaryService {
       uploadStream.end(file.buffer);
     });
   }
+
+  async uploadRaw(
+    file: Express.Multer.File,
+    uploadType: AcademeetUploadType,
+  ): Promise<CloudinaryUploadResult> {
+    const config = this.getUploadConfig(uploadType);
+  
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+  
+    if (file.size > config.maxSizeBytes) {
+      throw new BadRequestException('File exceeds maximum allowed size');
+    }
+  
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: config.folder,
+          resource_type: 'raw',
+        },
+        (error, result) => {
+          if (error || !result) {
+            return reject(
+              new BadRequestException(
+                'Cloudinary raw upload failed: ' + (error?.message || 'Unknown error'),
+              ),
+            );
+          }
+  
+          const uploadResult: CloudinaryUploadResult = {
+            ...result,
+            folder: config.folder,
+          };
+  
+          resolve(uploadResult);
+        },
+      );
+  
+      uploadStream.end(file.buffer);
+    });
+  }
+  
 }

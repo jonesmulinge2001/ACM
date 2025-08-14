@@ -45,6 +45,23 @@ export class ProfileService {
     return profile;
   }
 
+  //>>> get profile by id
+  async getProfileById(id: string) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id },
+      include: {
+        user: true, 
+      },
+    });
+  
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+  
+    return profile;
+  }
+  
+
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
@@ -69,7 +86,7 @@ export class ProfileService {
       throw new NotFoundException('Profile not found');
     }
 
-    const upload = await this.cloudinary.uploadImage(
+    const upload = await this.cloudinary.uploadMedia(
       file,
       AcademeetUploadType.PROFILE_IMAGE,
     );
@@ -91,7 +108,7 @@ export class ProfileService {
       throw new NotFoundException('Profile not found');
     }
 
-    const upload = await this.cloudinary.uploadImage(
+    const upload = await this.cloudinary.uploadMedia(
       file,
       AcademeetUploadType.PROFILE_IMAGE,
     );

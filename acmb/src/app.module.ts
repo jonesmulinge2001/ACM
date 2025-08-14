@@ -21,6 +21,7 @@ import { ViewsModule } from './views/views.module';
 import { CommentLikeModule } from './comment-like/comment-like.module';
 import { CommentLikeService } from './comment-like/comment-like.service';
 import { PostModule } from './post/post.module';
+import { AcademicResourceModule } from './academic-resource/academic-resource.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PostModule } from './post/post.module';
     ViewsModule,
     CommentLikeModule,
     PostModule,
+    AcademicResourceModule,
   ],
   controllers: [AppController, RecommenderController],
   providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService],

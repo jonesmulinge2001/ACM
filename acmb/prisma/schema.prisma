@@ -60,6 +60,7 @@ model Profile {
   updatedAt     DateTime @updatedAt
   postLikes Like[]
   interests     String[]
+  academicResources AcademicResource[]
   // Relation to User
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
@@ -133,8 +134,8 @@ model Comment {
   updatedAt DateTime @updatedAt
   userId String
   user   User   @relation(fields: [userId], references: [id])
-  postId  String
-  post   Post   @relation(fields: [postId], references: [id])
+  postId  String?
+  post   Post?   @relation(fields: [postId], references: [id])
 
   deleted   Boolean  @default(false)
   likes      CommentLike[] 
@@ -176,6 +177,23 @@ model CommentLike {
   comment     Comment @relation(fields: [commentId], references: [id])
   @@unique([userId, commentId]) // prevent duplicate likes
 }
+
+model AcademicResource {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  course       String
+  unitName     String
+  semester     String
+  year         String
+  institution  String
+  fileUrl      String? 
+  downloadCount Int      @default(0)   // Optional file upload
+  uploadedAt   DateTime @default(now())
+  uploader     Profile  @relation(fields: [uploaderId], references: [id])
+  uploaderId   String
+}
+
 
 model Tag {
   id      String @id  @default(uuid())
