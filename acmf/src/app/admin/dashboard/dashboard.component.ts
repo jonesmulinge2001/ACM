@@ -1,11 +1,114 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { DashboardOverview } from '../../interfaces';
+import { AdmindashboardService } from '../../services/admindashboard.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+// 👉 Type alias should be here (outside the class)
+type TabKey = 'total' | 'today' | 'last7Days' | 'thisMonth';
 
 @Component({
-  selector: 'app-dashboard',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  selector: 'app-dashboard-overview',
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent {
+export class DashboardOverviewComponent implements OnInit {
+  overview?: DashboardOverview;
+  metrics: {
+    label: string;
+    value: number;
+    icon: string;
+    color: string;
+  }[] = [];
 
+  loading = true;
+  error?: string;
+
+  
+  tabs: { key: TabKey; label: string }[] = [
+    { key: 'total', label: 'Total' },
+    { key: 'today', label: 'Today' },
+    { key: 'last7Days', label: 'Last 7 Days' },
+    { key: 'thisMonth', label: 'This Month' },
+  ];
+
+  activeTab: TabKey = 'total';
+
+  objectKeys = Object.keys;
+
+  getTabLabel(key: TabKey): string {
+    const found = this.tabs.find(t => t.key === key);
+    return found ? found.label : '';
+  }
+
+  constructor(private dashboardService: AdmindashboardService) {}
+
+  ngOnInit(): void {
+    this.dashboardService.getOverview().subscribe({
+      next: (res) => {
+        this.overview = res.data;
+
+        // Map ALL overview data into metrics cards
+        this.metrics = [
+          {
+            label: 'Total Users',
+            value: this.overview.usersCount,
+            icon: 'group',
+            color: 'bg-blue-100 text-blue-600'
+          },
+          {
+            label: 'Total Posts',
+            value: this.overview.postsCount,
+            icon: 'article',
+            color: 'bg-orange-100 text-orange-600'
+          },
+          {
+            label: 'Academic Resources',
+            value: this.overview.academicResourceCount,
+            icon: 'menu_book',
+            color: 'bg-teal-100 text-teal-600'
+          },
+          {
+            label: 'New Signups Today',
+            value: this.overview.newSignUpsToday,
+            icon: 'person_add',
+            color: 'bg-purple-100 text-purple-600'
+          },
+          {
+            label: 'New Signups (Last 7 Days)',
+            value: this.overview.newSignUpsLast7Days,
+            icon: 'date_range',
+            color: 'bg-green-100 text-green-600'
+          },
+          {
+            label: 'New Signups (This Month)',
+            value: this.overview.newSignUpsThisMonth,
+            icon: 'calendar_month',
+            color: 'bg-pink-100 text-pink-600'
+          },
+          {
+            label: 'Total Likes',
+            value: this.overview.likesCount,
+            icon: 'thumb_up',
+            color: 'bg-yellow-100 text-yellow-600'
+          },
+          {
+            label: 'Total Comments',
+            value: this.overview.commentsCount,
+            icon: 'comment',
+            color: 'bg-indigo-100 text-indigo-600'
+          }
+        ];
+        
+
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load overview';
+        this.loading = false;
+      }
+    });
+  }
 }

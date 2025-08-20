@@ -219,12 +219,55 @@ export interface PostLikeResponse {
 export interface DashboardOverview {
   usersCount: number;
   postsCount: number;
-  bursariesCount: number;
-  reportsCount: number;
+  academicResourceCount: number;
+  newSignUpsToday: number;
+  newSignUpsLast7Days: number;
+  newSignUpsThisMonth: number;
+
+  likesCount: number;
+  commentsCount: number;
+
+  studentsPerInstitution: {
+    total: Record<string, number>;
+    today: Record<string, number>;
+    last7Days: Record<string, number>;
+    thisMonth: Record<string, number>;
+  };
+
+  topInstitutions: {
+    institution: string;
+    activeUsers: number; 
+  }[];
+
+  topPosts: {
+    id: string;
+    title: string;
+    fileUrl?: string;
+    likesCount: number;
+    commentsCount: number;
+  }[];
 }
 
-export interface ApiErrorPayload {
-  statusCode: number;
-  message: string | string[];
-  error?: string;
+export interface AdminUserProfile {
+  institution: string;
+  profileImage: string;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'STUDENT';
+  status: 'ACTIVE' | 'SUSPENDED';
+  profile: AdminUserProfile;
+  //  counts for analytics
+  totalPosts?: number;
+  totalFollowers?: number;
+  //  for convenience
+  posts?: { id: string }[];
+  followers?: { id: string }[];
+}
+
+export interface BulkActionResponse {
+  message: string;
 }

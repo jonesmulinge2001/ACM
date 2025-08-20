@@ -20,10 +20,10 @@ import { ResourceUploadModalComponent } from './components/resource-upload-modal
 
 import { StudentLayoutComponent } from './layouts/student-layout/student-layout.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
-
-import { DashboardComponent } from './admin/dashboard/dashboard.component';
 import { ManageUsersComponent } from './admin/manage-users/manage-users.component';
 import { ManageResourcesComponent } from './admin/manage-resources/manage-resources.component';
+import { DashboardOverviewComponent } from './admin/dashboard/dashboard.component';
+import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -40,6 +40,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: HomeComponent },
       { path: 'home', component: HomeComponent },
+      { path: 'posts/:id', component: PostDetailComponent },
       { path: 'create-profile', component: CreateProfileComponent },
       { path: 'my-profile', component: MyProfileComponent },
       { path: 'update-profile', component: UpdateProfileComponent },
@@ -57,9 +58,10 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayoutComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent },
+      { path: 'dashboard', component: DashboardOverviewComponent },
       { path: 'manage-users', component: ManageUsersComponent },
-      { path: 'manage-resources', component: ManageResourcesComponent }
+      { path: 'manage-resources', component: ManageResourcesComponent },
+      { path: 'posts/:id', component: PostDetailComponent }
     ]
   }
 ];

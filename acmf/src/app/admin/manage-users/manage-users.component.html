@@ -1,1 +1,122 @@
-<p>manage-users works!</p>
+<div class="p-6 bg-gray-50 min-h-screen -mt-10">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">User Management</h2>
+    <p class="-mt-4 text-sm">Manage students, mentors, and institutional accounts</p>
+  
+    <!-- Bulk Action Bar -->
+    <div *ngIf="selectedUserIds.size > 0" class="mb-4 flex flex-wrap items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-xl shadow-sm">
+      <div class="text-sm text-gray-700">{{ selectedUserIds.size }} selected</div>
+      <div class="flex space-x-2 mt-2 sm:mt-0">
+        <button (click)="suspendSelected()" class="px-3 py-1 text-xs rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">Suspend</button>
+        <button (click)="restoreSelected()" class="px-3 py-1 text-xs rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition">Restore</button>
+        <button (click)="deleteSelected()" class="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">Delete</button>
+      </div>
+    </div>
+  
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex justify-center py-10">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-b-4 border-gray-300"></div>
+    </div>
+  
+    <!-- Error -->
+    <div *ngIf="error" class="text-red-700 bg-red-100 p-4 rounded-2xl shadow-md mb-4">
+      {{ error }}
+    </div>
+  
+    <!-- Table -->
+    <div *ngIf="!loading && !error" class="bg-white rounded-2xl shadow">
+      <!-- Search Bar -->
+      <div class="flex justify-between items-center mt-4 mb-2">
+        <input type="text" placeholder="Search users..." [(ngModel)]="searchTerm" (input)="onSearch()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-1/3"/>
+      </div>
+  
+      <table class="w-full table-auto divide-y divide-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-2 py-3">
+              <input type="checkbox" [checked]="selectAllChecked" (change)="toggleSelectAll()" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
+            </th>
+            <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700">User</th>
+            <th class="px-2 py-3 text-sm font-semibold text-gray-700 hidden sm:table-cell">Role</th>
+            <th class="px-2 py-3 text-sm font-semibold text-gray-700 hidden sm:table-cell">Status</th>
+            <th class="px-2 py-3 text-sm font-semibold text-gray-700 hidden md:table-cell">Posts</th>
+            <th class="px-2 py-3 text-sm font-semibold text-gray-700 hidden md:table-cell">Followers</th>
+            <th class="px-2 py-3 text-sm font-semibold text-gray-700 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr *ngFor="let user of paginatedUsers" class="hover:bg-gray-50 transition">
+            <td class="px-2 py-4">
+              <input type="checkbox" [checked]="selectedUserIds.has(user.id)" (change)="toggleUserSelection(user.id)" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
+            </td>
+  
+            <!-- User info -->
+            <td class="px-2 py-4 flex items-center space-x-2">
+              <img [src]="user.profile.profileImage" alt="{{ user.name }}" class="h-10 w-10 rounded-full object-cover"/>
+              <div class="truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px]">
+                <div class="font-medium text-gray-900 truncate">{{ user.name }}</div>
+                <div class="text-sm text-gray-500 truncate">{{ user.email }}</div>
+                <div class="text-xs text-gray-400 truncate">{{ user.profile.institution }}</div>
+              </div>
+            </td>
+  
+            <!-- Role -->
+            <td class="px-2 py-4 hidden sm:table-cell">
+              <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{'bg-blue-100 text-blue-800': user.role === 'ADMIN', 'bg-green-100 text-green-800': user.role === 'STUDENT'}">{{ user.role }}</span>
+            </td>
+  
+            <!-- Status -->
+            <td class="px-2 py-4 hidden sm:table-cell">
+              <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{'bg-green-100 text-green-700': user.status === 'ACTIVE', 'bg-red-100 text-red-700': user.status === 'SUSPENDED'}">{{ user.status }}</span>
+            </td>
+  
+            <!-- Posts -->
+            <td class="px-2 py-4 text-sm text-gray-700 text-center hidden md:table-cell">{{ user.totalPosts || 0 }}</td>
+  
+            <!-- Followers -->
+            <td class="px-2 py-4 text-sm text-gray-700 text-center hidden md:table-cell">{{ user.totalFollowers || 0 }}</td>
+  
+            <!-- Actions -->
+            <td class="px-2 py-4 text-right space-x-1">
+              <button *ngIf="user.status === 'ACTIVE'" (click)="suspendUser(user)" class="px-2 py-1 text-xs rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">Suspend</button>
+              <button *ngIf="user.status === 'SUSPENDED'" (click)="restoreUser(user)" class="px-2 py-1 text-xs rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition">Restore</button>
+              <button (click)="deleteUser(user)" class="px-2 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">Delete</button>
+            </td>
+          </tr>
+  
+          <!-- No results -->
+          <tr *ngIf="paginatedUsers.length === 0">
+            <td colspan="7" class="text-center py-4 text-gray-500">No users found</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 0 && paginatedUsers.length > 0" class="flex flex-wrap justify-between px-2 py-4 border-t border-gray-200">
+        <div class="text-sm text-gray-600">Showing {{ (page - 1) * limit + 1 }} to {{ Math.min(page * limit, totalUsers) }} of {{ totalUsers }} results</div>
+  
+        <div class="flex items-center space-x-1 mt-2 sm:mt-0">
+          <button (click)="setPage(page - 1)" [disabled]="page === 1" class="px-3 py-1.5 text-sm rounded-full border border-gray-300 text-gray-600 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Previous</button>
+  
+          <ng-container *ngFor="let p of getPaginationRange()">
+            <button *ngIf="p !== '...'; else dots" (click)="setPage(p)" [class.bg-blue-600]="page === p" [class.text-white]="page === p" [class.border-blue-600]="page === p" class="px-3 py-1.5 text-sm rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition">{{ p }}</button>
+            <ng-template #dots><span class="px-3 py-1.5 text-sm text-gray-400">…</span></ng-template>
+          </ng-container>
+  
+          <button (click)="setPage(page + 1)" [disabled]="page === totalPages" class="px-3 py-1.5 text-sm rounded-full border border-gray-300 text-gray-600 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition">Next</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Confirm Modal -->
+    <div *ngIf="confirmAction.show" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+      <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 animate-fadeIn">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Confirm Action</h3>
+        <p class="text-sm text-gray-600 mb-6">{{ confirmAction.message }}</p>
+        <div class="flex justify-end space-x-2">
+          <button (click)="closeConfirm()" class="px-4 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Cancel</button>
+          <button (click)="confirmAction.onConfirm && confirmAction.onConfirm()" class="px-4 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 transition">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
