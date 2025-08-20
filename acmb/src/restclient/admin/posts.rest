@@ -1,0 +1,74 @@
+### fetch all posts
+GET http://localhost:3000/post-management
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+Content-Type: application/json
+
+### fetch a single post
+GET http://localhost:3000/post-management/4ac291c5-0a41-4ab5-ac62-1367c2c8537f
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+
+### Soft delete or restore single post
+PATCH http://localhost:3000/post-management/4ac291c5-0a41-4ab5-ac62-1367c2c8537f/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+Content-Type: application/json
+
+{
+  "action": "RESTORE"
+}
+
+
+### Hard delete a post
+DELETE http://localhost:3000/post-management/40865a03-f06e-4f19-ac5e-9b55f354ea9e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+
+### Fetch all flagged posts
+GET http://localhost:3000/post-management/flagged
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+
+### Update flagged post status
+PATCH http://localhost:3000/post-management/:flagId/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+Content-Type: application/json
+
+{
+  "status": "PENDING" // or "REVIEWED" | "RESOLVED"
+}
+
+
+### Soft delete flagged post
+PATCH http://localhost:3000/post-management/flagged/:postId/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+
+### Restore flagged post
+PATCH http://localhost:3000/post-management/flagged/:postId/localhost:3000/admin/users/restore
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+
+### Bulk delete posts
+DELETE  http://localhost:3000/post-management/bulk/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+{
+  "postIds": ["postId1", "postId2", "postId3"]
+}
+
+
+## Bulk restore posts
+POST http://localhost:3000/post-management/bulk/delete
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+{
+  "postIds": ["postId1", "postId2", "postId3"]
+}
+
+### Bulk remove flags
+POST http://localhost:3000/post-management/bulk/remove-flags
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTU1ODA5NDEsImV4cCI6MTc1NTY2NzM0MX0.WT187Uq4ZdIlPNv-1SghkROKCImGM5ZNMvtZjsfRjao
+
+{
+  "postIds": ["postId1", "postId2", "postId3"]
+}

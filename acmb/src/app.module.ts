@@ -26,6 +26,8 @@ import { DashboardOverviewModule } from './admin/dashboard-overview/dashboard-ov
 import { DashboardOverviewController } from './admin/dashboard-overview/dashboard-overview.controller';
 import { DashboardOverviewService } from './admin/dashboard-overview/dashboard-overview.service';
 import { UserManagementModule } from './admin/user-management/user-management.module';
+import { PostManagementModule } from './admin/post-management/post-management.module';
+
 
 
 @Module({
@@ -47,6 +49,7 @@ import { UserManagementModule } from './admin/user-management/user-management.mo
     AcademicResourceModule,
     DashboardOverviewModule,
     UserManagementModule,
+    PostManagementModule,
   ],
   controllers: [AppController, RecommenderController, DashboardOverviewController],
   providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService, DashboardOverviewService],

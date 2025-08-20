@@ -43,6 +43,7 @@ model User {
   requests             Request[]
   comments             Comment[]
   commentLikes         CommentLike[] 
+  reportedFlags PostFlag[]
   profileViewsMade     ProfileView[] @relation("Viewer")
   profileViewsReceived ProfileView[] @relation("Viewed")
 
@@ -131,6 +132,7 @@ model Post {
   interactions  Interaction[]
   type          PostType     @default(GENERAL)
   comments      Comment[]
+  flags      PostFlag[]
   isDeleted     Boolean      @default(false)
   deletedAt     DateTime?
   tags          PostTag[]
@@ -142,7 +144,6 @@ model Post {
   @@index([authorId, createdAt], name: "idx_post_author_createdAt")
   @@index([isDeleted, createdAt], name: "idx_post_isDeleted_createdAt")
 }
-
 
 
 model Like {
@@ -177,6 +178,21 @@ model Comment {
   parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
 
+}
+
+model PostFlag {
+  id         String   @id @default(cuid())
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     String
+  reporter   User     @relation(fields: [reporterId], references: [id])
+  reporterId String
+  reason     String
+  status     FlagStatus @default(PENDING) // PENDING, REVIEWED, RESOLVED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([postId])
+  @@index([reporterId])
 }
 
 model Request {
@@ -252,6 +268,12 @@ enum interactionType {
   VIEW
 }
 
+// enum for flag status
+enum FlagStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
 
 enum UserRole {
   ADMIN
