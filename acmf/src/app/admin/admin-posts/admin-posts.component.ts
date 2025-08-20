@@ -48,6 +48,9 @@ export class AdminPostsComponent implements OnInit {
   selectedPostIds = new Set<string>();
   selectAllChecked = false;
 
+  // Track expanded states
+expandedPosts = new Set<string>();
+
   // Confirm modal
   confirmAction: { show: boolean; message: string; onConfirm?: () => void } = {
     show: false,
@@ -295,5 +298,18 @@ export class AdminPostsComponent implements OnInit {
         error: (e) => (this.error = e.message || 'Bulk remove flags failed'),
       });
     });
+  }
+
+  // toggle expand for readmore/readless
+  toggleExpand(postId: string) {
+    if (this.expandedPosts.has(postId)) {
+      this.expandedPosts.delete(postId);
+    } else {
+      this.expandedPosts.add(postId);
+    }
+  }
+  
+  isExpanded(postId: string): boolean {
+    return this.expandedPosts.has(postId);
   }
 }
