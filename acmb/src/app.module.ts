@@ -25,6 +25,7 @@ import { AcademicResourceModule } from './academic-resource/academic-resource.mo
 import { DashboardOverviewModule } from './admin/dashboard-overview/dashboard-overview.module';
 import { DashboardOverviewController } from './admin/dashboard-overview/dashboard-overview.controller';
 import { DashboardOverviewService } from './admin/dashboard-overview/dashboard-overview.service';
+import { UserManagementModule } from './admin/user-management/user-management.module';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { DashboardOverviewService } from './admin/dashboard-overview/dashboard-o
     PostModule,
     AcademicResourceModule,
     DashboardOverviewModule,
+    UserManagementModule,
   ],
   controllers: [AppController, RecommenderController, DashboardOverviewController],
   providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService, DashboardOverviewService],

@@ -30,20 +30,26 @@ model User {
   updatedAt            DateTime      @updatedAt
   isVerified           Boolean       @default(false)
   resetToken           String?
-  interactions  Interaction[] 
+  interactions         Interaction[] 
   resetTokenExpiresAt  DateTime?
   verifyToken          String
   verifyTokenExpiresAt DateTime?
+  lastLogin            DateTime?  
   isDeleted            Boolean       @default(false)
   deletedAt            DateTime?
 
   // Relations
-  posts       Post[]
-  requests    Request[]
-  comments    Comment[]
-  commentLikes CommentLike[] 
-  profileViewsMade  ProfileView[] @relation("Viewer")
-  profileViewsReceived  ProfileView[] @relation("Viewed")
+  posts                Post[]
+  requests             Request[]
+  comments             Comment[]
+  commentLikes         CommentLike[] 
+  profileViewsMade     ProfileView[] @relation("Viewer")
+  profileViewsReceived ProfileView[] @relation("Viewed")
+
+  //Add opposite relations
+  userSuspensions      UserSuspension[] @relation("UserSuspensions")
+  adminSuspensions     UserSuspension[] @relation("AdminSuspensions")
+  restoredSuspensions  UserSuspension[] @relation("UserSuspensionRestorer")
 }
 
 model Profile {
@@ -73,6 +79,23 @@ model Profile {
   @@index([academicLevel])
 }
 
+model UserSuspension {
+  id         String   @id @default(uuid())
+  userId     String
+  adminId    String
+  reason     String?
+  createdAt  DateTime @default(now())
+  restoredAt DateTime?
+
+  user       User @relation("UserSuspensions", fields: [userId], references: [id])
+  admin      User @relation("AdminSuspensions", fields: [adminId], references: [id])
+
+  restoredBy String?
+  restoredByUser User? @relation("UserSuspensionRestorer", fields: [restoredBy], references: [id])
+}
+
+
+
 model Follow {
   id          String @id @default(uuid())
   followerId  String
@@ -93,22 +116,33 @@ model ProfileView {
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  title     String
-  body      String?
-  fileUrl   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  likes     Like[]
-  interactions Interaction[]
-  type      PostType @default(GENERAL)
-  comments  Comment[]
-  isDeleted Boolean  @default(false)
-  deletedAt DateTime?
-  tags      PostTag[]
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
+  id            String       @id @default(uuid())
+  title         String
+  body          String?
+  fileUrl       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // NEW: engagement counters (denormalized for speed)
+  likesCount    Int          @default(0)
+  commentsCount Int          @default(0)
+
+  likes         Like[]
+  interactions  Interaction[]
+  type          PostType     @default(GENERAL)
+  comments      Comment[]
+  isDeleted     Boolean      @default(false)
+  deletedAt     DateTime?
+  tags          PostTag[]
+  authorId      String
+  author        User         @relation(fields: [authorId], references: [id])
+
+  // Helpful indexes for feed/dashboards
+  @@index([createdAt], name: "idx_post_createdAt")
+  @@index([authorId, createdAt], name: "idx_post_author_createdAt")
+  @@index([isDeleted, createdAt], name: "idx_post_isDeleted_createdAt")
 }
+
 
 
 model Like {
