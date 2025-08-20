@@ -271,3 +271,71 @@ export interface AdminUser {
 export interface BulkActionResponse {
   message: string;
 }
+
+// --- Admin Posts moderation (new) ---
+
+export type FlagStatus = 'PENDING' | 'REVIEWED' | 'RESOLVED';
+export type PostStatusAction = 'DELETE' | 'RESTORE';
+
+export interface AdminPostAuthorProfile {
+  profileImage?: string | null;
+  institution?: string | null;
+  academicLevel?: string | null;
+}
+
+export interface AdminPostAuthor {
+  id: string;
+  name: string;
+  profile: AdminPostAuthorProfile;
+}
+
+export interface AdminPost {
+  id: string;
+  title: string;
+  body?: string | null;
+  fileUrl?: string | null;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
+  isDeleted: boolean;
+  deletedAt?: string | null;
+
+  author: AdminPostAuthor;
+
+  // counts coming from `_count`
+  likesCount: number;
+  commentsCount: number;
+}
+
+export interface PostFlagLiteReporter {
+  id: string;
+  name: string;
+  profile: {
+    profileImage?: string | null;
+    institution?: string | null;
+  };
+}
+
+export interface PostFlag {
+  id: string;
+  postId: string;
+  reporterId: string;
+  reason: string;
+  status: FlagStatus;
+  createdAt: string;
+
+  post: AdminPost;
+  reporter: PostFlagLiteReporter;
+}
+
+export interface ChangePostStatusRequest {
+  action: PostStatusAction; // 'DELETE' | 'RESTORE'
+}
+
+export interface UpdateFlagStatusRequest {
+  status: FlagStatus;
+}
+
+export interface BulkPostIds {
+  postIds: string[];
+}

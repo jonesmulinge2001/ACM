@@ -24,6 +24,7 @@ import { ManageUsersComponent } from './admin/manage-users/manage-users.componen
 import { ManageResourcesComponent } from './admin/manage-resources/manage-resources.component';
 import { DashboardOverviewComponent } from './admin/dashboard/dashboard.component';
 import { PostDetailComponent } from './pages/post-detail/post-detail.component';
+import { AdminPostsComponent } from './admin/admin-posts/admin-posts.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -60,7 +61,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardOverviewComponent },
       { path: 'manage-users', component: ManageUsersComponent },
-      { path: 'manage-resources', component: ManageResourcesComponent },
+      { path: 'manage-posts', component: AdminPostsComponent },
       { path: 'posts/:id', component: PostDetailComponent }
     ]
   }
