@@ -2,6 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -18,5 +20,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src/**/*", "socket-test.js"]
 }

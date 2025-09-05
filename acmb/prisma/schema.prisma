@@ -47,6 +47,16 @@ model User {
   profileViewsMade     ProfileView[] @relation("Viewer")
   profileViewsReceived ProfileView[] @relation("Viewed")
 
+  // flag relations
+  resourceFlagsReported AcademicResourceFlag[] @relation("AcademicResourceFlagsReported")
+  resourceFlagsReviewed AcademicResourceFlag[] @relation("AcademicResourceFlagsReviewed")
+
+  groupsCreated   Group[]        @relation("GroupCreator")
+  groupMemberships GroupMember[]
+  groupMessages   GroupMessage[]
+  groupResources  GroupResource[]
+
+  activityLogs ResourceActivityLog[]
   //Add opposite relations
   userSuspensions      UserSuspension[] @relation("UserSuspensions")
   adminSuspensions     UserSuspension[] @relation("AdminSuspensions")
@@ -133,8 +143,9 @@ model Post {
   type          PostType     @default(GENERAL)
   comments      Comment[]
   flags      PostFlag[]
-  isDeleted     Boolean      @default(false)
-  deletedAt     DateTime?
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+
   tags          PostTag[]
   authorId      String
   author        User         @relation(fields: [authorId], references: [id])
@@ -242,6 +253,50 @@ model AcademicResource {
   uploadedAt   DateTime @default(now())
   uploader     Profile  @relation(fields: [uploaderId], references: [id])
   uploaderId   String
+
+  flags AcademicResourceFlag[]
+  activityLogs ResourceActivityLog[]
+  isApproved     Boolean   @default(false)
+  approvedAt     DateTime?
+  approvedBy     String?
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+}
+
+model AcademicResourceFlag {
+  id           String     @id @default(cuid())
+  resourceId   String
+  reporterId   String
+  reviewedById String?
+  reason       String
+  status       FlagStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  resource   AcademicResource @relation(fields: [resourceId], references: [id])
+  reporter   User  @relation("AcademicResourceFlagsReported", fields: [reporterId], references: [id])
+  reviewedBy User? @relation("AcademicResourceFlagsReviewed", fields: [reviewedById], references: [id])
+
+  @@index([resourceId])
+  @@index([reporterId])
+  @@index([reviewedById])
+}
+
+model ResourceActivityLog {
+  id          String   @id @default(uuid())
+  resourceId  String
+  userId      String?
+  action      ResourceAction
+  details     String?   // optional metadata (reason, status, etc.)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  resource AcademicResource @relation(fields: [resourceId], references: [id])
+  user     User?            @relation(fields: [userId], references: [id])
+
+  @@index([resourceId])
+  @@index([userId])
 }
 
 
@@ -259,6 +314,77 @@ model PostTag {
   tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
+}
+
+
+model Group {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  coverImage  String?
+  visibility  GroupVisibility @default(PUBLIC)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  creatorId String
+  creator   User          @relation("GroupCreator", fields: [creatorId], references: [id])
+  members   GroupMember[]
+  messages  GroupMessage[]
+  resources GroupResource[]
+}
+
+model GroupMember {
+  id        String     @id @default(uuid())
+  groupId   String
+  userId    String
+  role      GroupRole  @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  isDeleted Boolean    @default(false)
+  deletedAt DateTime?
+
+  @@unique([groupId, userId]) // prevent duplicate membership
+}
+
+model GroupMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  groupId String
+  userId  String
+
+  group   Group @relation(fields: [groupId], references: [id])
+  user    User  @relation(fields: [userId], references: [id])
+}
+
+model GroupResource {
+  id         String   @id @default(uuid())
+  title      String
+  resourceUrl String
+  createdAt  DateTime @default(now())
+
+  groupId    String
+  sharedById String
+
+  group      Group @relation(fields: [groupId], references: [id])
+  sharedBy   User  @relation(fields: [sharedById], references: [id])
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum GroupVisibility {
+  PUBLIC
+  PRIVATE
 }
 
 
@@ -304,4 +430,16 @@ enum PostType {
   ACADEMIC
   OPPORTUNITY
   RESOURCE
+}
+
+enum ResourceAction {
+  CREATE
+  UPDATE
+  DELETE_SOFT
+  DELETE_HARD
+  RESTORE
+  FLAG
+  FLAG_REVIEWED
+  APPROVE
+  UNPUBLISH
 }
