@@ -25,6 +25,8 @@ import { ManageResourcesComponent } from './admin/manage-resources/manage-resour
 import { DashboardOverviewComponent } from './admin/dashboard/dashboard.component';
 import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 import { AdminPostsComponent } from './admin/admin-posts/admin-posts.component';
+import { GroupListComponent } from './groups/group-list/group-list.component';
+import { GroupDetailComponent } from './groups/group-detail/group-detail.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -51,6 +53,8 @@ export const routes: Routes = [
       { path: 'create', component: PostComponent },
       { path: 'upload-academic-resource', component: ResourceUploadModalComponent },
       { path: 'opportunities', component: OpportunitiesComponent },
+      { path: 'groups', component: GroupListComponent },
+      { path: 'groups/:id', component: GroupDetailComponent },
     ]
   },
 

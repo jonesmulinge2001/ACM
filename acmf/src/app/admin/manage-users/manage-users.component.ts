@@ -163,7 +163,7 @@ export class ManageUsersComponent implements OnInit {
     this.selectAllChecked = false;
   }
 
-  // Per-user actions (fixes the HTML errors)
+  // Per-user actions
   suspendUser(user: AdminUser) {
     this.openConfirm(`Suspend ${user.name}?`, () => {
       this.adminUserService.suspendUser(user.id).subscribe(() => {

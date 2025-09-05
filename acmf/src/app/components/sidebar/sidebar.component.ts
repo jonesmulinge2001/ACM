@@ -18,7 +18,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Create', link: '/create', icon: 'add_circle' },
     { label: 'Resources', link: '/resources', icon: 'work' },
     { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
-    { label: 'UniTok', link: '/unitok', icon: 'play_circle_filled' },
+    { label: 'Groups', link: '/groups', icon: 'play_circle_filled' },
   ];
 
   getIconGradient(label: string): string {

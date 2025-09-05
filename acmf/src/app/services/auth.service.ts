@@ -24,7 +24,30 @@ export class AuthService {
     private router: Router,
     private toastr: ToastrService,
     private profileService: ProfileService
-  ) { }
+  ) {
+    // Restore user on reload if token exists
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.profileService.getMyProfile().subscribe({
+        next: (profile) => {
+          this.setCurrentUser(profile);
+        },
+        error: () => {
+          // Token invalid? clear everything
+          this.logout();
+        }
+      });
+    }
+  }
+  
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
+  }
+  
 
   // api callls
   register(data: RegisterRequest): Observable<RegisterResponse> {

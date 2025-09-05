@@ -339,3 +339,59 @@ export interface UpdateFlagStatusRequest {
 export interface BulkPostIds {
   postIds: string[];
 }
+
+
+export type GroupVisibility = 'PUBLIC' | 'PRIVATE';
+
+export interface GroupMember {
+  userId: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER';
+  joinedAt: string;
+  isDeleted?: boolean;
+  user?: {
+    id: string;
+    name: string;
+    profile?: Profile | null;
+  };
+}
+
+export interface GroupResource {
+  id: string;
+  title: string;
+  resourceUrl: string;
+  createdAt: string;
+  sharedById: string;
+  sharedBy?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface GroupMessage {
+  id: string;
+  content: string;
+  groupId: string;
+  userId: string;
+  createdAt: string;
+  user?: { id: string; name: string; profileImage?: string | null };
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description?: string | null;
+  coverImage?: string | null;
+  visibility: GroupVisibility;
+  creatorId: string;
+  createdAt: string;
+  updatedAt?: string;
+  members?: GroupMember[];
+  resources?: GroupResource[];
+  _count?: { members?: number; resources?: number };
+}
+
+export interface BulkAddMembersDto { userIds: string[]; role: 'OWNER'|'ADMIN'|'MEMBER' }
+export interface BulkRemoveMembersDto { userIds: string[] }
+export interface BulkRestoreMembersDto { userIds: string[] }
+export interface BulkUpdateRolesDto { userIds: string[]; role: 'OWNER'|'ADMIN'|'MEMBER' }
+
