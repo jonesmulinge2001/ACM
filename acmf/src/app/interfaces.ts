@@ -395,3 +395,27 @@ export interface BulkRemoveMembersDto { userIds: string[] }
 export interface BulkRestoreMembersDto { userIds: string[] }
 export interface BulkUpdateRolesDto { userIds: string[]; role: 'OWNER'|'ADMIN'|'MEMBER' }
 
+export interface ConversationParticipant {
+  userId: string;
+  user: Profile;
+}
+
+
+export interface Conversation {
+  id: string;
+  title?: string | null;
+  isGroup: boolean;
+  participants: ConversationParticipant[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationMessage {
+  id: string;
+  conversationId: string;
+  content: string;
+  createdAt: string;
+  senderId: string;
+  sender: Profile;
+  attachments?: string[] | null;
+}
