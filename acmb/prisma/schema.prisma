@@ -46,6 +46,8 @@ model User {
   reportedFlags PostFlag[]
   profileViewsMade     ProfileView[] @relation("Viewer")
   profileViewsReceived ProfileView[] @relation("Viewed")
+  participants ConversationParticipant[]
+  messages     ConversationMessage[]
 
   // flag relations
   resourceFlagsReported AcademicResourceFlag[] @relation("AcademicResourceFlagsReported")
@@ -375,6 +377,50 @@ model GroupResource {
   group      Group @relation(fields: [groupId], references: [id])
   sharedBy   User  @relation(fields: [sharedById], references: [id])
 }
+
+
+model Conversation {
+  id            String                     @id @default(uuid())
+  title         String?                    // optional for group convs
+  isGroup       Boolean                    @default(false)
+  oneOnOneKey   String?                    @unique // deterministic key for 1:1 (sorted ids)
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  participants  ConversationParticipant[]
+  messages      ConversationMessage[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?    // used to compute unread counts
+  createdAt      DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model ConversationMessage {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String?
+  attachments    Json?     // array of { url, type } or whatever you want
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+
 
 enum GroupRole {
   OWNER

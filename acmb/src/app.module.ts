@@ -29,8 +29,7 @@ import { UserManagementModule } from './admin/user-management/user-management.mo
 import { PostManagementModule } from './admin/post-management/post-management.module';
 import { AcademicRsourceModule } from './admin/academic-rsource/academic-rsource.module';
 import { GroupsModule } from './groups/groups.module';
-
-
+import { ConversationsModule } from './conversations/conversations.module';
 
 @Module({
   imports: [
@@ -54,8 +53,20 @@ import { GroupsModule } from './groups/groups.module';
     PostManagementModule,
     AcademicRsourceModule,
     GroupsModule,
+    ConversationsModule,
   ],
-  controllers: [AppController, RecommenderController, DashboardOverviewController],
-  providers: [AppService, AuthService, MailerService, RecommenderService, CommentLikeService, DashboardOverviewService],
+  controllers: [
+    AppController,
+    RecommenderController,
+    DashboardOverviewController,
+  ],
+  providers: [
+    AppService,
+    AuthService,
+    MailerService,
+    RecommenderService,
+    CommentLikeService,
+    DashboardOverviewService,
+  ],
 })
 export class AppModule {}
