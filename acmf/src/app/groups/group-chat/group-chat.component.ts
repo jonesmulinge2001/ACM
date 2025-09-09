@@ -6,7 +6,8 @@ import {
   ChangeDetectionStrategy,
   ViewChild,
   ElementRef,
-  AfterViewInit
+  AfterViewInit,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -37,7 +38,8 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private socket: SocketService,
     private groups: GroupsService,
-    private auth: AuthService
+    private auth: AuthService,
+    private cdr: ChangeDetectorRef // ✅ inject ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -47,22 +49,26 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.loadMessages();
 
-    this.subs.add(this.socket.onMessage().subscribe((m) => {
-      if (m.groupId === this.groupId) {
-        this.messages.push(m);
-        if (this.isNearBottom()) {
-          this.scrollToBottom();
-        } else {
-          this.showNewMessageButton = true;
+    this.subs.add(
+      this.socket.onMessage().subscribe((m) => {
+        if (m.groupId === this.groupId) {
+          this.messages.push(m);
+          this.cdr.markForCheck(); // ✅ trigger UI refresh
+          if (this.isNearBottom()) {
+            this.scrollToBottom();
+          } else {
+            this.showNewMessageButton = true;
+          }
         }
-      }
-    }));
+      })
+    );
   }
 
   ngAfterViewInit() {
     this.messagesContainer.nativeElement.addEventListener('scroll', () => {
       if (this.isNearBottom()) {
         this.showNewMessageButton = false;
+        this.cdr.markForCheck(); // ✅ update when scroll changes state
       }
     });
 
@@ -70,18 +76,36 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadMessages() {
-    this.groups.getMessages(this.groupId).subscribe(msgs => {
+    this.groups.getMessages(this.groupId).subscribe((msgs) => {
       this.messages = msgs.reverse();
       this.scrollToBottom();
+      this.cdr.markForCheck(); // ✅ refresh after loading
     });
   }
 
   send() {
     const content = this.messageControl.value?.trim();
     if (!content) return;
+
     this.socket.sendMessage(this.groupId, content);
+
+    // optimistic update
+    const optimistic: GroupMessage = {
+      id: 'temp-' + Date.now(),
+      content,
+      groupId: this.groupId,
+      userId: this.currentUserId ?? '',
+      createdAt: new Date().toISOString(),
+      user: {
+        id: this.currentUserId ?? '',
+        name: 'Me',
+        profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
+      },
+    };
+    this.messages.push(optimistic);
     this.messageControl.reset();
     this.scrollToBottom();
+    this.cdr.markForCheck(); // ✅ refresh after sending
   }
 
   private scrollToBottom() {
@@ -89,6 +113,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
       this.messagesContainer.nativeElement.scrollTop =
         this.messagesContainer.nativeElement.scrollHeight;
       this.showNewMessageButton = false;
+      this.cdr.markForCheck(); // ✅ refresh after scrolling
     }, 50);
   }
 
