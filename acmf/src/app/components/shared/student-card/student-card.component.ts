@@ -16,6 +16,8 @@ export class StudentCardComponent {
   @Output() follow = new EventEmitter<string>();
   @Output() unfollow = new EventEmitter<string>();
 
+  showAllSkills: boolean = false;
+
   constructor(private router: Router) {}
 
   handleFollow() {
@@ -47,5 +49,10 @@ export class StudentCardComponent {
     this.profile.showFullBio = !this.profile.showFullBio;
   }
   
+  // Toggle skills visibility
+  toggleSkills(event: MouseEvent) {
+    event.stopPropagation();
+    this.showAllSkills = !this.showAllSkills;
+  }
   
 }

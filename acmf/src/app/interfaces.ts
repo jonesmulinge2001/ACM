@@ -1,124 +1,123 @@
 export interface RegisterRequest {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-    role: 'ADMIN' | 'STUDENT';
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: 'ADMIN' | 'STUDENT';
 }
 
 export interface RegisterResponse {
-    message: string;
-    user: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 export interface LoginRequest {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginResponse {
-    success: boolean;
-    message: string;
-    data?: {
-        token: string;
-        user: {
-            id: string;
-            name: string;
-            email: string;
-            role: string;
-        };
+  success: boolean;
+  message: string;
+  data?: {
+    token: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
     };
+  };
 }
 
 export interface VerifyEmailRequest {
-    email: string;
-    code: string;
+  email: string;
+  code: string;
 }
 
 export interface GenericResponse {
-    message: string;
+  message: string;
 }
 
 export interface ResetPasswordRequest {
-    email: string;
-    code: string;
-    password: string;
+  email: string;
+  code: string;
+  password: string;
 }
 
 export interface Profile {
-    id?: string;
-    name: string;
-    email: string;
-    institution: string;
-    academicLevel: string;
-    skills: string[];
-    bio: string;
-    course: string;
-    interests: string[],
-    profileImage?: string;
-    coverPhoto: string | null;
+  id?: string;
+  name: string;
+  email: string;
+  institution: string;
+  academicLevel: string;
+  skills: string[];
+  bio: string;
+  course: string;
+  interests: string[];
+  profileImage?: string;
+  coverPhoto: string | null;
 
-    followersCount?: number;
-    followingCount?: number;
-    viewsCount?: number;
-    createdAt?: string;
-    updatedAt?: string;
-    userId: string;
+  followersCount?: number;
+  followingCount?: number;
+  viewsCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  userId: string;
 
-    showFullBio?: boolean;
+  showFullBio?: boolean;
 }
 
 export interface ProfileView {
-    id: string;
-    viewer: {
-      profile: Profile;
-    };
-    createdAt: string;
-  }
+  id: string;
+  viewer: {
+    profile: Profile;
+  };
+  createdAt: string;
+}
 
-  export interface Follow {
-    id: string;
-    followerId: string;
-    followingId: string;
-    createdAt: string;
-    follower?: {
-      profile: Profile;
-    };
-    following?: {
-      profile: Profile;
-    };
-  }
-  
-  export interface Author {
-    id: string;
-    name: string;
-    profileImage?: string | null;
-    institution?: string;
-    academicLevel?: string;
-  }
-  
-  export interface Post {
-    id: string;
-    title: string;
-    body?: string;
-    fileUrl?: string;
-    createdAt: string;
-    updatedAt: string;
-    type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
-    author: Author;
-    tags?: string[];
+export interface Follow {
+  id: string;
+  followerId: string;
+  followingId: string;
+  createdAt: string;
+  follower?: {
+    profile: Profile;
+  };
+  following?: {
+    profile: Profile;
+  };
+}
 
-    likesCount?: number;
-    likedByCurrentUser?: boolean;
-    comments?: Comment[];
-  }
-  
-  
+export interface Author {
+  id: string;
+  name: string;
+  profileImage?: string | null;
+  institution?: string;
+  academicLevel?: string;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  body?: string;
+  fileUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
+  author: Author;
+  tags?: string[];
+
+  likesCount?: number;
+  likedByCurrentUser?: boolean;
+  comments?: Comment[];
+}
+
 export interface Follow {
   id: string;
   followerId: string;
@@ -145,7 +144,7 @@ export interface CommentUser {
 
 export interface Comment {
   id: string;
-  body: string; 
+  body: string;
   postId: string;
   userId: string;
   createdAt: string;
@@ -159,19 +158,16 @@ export interface Comment {
       institution: string;
     };
   };
-  parentId?: string
+  parentId?: string;
   likes?: number;
   isLikedByCurrentUser?: boolean;
   replies?: Comment[];
-
 }
-
 
 export interface CommentResponse {
   total: number;
   comments: Comment[];
 }
-
 
 export interface AcademicResource {
   id: string;
@@ -236,7 +232,7 @@ export interface DashboardOverview {
 
   topInstitutions: {
     institution: string;
-    activeUsers: number; 
+    activeUsers: number;
   }[];
 
   topPosts: {
@@ -340,7 +336,6 @@ export interface BulkPostIds {
   postIds: string[];
 }
 
-
 export type GroupVisibility = 'PUBLIC' | 'PRIVATE';
 
 export interface GroupMember {
@@ -390,16 +385,25 @@ export interface Group {
   _count?: { members?: number; resources?: number };
 }
 
-export interface BulkAddMembersDto { userIds: string[]; role: 'OWNER'|'ADMIN'|'MEMBER' }
-export interface BulkRemoveMembersDto { userIds: string[] }
-export interface BulkRestoreMembersDto { userIds: string[] }
-export interface BulkUpdateRolesDto { userIds: string[]; role: 'OWNER'|'ADMIN'|'MEMBER' }
+export interface BulkAddMembersDto {
+  userIds: string[];
+  role: 'OWNER' | 'ADMIN' | 'MEMBER';
+}
+export interface BulkRemoveMembersDto {
+  userIds: string[];
+}
+export interface BulkRestoreMembersDto {
+  userIds: string[];
+}
+export interface BulkUpdateRolesDto {
+  userIds: string[];
+  role: 'OWNER' | 'ADMIN' | 'MEMBER';
+}
 
 export interface ConversationParticipant {
   userId: string;
   user: Profile;
 }
-
 
 export interface Conversation {
   id: string;
@@ -416,6 +420,100 @@ export interface ConversationMessage {
   content: string;
   createdAt: string;
   senderId: string;
-  sender: Profile;
+  sender: UserProfile;
   attachments?: string[] | null;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  profileImage?: string | null;
+}
+
+// Reuse your existing simple user shape:
+export interface UserProfile {
+  id: string;
+  name: string;
+  profileImage?: string | null;
+}
+
+/** Conversation item as shown in conversation list */
+// --- Conversation summary (for sidebar/list) ---
+export interface ConversationSummary {
+  id: string;
+  title?: string | null;
+  isGroup: boolean;
+  participants: ConversationParticipant[];
+  lastMessage?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    sender?: UserProfile | null;
+  };
+  unreadCount: number;
+}
+
+/** Full conversation details (if you need) */
+export interface Conversation {
+  id: string;
+  title?: string | null;
+  isGroup: boolean;
+  participants: ConversationParticipant[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationParticipant {
+  id: string;
+  name: string;
+  profileImage?: string | null;
+  lastReadAt?: string | null;
+}
+
+/** Message coming from REST or socket */
+export interface ConversationMessage {
+  id: string;
+  conversationId: string;
+  content: string;
+  createdAt: string;
+  senderId: string;
+  sender: UserProfile; // flattened shape: { id, name, profileImage }
+  attachments?: string[] | null; // array of urls or attachment ids
+}
+
+/** Request to start a 1:1 conversation (REST) */
+export interface StartConversationRequest {
+  participantIds: string[]; // backend expects participantIds or recipientId
+  isGroup?: boolean;
+  title?: string | null;
+}
+
+/** Request used to send a message over REST */
+export interface SendMessageRequest {
+  conversationId?: string;
+  recipientId?: string; // optional convenience: backend can create one-on-one
+  content: string;
+  attachments?: string[] | null;
+}
+
+/** WebSocket client -> server payload */
+export interface DmSocketSendPayload {
+  conversationId?: string;
+  recipientId?: string;
+  content: string;
+  tempId?: string | null; // optional client temp id for local optimistic UI
+  attachments?: string[] | null;
+}
+
+/** WebSocket events */
+export interface DmTypingEvent {
+  conversationId: string;
+  userId: string;
+  typing: boolean;
+}
+
+export interface DmReadEvent {
+  conversationId: string;
+  userId: string;
+  lastReadAt: string;
 }

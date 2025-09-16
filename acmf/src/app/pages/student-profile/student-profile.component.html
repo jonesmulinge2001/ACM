@@ -1,86 +1,93 @@
 <!-- ✅ SKELETON (when loading) -->
-<div
-  *ngIf="isLoading"
-  class="w-full max-w-5xl mx-auto p-4 min-h-[600px] animate-fadeIn"
->
+<div *ngIf="isLoading" class="w-full max-w-5xl mx-auto p-4 min-h-[600px]">
   <!-- Cover photo skeleton -->
   <ngx-skeleton-loader
     count="1"
-    appearance="circle"
-    [theme]="{ height: '12rem', 'border-radius': '0.75rem', width: '100%' }"
+    [theme]="{
+      height: '12rem',
+      width: '100%',
+      'border-radius': '0.75rem',
+      'background-color': '#f3f4f6'
+    }"
+    animation="pulse"
   ></ngx-skeleton-loader>
 
-  <!-- Profile image and name skeleton -->
+  <!-- Profile image + name skeleton -->
   <div class="flex items-center gap-4 -mt-16 px-4">
     <ngx-skeleton-loader
       count="1"
-      appearance="circle"
-      [theme]="{ width: '96px', height: '96px', 'border-radius': '9999px' }"
+      [theme]="{
+        width: '96px',
+        height: '96px',
+        'border-radius': '9999px',
+        'background-color': '#e5e7eb'
+      }"
+      animation="pulse"
     ></ngx-skeleton-loader>
     <div class="flex-1 space-y-2">
-      <ngx-skeleton-loader count="1" [theme]="{ height: '20px', width: '60%' }"></ngx-skeleton-loader>
-      <ngx-skeleton-loader count="1" [theme]="{ height: '16px', width: '40%' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader [theme]="{ height: '20px', width: '60%' }" animation="pulse"></ngx-skeleton-loader>
+      <ngx-skeleton-loader [theme]="{ height: '16px', width: '40%' }" animation="pulse"></ngx-skeleton-loader>
     </div>
   </div>
 
-  <!-- Follow button skeleton -->
+  <!-- Button skeleton -->
   <div class="flex justify-end px-4 mt-2">
     <ngx-skeleton-loader
-      count="1"
-      [theme]="{ height: '32px', width: '100px', 'border-radius': '0.375rem' }"
+      [theme]="{
+        height: '36px',
+        width: '110px',
+        'border-radius': '9999px',
+        'background-color': '#e5e7eb'
+      }"
+      animation="pulse"
     ></ngx-skeleton-loader>
   </div>
 
-  <!-- Bio and stats skeleton -->
+  <!-- Bio + stats skeleton -->
   <div class="space-y-2 px-4 mt-4">
-    <ngx-skeleton-loader count="2" [theme]="{ height: '16px', width: '100%' }"></ngx-skeleton-loader>
-    <div class="flex gap-2">
-      <ngx-skeleton-loader
-        count="3"
-        [theme]="{ height: '14px', width: '80px', 'border-radius': '9999px' }"
-      ></ngx-skeleton-loader>
-    </div>
+    <ngx-skeleton-loader [theme]="{ height: '16px', width: '90%' }" animation="pulse"></ngx-skeleton-loader>
+    <ngx-skeleton-loader [theme]="{ height: '16px', width: '75%' }" animation="pulse"></ngx-skeleton-loader>
   </div>
 
   <!-- Tabs skeleton -->
-  <div class="flex gap-4 border-b pb-2 mt-6 px-4">
-    <ngx-skeleton-loader count="3" [theme]="{ height: '24px', width: '60px' }"></ngx-skeleton-loader>
+  <div class="flex gap-6 border-b pb-2 mt-6 px-4">
+    <ngx-skeleton-loader [theme]="{ height: '24px', width: '70px' }" animation="pulse"></ngx-skeleton-loader>
+    <ngx-skeleton-loader [theme]="{ height: '24px', width: '70px' }" animation="pulse"></ngx-skeleton-loader>
+    <ngx-skeleton-loader [theme]="{ height: '24px', width: '70px' }" animation="pulse"></ngx-skeleton-loader>
   </div>
 
   <!-- Posts skeleton -->
   <div class="px-4 space-y-4 mt-4">
     <ngx-skeleton-loader
       count="2"
-      [theme]="{ height: '100px', width: '100%', 'border-radius': '0.5rem' }"
+      [theme]="{ height: '120px', width: '100%', 'border-radius': '0.75rem' }"
+      animation="pulse"
     ></ngx-skeleton-loader>
   </div>
 </div>
 
-<!-- ✅ PROFILE -->
-<div
-  *ngIf="!isLoading && userProfile"
-  class="w-full max-w-5xl mx-auto p-4 animate-fadeIn"
->
-  <!-- Cover Photo -->
-  <div class="relative h-48 rounded-lg overflow-hidden shadow-sm">
+<!-- PROFILE -->
+<div *ngIf="!isLoading && userProfile" class="w-full max-w-5xl mx-auto p-4 animate-fadeIn">
+  <!-- Cover -->
+  <div class="relative h-48 rounded-xl overflow-hidden shadow-sm">
     <img
       [src]="userProfile.coverPhoto || 'https://via.placeholder.com/1200x300'"
-      alt="Cover Photo"
-      class="w-full h-full object-cover"
+      alt="Cover"
+      class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
     />
   </div>
 
   <!-- Profile Info -->
   <div class="flex flex-col md:flex-row md:items-end md:justify-between px-4 relative">
-    <div class="flex items-start gap-4 -mt-12">
+    <div class="flex items-start gap-4 -mt-14">
       <img
         [src]="userProfile.profileImage || 'https://via.placeholder.com/150'"
         alt="Profile"
-        class="w-24 h-24 rounded-full border-4 border-white shadow-md"
+        class="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover"
       />
       <div>
-        <h2 class="text-2xl font-semibold text-gray-900">{{ userProfile.name }}</h2>
-        <p class="text-sm text-gray-600">{{ userProfile.academicLevel }} - {{ userProfile.institution }}</p>
+        <h2 class="text-2xl font-bold text-gray-900">{{ userProfile.name }}</h2>
+        <p class="text-sm text-gray-600">{{ userProfile.academicLevel }} · {{ userProfile.institution }}</p>
         <p class="text-xs text-gray-500">{{ userProfile.course }}</p>
       </div>
     </div>
@@ -89,7 +96,7 @@
     <div class="mt-4 md:mt-0">
       <button
         (click)="toggleFollow()"
-        class="px-5 py-2 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-300 transition"
+        class="px-6 py-2 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-sm hover:shadow transition-all"
       >
         {{ isFollowing ? "Unfollow" : "Follow" }}
       </button>
@@ -104,71 +111,78 @@
         *ngIf="hasLongBio()"
         href="#"
         (click)="toggleReadMore($event)"
-        class="text-blue-600 hover:underline"
+        class="text-blue-600 hover:underline font-medium"
       >
-        {{ showFullBio ? 'Read less' : 'Read more' }}
+        {{ showFullBio ? "Read less" : "Read more" }}
       </a>
     </p>
   </div>
 
   <!-- Stats -->
-  <div class="flex gap-6 mt-4 px-4 text-sm text-gray-600">
-    <div><strong>{{ followers.length }}</strong> Followers</div>
-    <div><strong>{{ following.length }}</strong> Following</div>
-    <div><strong>{{ userProfile.viewsCount || 0 }}</strong> Profile Views</div>
+  <div class="flex gap-8 mt-4 px-4 text-sm text-gray-600">
+    <div><span class="font-semibold text-gray-900">{{ followers.length }}</span> Followers</div>
+    <div><span class="font-semibold text-gray-900">{{ following.length }}</span> Following</div>
+    <div><span class="font-semibold text-gray-900">{{ userProfile.viewsCount || 0 }}</span> Views</div>
   </div>
 
   <!-- Skills & Interests -->
   <div class="mt-4 px-4">
-    <span class="text-sm text-gray-500">Skills:</span>
-    <span
-      *ngFor="let skill of userProfile.skills"
-      class="inline-block bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-xs font-medium mr-1 transition"
-    >{{ skill }}</span>
+    <span class="block text-sm text-gray-500 mb-1">Skills</span>
+    <div class="flex flex-wrap gap-2">
+      <span
+        *ngFor="let skill of userProfile.skills"
+        class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-xs font-medium transition"
+      >{{ skill }}</span>
+    </div>
   </div>
-  <div class="mt-2 px-4">
-    <span class="text-sm text-gray-500">Interests:</span>
-    <span
-      *ngFor="let interest of userProfile.interests"
-      class="inline-block bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded-full text-xs font-medium mr-1 transition"
-    >{{ interest }}</span>
+  <div class="mt-3 px-4">
+    <span class="block text-sm text-gray-500 mb-1">Interests</span>
+    <div class="flex flex-wrap gap-2">
+      <span
+        *ngFor="let interest of userProfile.interests"
+        class="bg-purple-100 hover:bg-purple-200 px-3 py-1 rounded-full text-xs font-medium transition"
+      >{{ interest }}</span>
+    </div>
   </div>
 
   <!-- Tabs -->
   <div class="mt-6 px-4">
-    <nav class="flex gap-6 border-b">
+    <nav class="flex gap-6 border-b relative">
       <button
-        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
-        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'posts' }"
+        class="pb-3 font-medium text-gray-600 hover:text-blue-600 transition relative"
+        [ngClass]="{ 'text-blue-600': activeTab === 'posts' }"
         (click)="activeTab = 'posts'"
       >
         Posts
+        <span *ngIf="activeTab === 'posts'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded"></span>
       </button>
       <button
-        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
-        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'followers' }"
+        class="pb-3 font-medium text-gray-600 hover:text-blue-600 transition relative"
+        [ngClass]="{ 'text-blue-600': activeTab === 'followers' }"
         (click)="activeTab = 'followers'"
       >
         Followers
+        <span *ngIf="activeTab === 'followers'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded"></span>
       </button>
       <button
-        class="pb-2 font-medium text-gray-600 hover:text-blue-600 transition"
-        [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': activeTab === 'following' }"
+        class="pb-3 font-medium text-gray-600 hover:text-blue-600 transition relative"
+        [ngClass]="{ 'text-blue-600': activeTab === 'following' }"
         (click)="activeTab = 'following'"
       >
         Following
+        <span *ngIf="activeTab === 'following'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded"></span>
       </button>
     </nav>
 
     <!-- Tab Content -->
     <div class="mt-4">
-      <!-- Posts Tab -->
+      <!-- Posts -->
       <div *ngIf="activeTab === 'posts'">
         <ng-container *ngIf="userPosts.length > 0; else noPosts">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div
               *ngFor="let post of userPosts"
-              class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition p-4 flex flex-col"
+              class="bg-white border rounded-lg shadow-sm hover:shadow-md transition p-4 flex flex-col"
             >
               <!-- Author -->
               <div class="flex items-center mb-3">
@@ -179,7 +193,7 @@
                 />
                 <div>
                   <p class="font-semibold text-gray-900">{{ post.author.name }}</p>
-                  <p class="text-xs text-gray-500">{{ post.author.institution }} • {{ post.createdAt | date: "mediumDate" }}</p>
+                  <p class="text-xs text-gray-500">{{ post.author.institution }} • {{ post.createdAt | date:"mediumDate" }}</p>
                 </div>
               </div>
 
@@ -194,7 +208,7 @@
                 (click)="togglePostReadMore($event, post.id)"
                 class="text-blue-600 text-xs mt-1 hover:underline"
               >
-                {{ showFullBody[post.id] ? 'Read less' : 'Read more' }}
+                {{ showFullBody[post.id] ? "Read less" : "Read more" }}
               </a>
 
               <!-- Image -->
@@ -222,10 +236,10 @@
         </ng-template>
       </div>
 
-      <!-- Followers Tab -->
+      <!-- Followers -->
       <div *ngIf="activeTab === 'followers'">
         <ng-container *ngIf="followers.length > 0; else noFollowers">
-          <div *ngFor="let f of followers" class="mb-3">
+          <div *ngFor="let f of followers" class="mb-2">
             <a
               [routerLink]="['/profile', f.follower?.profile?.userId]"
               class="flex items-center gap-3 hover:bg-gray-50 p-2 rounded transition"
@@ -246,10 +260,10 @@
         </ng-template>
       </div>
 
-      <!-- Following Tab -->
+      <!-- Following -->
       <div *ngIf="activeTab === 'following'">
         <ng-container *ngIf="following.length > 0; else noFollowing">
-          <div *ngFor="let f of following" class="mb-3">
+          <div *ngFor="let f of following" class="mb-2">
             <a
               [routerLink]="['/profile', f.following?.profile?.userId]"
               class="flex items-center gap-3 hover:bg-gray-50 p-2 rounded transition"

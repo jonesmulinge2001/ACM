@@ -1,0 +1,7 @@
+<app-dm-chat
+  *ngFor="let convo of openChats"
+  [conversationId]="convo.id"
+  [participantId]="getOtherParticipantId(convo)"
+  (close)="close(convo.id)"
+  class="w-80 h-96 border shadow-xl bg-white rounded-xl flex flex-col"
+></app-dm-chat>

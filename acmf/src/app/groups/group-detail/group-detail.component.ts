@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   OnInit,
   OnDestroy,
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -16,6 +17,8 @@ import { GroupChatComponent } from '../group-chat/group-chat.component';
 import { GroupMembersComponent } from '../group-members/group-members.component';
 import { GroupResourcesComponent } from '../group-resources/group-resources.component';
 import { EditGroupComponent } from '../edit-group/edit-group.component';
+import { DmChatComponent } from "../../components/dm-chat/dm-chat/dm-chat.component";
+import { DmPopupHostComponent } from '../../components/dm-popup-host/dm-popup-host.component';
 
 @Component({
   imports: [
@@ -24,7 +27,9 @@ import { EditGroupComponent } from '../edit-group/edit-group.component';
     GroupMembersComponent,
     GroupResourcesComponent,
     EditGroupComponent,
-  ],
+    DmChatComponent,
+    DmPopupHostComponent
+],
   selector: 'app-group-detail',
   templateUrl: './group-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +47,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   currentUserId: string | null = null;
 
   activeTab: 'feed' | 'chat' | 'members' | 'resources' = 'feed';
+
+  dmUserId: string | null = null;
+
+  @ViewChild('dmHost') dmPopupHost!: DmPopupHostComponent;
 
 
   constructor(
@@ -141,6 +150,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     // otherwise check the membership role
     const member = group.members?.find((m) => m.userId === userId);
     return member?.role === 'OWNER' || member?.role === 'ADMIN';
+  }
+
+  openDm(userId: string) {
+    this.dmPopupHost.openForUser(userId);
   }
   
 }
