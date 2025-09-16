@@ -448,8 +448,9 @@ enum FlagStatus {
 }
 
 enum UserRole {
-  ADMIN
-  STUDENT
+  ADMIN // global system admin (oversees all)
+  STUDENT  // normal student user
+  INSTITUTION_ADMIN // manages one institution
 }
 
 enum AccountStatus {

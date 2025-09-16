@@ -65,4 +65,10 @@ export class ConversationsController {
     dto.conversationId = id;
     return this.conv.sendMessage(req.user.id, dto);
   }
+
+  @Get(':id')
+async getOne(@Req() req: RequestWithUser, @Param('id') id: string) {
+  return this.conv.getConversation(id, req.user.id);
+}
+
 }

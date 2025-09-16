@@ -181,6 +181,37 @@ export class ConversationsService {
     }));
   }
 
+  // Get full conversation with participants
+async getConversation(conversationId: string, userId: string) {
+  // Ensure user is a participant
+  await this.ensureParticipant(conversationId, userId);
+
+  const convo = await this.prisma.conversation.findUnique({
+    where: { id: conversationId },
+    include: {
+      participants: {
+        include: {
+          user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } },
+        },
+      },
+    },
+  });
+
+  if (!convo) throw new BadRequestException('Conversation not found');
+
+  return {
+    id: convo.id,
+    isGroup: convo.isGroup,
+    title: convo.title,
+    participants: convo.participants.map((p) => ({
+      id: p.user.id,
+      name: p.user.name,
+      profileImage: p.user.profile?.profileImage ?? null,
+    })),
+  };
+}
+
+
   // list conversations for user with last message preview & unread count
   async listConversationsForUser(userId: string) {
     // first load participant rows + conversation basic info
