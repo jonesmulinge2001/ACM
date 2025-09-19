@@ -52,7 +52,7 @@
     [infiniteScrollThrottle]="150"
     (scrolled)="loadMorePosts()"
   >
-    <!-- Skeleton Loader (initial load or loading more) -->
+    <!-- Skeleton Loader -->
     <ng-container *ngIf="isLoading && posts.length === 0">
       <div
         *ngFor="let placeholder of [1, 2, 3]"
@@ -109,7 +109,7 @@
             {{ post.author.name }}
           </a>
           <p class="text-xs text-gray-500">
-            {{ post.author.institution || "" }} •
+            {{ post.author.institution?.name || "" }} •
             {{ post.author.academicLevel || "" }}
           </p>
           <span class="text-xs text-gray-400">
@@ -217,7 +217,7 @@
       </div>
     </div>
 
-    <!-- Infinite Scroll Loader (smaller placeholders) -->
+    <!-- Infinite Scroll Loader -->
     <ng-container *ngIf="isLoading && posts.length > 0">
       <div
         *ngFor="let placeholder of [1, 2]"
@@ -229,7 +229,6 @@
       </div>
     </ng-container>
 
-    <!-- End of Feed -->
     <div
       *ngIf="nextCursor === null && !isLoading"
       class="flex justify-center py-4"
@@ -256,7 +255,7 @@
             {{ post.author.name }}
           </p>
           <p class="text-xs text-gray-500">
-            {{ post.author.institution }} • {{ post.author.academicLevel }}
+            {{ post.author.institution?.name || "" }} • {{ post.author.academicLevel || "" }}
           </p>
           <p class="text-xs text-gray-400">{{ post.createdAt | timeago }}</p>
         </div>

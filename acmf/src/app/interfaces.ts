@@ -54,7 +54,7 @@ export interface Profile {
   id?: string;
   name: string;
   email: string;
-  institution: string;
+  institutionId: string;
   academicLevel: string;
   skills: string[];
   bio: string;
@@ -69,6 +69,11 @@ export interface Profile {
   createdAt?: string;
   updatedAt?: string;
   userId: string;
+
+  institution?: {
+    id: string;
+    name: string;
+  };
 
   showFullBio?: boolean;
 }
@@ -98,7 +103,7 @@ export interface Author {
   id: string;
   name: string;
   profileImage?: string | null;
-  institution?: string;
+  institution?: {name: string} | null;
   academicLevel?: string;
 }
 
@@ -517,3 +522,28 @@ export interface DmReadEvent {
   userId: string;
   lastReadAt: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  fileUrls?: string[];
+  createdAt: string;
+  updatedAt: string;
+
+  createdBy: {
+    id: string;
+    email: string;
+    profile: {
+      name: string;
+      profileImage?: string;
+    };
+  };
+
+  institution: {
+    id: string;
+    name: string;
+    logoUrl?: string;
+  };
+}
+

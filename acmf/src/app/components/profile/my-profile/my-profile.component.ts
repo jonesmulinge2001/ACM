@@ -9,12 +9,7 @@ import { Follow, Profile, ProfileView } from '../../../interfaces';
 @Component({
   selector: 'app-my-profile',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './my-profile.component.html',
   styleUrl: './my-profile.component.css',
 })
@@ -28,11 +23,6 @@ export class MyProfileComponent implements OnInit {
   profileViews: ProfileView[] = [];
   showProfileModal = true;
 
-closeProfileModal() {
-  this.showProfileModal = false;
-}
-
-
   // Toggle tab: 'followers' or 'following'
   selectedTab: 'followers' | 'following' = 'followers';
 
@@ -45,6 +35,10 @@ closeProfileModal() {
     this.loadProfile();
   }
 
+  closeProfileModal() {
+    this.showProfileModal = false;
+  }
+
   // Load your own profile + followers/following
   loadProfile(): void {
     this.profileService.getMyProfile().subscribe({
@@ -54,10 +48,8 @@ closeProfileModal() {
         this.profilePreview = data.profileImage || null;
         this.isLoading = false;
 
-        const userId = data.userId;
-        if (userId) {
-          this.loadFollowersAndFollowing(userId);
-          // this.loadProfileViews(userId);
+        if (data.userId) {
+          this.loadFollowersAndFollowing(data.userId);
         }
       },
       error: () => {
@@ -140,35 +132,13 @@ closeProfileModal() {
 
   toggleFollow(userId: string): void {
     if (this.isFollowingUser(userId)) {
-      this.profileService.unFollowUser(userId).subscribe({
-        next: () => {
-          this.following = this.following.filter(
-            (f) => f.following?.profile?.userId !== userId
-          );
-        },
-        error: () => this.toastr.error('Failed to unfollow user'),
-      });
+      this.unFollow(userId);
     } else {
-      this.profileService.followUser(userId).subscribe({
-        next: (newFollow) => {
-          this.following.push(newFollow);
-        },
-        error: () => this.toastr.error('Failed to follow user'),
-      });
+      this.follow(userId);
     }
   }
 
-  // Switch between followers and following view
   setTab(tab: 'followers' | 'following') {
     this.selectedTab = tab;
   }
-
-  // loadProfileViews(userId: string): void {
-  //   this.profileService.getProfileViewers(userId).subscribe({
-  //     next: (views) => {
-  //       this.profileViews = views;
-  //     },
-  //     error: () => this.toastr.error('Failed to load profile views')
-  //   });
-  // }
 }

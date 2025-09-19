@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { response } from 'express';
 import { CommonModule } from '@angular/common';
+import { InstitutionService } from '../../../services/institution.service';
 
 @Component({
   selector: 'app-create-profile',
@@ -20,22 +21,31 @@ export class CreateProfileComponent implements OnInit{
   selectedProfileImage!: File;
   selcetedCoverImage!: File;
 
+  institutions: { id: string; name: string }[] = []; // holds dropdown values
+
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private institutionService: InstitutionService,
   ){}
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
       name:['', [Validators.required, Validators.minLength(2)]],
-      institution: ['', Validators.required],
+      institutionId: ['', Validators.required],
       academicLevel: ['', Validators.required],
       skills: ['', Validators.required],
       bio: ['', Validators.required],
       interests: ['', Validators.required]
     });
+
+        // fetch institutions for dropdown
+        this.institutionService.getInstitutions().subscribe({
+          next: (data) => (this.institutions = data),
+          error: (err) => console.error('Failed to load institutions', err),
+        });
   }
 
   onProfileImageSelected(event: Event): void {
@@ -78,7 +88,6 @@ export class CreateProfileComponent implements OnInit{
             error: (err) => {
               console.error(err);
               this.toastr.error('Image upload failed');
-              this.router.navigate(['/MetricHistogramBucket']);
             },
           });
         }

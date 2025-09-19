@@ -123,9 +123,14 @@ export class AuthService {
 
         if (user.role === 'ADMIN') {
           this.router.navigate(['/admin/dashboard']);
-        } else {
+        } 
+        else if (user.role === 'INSTITUTION_ADMIN') {
+          this.router.navigate(['/institution-admin/announcements']);
+        } 
+        else {
           this.router.navigate(['/home']);
         }
+        
         this.loadingSubject.next(false);
       },
     });

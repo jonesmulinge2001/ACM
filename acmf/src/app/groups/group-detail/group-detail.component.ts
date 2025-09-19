@@ -99,7 +99,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       id: user?.id || '',
       name: user?.name || '',
       email: user?.email || '',
-      institution: user?.institution || '',
+      institutionId: user?.institutionId || '',
       academicLevel: user?.academicLevel || '',
       skills: user?.skills || [],
       bio: user?.bio || '',

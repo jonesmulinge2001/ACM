@@ -27,6 +27,10 @@ import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 import { AdminPostsComponent } from './admin/admin-posts/admin-posts.component';
 import { GroupListComponent } from './groups/group-list/group-list.component';
 import { GroupDetailComponent } from './groups/group-detail/group-detail.component';
+import { AdminAnnouncementFeedComponent } from './InstitutionAdmin/announcement-feed/announcement-feed.component';
+import { CreateAnnouncementComponent } from './InstitutionAdmin/create-announcement/create-announcement.component';
+import { InstitutionAdminLayoutComponent } from './layouts/institution-admin-layout/institution-admin-layout.component';
+import { AnalyticsComponent } from './InstitutionAdmin/analytics/analytics.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -68,5 +72,18 @@ export const routes: Routes = [
       { path: 'manage-posts', component: AdminPostsComponent },
       { path: 'posts/:id', component: PostDetailComponent }
     ]
-  }
+  },
+
+  // ==== Institution Admin routes ====
+{
+  path: 'institution-admin',
+  component: InstitutionAdminLayoutComponent,
+  children: [
+    { path: 'announcements', component: AdminAnnouncementFeedComponent },
+    { path: 'announcements/create', component: CreateAnnouncementComponent },
+    // { path: 'announcements/:id/edit', component: AdminAnnouncementFormComponent },
+    { path: 'analytics', component: AnalyticsComponent },
+  ]
+},
+
 ];

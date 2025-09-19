@@ -77,12 +77,17 @@
 
       <div class="space-y-1">
         <label class="text-sm font-medium text-gray-600">Institution</label>
-        <input
-          formControlName="institution"
-          type="text"
+        <select
+          formControlName="institutionId"
           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
+        >
+          <option value="" disabled>Select your institution</option>
+          <option *ngFor="let inst of institutions" [value]="inst.id">
+            {{ inst.name }}
+          </option>
+        </select>
       </div>
+      
 
       <div class="space-y-1">
         <label class="text-sm font-medium text-gray-600">Academic Level</label>

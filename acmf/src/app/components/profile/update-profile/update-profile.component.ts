@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ProfileService } from '../../../services/profile.service';
 import { ToastrService } from 'ngx-toastr';
 import { Profile } from '../../../interfaces';
+import { InstitutionService } from '../../../services/institution.service';
 
 @Component({
   selector: 'app-update-profile',
@@ -21,6 +22,8 @@ export class UpdateProfileComponent implements OnInit {
 
   showProfileModal = true;
 
+  institutions: { id: string; name: string }[] = [];
+
   closeProfileModal() {
     this.showProfileModal = false;
   }
@@ -29,24 +32,31 @@ export class UpdateProfileComponent implements OnInit {
     private fb: FormBuilder,
     private profileService: ProfileService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private institutionService: InstitutionService
   ) {}
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      institution: ['', Validators.required],
+      institutionId: ['', Validators.required],
       academicLevel: ['', Validators.required],
       skills: ['', Validators.required],
       bio: ['', Validators.required]
     });
+
+       // fetch institutions for dropdown
+       this.institutionService.getInstitutions().subscribe({
+        next: (data) => (this.institutions = data),
+        error: () => this.toastr.error('Failed to load institutions'),
+      });
 
     this.profileService.getMyProfile().subscribe({
       next: (profile: Profile) => {
         this.isLoading = false;
         this.profileForm.patchValue({
           name: profile.name,
-          institution: profile.institution,
+          institutionId: profile.institutionId,
           academicLevel: profile.academicLevel,
           skills: profile.skills.join(', '),
           bio: profile.bio

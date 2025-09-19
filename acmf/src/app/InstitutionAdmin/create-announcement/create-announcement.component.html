@@ -1,0 +1,62 @@
+<div
+  class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-xl mx-auto border border-gray-200"
+>
+  <!-- Header -->
+  <h2 class="text-xl font-semibold mb-4">
+    {{ announcement ? 'Edit Announcement' : 'Create Announcement' }}
+  </h2>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+    <!-- Title -->
+    <input
+      formControlName="title"
+      type="text"
+      placeholder="Title"
+      class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300"
+    />
+
+    <!-- Content -->
+    <textarea
+      formControlName="content"
+      rows="5"
+      placeholder="Write your announcement..."
+      class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300"
+    ></textarea>
+
+    <!-- File Upload -->
+    <div class="border rounded-lg p-3">
+      <label class="text-sm font-medium text-gray-600"> Attach files </label>
+      <input
+        type="file"
+        multiple
+        (change)="onFileSelected($event)"
+        class="mt-2 block w-full text-sm text-gray-500"
+      />
+      <div
+        *ngIf="selectedFiles.length > 0"
+        class="mt-2 text-xs text-gray-700"
+      >
+        Selected: {{ selectedFileNames }}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3">
+      <button
+        type="button"
+        class="px-4 py-2 rounded-lg border border-gray-300"
+        (click)="form.reset(); selectedFiles = []"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        [disabled]="loading"
+        class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+      >
+        {{ loading ? 'Saving...' : announcement ? 'Update' : 'Post' }}
+      </button>
+    </div>
+  </form>
+</div>
