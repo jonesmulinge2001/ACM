@@ -8,7 +8,7 @@ export class CreateProfileDto {
 
   @IsString()
   @IsNotEmpty()
-  institution: string
+  institutionId: string;
 
   @IsString()
   @IsNotEmpty()

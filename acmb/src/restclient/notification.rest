@@ -1,0 +1,18 @@
+### Fetch all notifications
+GET http://localhost:3000/student-notifications/notifications
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTgyMzEzOTgsImV4cCI6MTc1ODMxNzc5OH0.k2b47PxER6eg4mlRQotAP6LwxZWy-wJ34YzT1ATCUGc
+
+
+### Fetch unread notifications
+GET http://localhost:3000/student-notifications/notifications/unread
+Authorization: Bearer <JWT_TOKEN>
+
+### Mark a notification as read
+PATCH http://localhost:3000/student-notifications/notifications/<NOTIFICATION_ID>/read
+Authorization: Bearer <JWT_TOKEN>
+
+
+### Fetch announcements
+GET http://localhost:3000/student-notifications/announcements
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTgyMzEzOTgsImV4cCI6MTc1ODMxNzc5OH0.k2b47PxER6eg4mlRQotAP6LwxZWy-wJ34YzT1ATCUGc
+

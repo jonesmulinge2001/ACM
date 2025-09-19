@@ -20,9 +20,11 @@ model User {
   password             String
   name                 String
   role                 UserRole      @default(STUDENT)
+  institutionAdmins InstitutionAdmin[]
   phone                String?       @unique
   status               AccountStatus @default(ACTIVE)
   profile              Profile?
+  announcements InstitutionAnnouncement[]
   likes                Like[]
   followers            Follow[]      @relation("followers")
   following            Follow[]      @relation("following")
@@ -43,11 +45,13 @@ model User {
   requests             Request[]
   comments             Comment[]
   commentLikes         CommentLike[] 
+  notifications        Notification[] @relation("UserNotifications")
   reportedFlags PostFlag[]
   profileViewsMade     ProfileView[] @relation("Viewer")
   profileViewsReceived ProfileView[] @relation("Viewed")
   participants ConversationParticipant[]
   messages     ConversationMessage[]
+  createdInstitutionAdmins InstitutionAdmin[] @relation("CreatedInstitutionAdmins")
 
   // flag relations
   resourceFlagsReported AcademicResourceFlag[] @relation("AcademicResourceFlagsReported")
@@ -65,10 +69,77 @@ model User {
   restoredSuspensions  UserSuspension[] @relation("UserSuspensionRestorer")
 }
 
+
+model Institution {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admins      InstitutionAdmin[]
+  invites       InstitutionInvite[]
+  announcements InstitutionAnnouncement[]
+  profiles    Profile[]
+}
+
+
+model InstitutionAdmin {
+  id            String       @id @default(uuid())
+  userId        String
+  institutionId String
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
+  createdById   String
+  createdBy     User     @relation("CreatedInstitutionAdmins", fields: [createdById], references: [id])
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  @@unique([userId, institutionId])
+  @@index([institutionId])
+}
+
+model InstitutionInvite {
+  id            String   @id @default(uuid())
+  email         String
+  institutionId String
+  token         String   @unique
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  usedAt        DateTime?
+  createdBy     String?  // userId who created the invite
+  createdById   String
+  isActive      Boolean  @default(true)
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+}
+
+model InstitutionAnnouncement {
+  id            String   @id @default(uuid())
+  title         String
+  fileUrls      String[]
+  content       String
+  isPublished   Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // relations
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  institutionId String
+
+  createdBy     User       @relation(fields: [createdById], references: [id])
+  createdById   String
+}
+
+
 model Profile {
   id            String   @id @default(uuid())
   name          String
-  institution   String
+  institutionId String       // new foreign key
   academicLevel String
   skills        String[]
   bio           String?
@@ -84,10 +155,12 @@ model Profile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
   // indexes
   @@index([skills], type: Gin)
   @@index([interests], type: Gin)
-  @@index([institution])
+  @@index([institutionId])
   @@index([course])
   @@index([academicLevel])
 }
@@ -107,6 +180,23 @@ model UserSuspension {
   restoredByUser User? @relation("UserSuspensionRestorer", fields: [restoredBy], references: [id])
 }
 
+model Notification {
+  id           String             @id @default(uuid())
+  recipientId  String
+  type         NotificationType
+  referenceId  String?            
+  message      String
+  status       NotificationStatus @default(UNREAD)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  readAt       DateTime? 
+
+  recipient    User               @relation("UserNotifications", fields: [recipientId], references: [id])
+
+  @@index([recipientId])
+  @@index([status])
+  @@index([createdAt])
+}
 
 
 model Follow {
@@ -489,4 +579,17 @@ enum ResourceAction {
   FLAG_REVIEWED
   APPROVE
   UNPUBLISH
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  POST
+  COMMENT
+  MESSAGE
+  SYSTEM
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
 }

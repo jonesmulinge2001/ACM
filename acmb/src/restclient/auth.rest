@@ -3,10 +3,11 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "name": "Next Level",
-  "email": "jonathanmwandi16@gmail.com",
+  "name": "Chuka Admin",
+  "email": "jonathanmwandi@gmail.com",
   "password": "shal00j1010",
-  "phone": "+254730867703"
+  "phone": "+254730867702",
+  "role": "INSTITUTION_ADMIN"
 }
 
 ### verify email
@@ -14,8 +15,8 @@ POST http://localhost:3000/auth/verify-email
 Content-Type: application/json
 
 {
-  "email": "jonathanmwandi16@gmail.com",
-  "code": "58485"
+  "email": "jonathanmwandi@gmail.com",
+  "code":"85768"
 }
 
 ### request verification code
@@ -23,7 +24,7 @@ POST http://localhost:3000/auth/request-verification-code
 Content-Type: application/json
 
 {
- "email": "j26515762@gmail.com"
+  "email": "jonathanmwandi@gmail.com"
 }
 
 ### login 
@@ -31,7 +32,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "jonathanmulingemwandi@gmail.com",
+  "email": "jonathanmwandi16@gmail.com",
   "password": "shal00j1010"
 }
 
@@ -40,7 +41,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
- "email": "jonathanmwandi6@gmail.com",
+ "email": "j26515762@gmail.com",
   "password": "shal00j1010"
 }
 

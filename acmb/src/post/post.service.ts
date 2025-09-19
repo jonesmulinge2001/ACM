@@ -6,7 +6,11 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PostType, Prisma, PrismaClient } from 'generated/prisma';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
@@ -107,7 +111,7 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
-                institution: true,
+                institution: { select: { id: true, name: true } },
                 academicLevel: true,
               },
             },
@@ -179,7 +183,7 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
-                institution: true,
+                institution: { select: { id: true, name: true } },
                 academicLevel: true,
               },
             },
@@ -227,7 +231,6 @@ export class PostService {
         throw new InternalServerErrorException('Failed to upload file');
       }
     }
-    
 
     const updatedTags = dto.tags?.map((tagName) => ({
       tag: {
@@ -299,6 +302,7 @@ export class PostService {
             name: true,
             profile: {
               select: {
+                institution: { select: { id: true, name: true } },
                 profileImage: true,
               },
             },
@@ -344,7 +348,7 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
-                institution: true,
+                institution: { select: { id: true, name: true } },
                 academicLevel: true,
               },
             },
@@ -380,7 +384,7 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
-                institution: true,
+                institution: { select: { id: true, name: true } },
                 academicLevel: true,
               },
             },
@@ -418,7 +422,7 @@ export class PostService {
             profile: {
               select: {
                 profileImage: true,
-                institution: true,
+                institution: { select: { id: true, name: true } },
                 academicLevel: true,
               },
             },
@@ -428,17 +432,16 @@ export class PostService {
         likes: true,
       },
     });
-  
+
     let nextCursor: string | undefined = undefined;
     if (posts.length > limit) {
       const nextItem = posts.pop(); // remove the extra item
       nextCursor = nextItem?.id;
     }
-  
+
     return {
       posts: posts.map((post) => this.toPostDto(post, currentUserId)),
       nextCursor,
     };
   }
-  
 }

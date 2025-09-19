@@ -29,7 +29,7 @@ export class RecommenderService {
         profile.interests,
       ).length;
       const institutionMatch =
-        profile.institution === student.institution ? 1 : 0;
+        profile.institutionId === student.institutionId ? 1 : 0;
       const courseMatch = profile.course === student.course ? 1 : 0;
 
       const score =

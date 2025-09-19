@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient, Prisma } from 'generated/prisma';
 import { CreateProfileDto } from 'src/dto/create-profile.dto';
 import { UpdateProfileDto } from 'src/dto/update-profile.dto';
 import {
@@ -25,10 +25,22 @@ export class ProfileService {
     if (profileExists) {
       throw new BadRequestException('Profile already exists');
     }
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: dto.institutionId },
+    });
+    if (!institution) {
+      throw new NotFoundException('Institution not found');
+    }
+
     return this.prisma.profile.create({
       data: {
-        ...dto,
+        name: dto.name,
+        bio: dto.bio,
+        academicLevel: dto.academicLevel,
+        skills: dto.skills,
         userId,
+        institutionId: dto.institutionId,
       },
     });
   }
@@ -36,6 +48,9 @@ export class ProfileService {
   async getProfileByUserId(userId: string) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
+      include: {
+        institution: { select: { id: true, name: true}}
+      }
     });
 
     if (!profile) {
@@ -50,33 +65,48 @@ export class ProfileService {
     const profile = await this.prisma.profile.findUnique({
       where: { id },
       include: {
-        user: true, 
+        user: true,
       },
     });
-  
+
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
-  
+
     return profile;
   }
-  
 
+  // Update your profile
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { userId },
-    });
-
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
+
+    if (dto.institutionId) {
+      const institution = await this.prisma.institution.findUnique({
+        where: { id: dto.institutionId },
+      });
+      if (!institution) {
+        throw new NotFoundException('Institution not found');
+      }
+    }
+
+    const updateData: Prisma.ProfileUpdateInput = {
+      name: dto.name,
+      bio: dto.bio,
+      academicLevel: dto.academicLevel,
+      skills: dto.skills,
+      ...(dto.institutionId && { institutionId: dto.institutionId }),
+    };
 
     return this.prisma.profile.update({
       where: { userId },
-      data: { ...dto },
+      data: updateData,
     });
   }
 
+  // upload a profile image
   async uploadProfileImage(userId: string, file: Express.Multer.File) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
@@ -127,12 +157,19 @@ export class ProfileService {
         ? {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
-              { institution: { contains: search, mode: 'insensitive' } },
+              {
+                institution: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
+              },
               { skills: { hasSome: [search] } },
             ],
           }
         : {},
       orderBy: { createdAt: 'asc' },
+      include: {
+        institution: true, // optional: returns institution data along with profile
+      },
     });
   }
 }

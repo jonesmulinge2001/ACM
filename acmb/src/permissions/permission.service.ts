@@ -39,6 +39,12 @@ export class PermissionService {
             Permission.CREATE_PROFILE,
             Permission.MANAGE_PROFILE
         ],
+        INSTITUTION_ADMIN: [
+            Permission.MANAGE_PROFILE, 
+            Permission.CREATE_PROFILE,
+            Permission.CREATE_EVENT,
+            Permission.CREATE_ANNOUNCEMENT
+        ],
     };
 
     getRolePermissions(role: UserRole): Permission[] {

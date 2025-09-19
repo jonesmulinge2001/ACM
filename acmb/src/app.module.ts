@@ -30,6 +30,9 @@ import { PostManagementModule } from './admin/post-management/post-management.mo
 import { AcademicRsourceModule } from './admin/academic-rsource/academic-rsource.module';
 import { GroupsModule } from './groups/groups.module';
 import { ConversationsModule } from './conversations/conversations.module';
+import { InstitutionModule } from './institution/institution.module';
+import { InstitutionService } from './institution/institution.service';
+import { StudentNotificationsModule } from './student-notifications/student-notifications.module';
 
 @Module({
   imports: [
@@ -54,6 +57,8 @@ import { ConversationsModule } from './conversations/conversations.module';
     AcademicRsourceModule,
     GroupsModule,
     ConversationsModule,
+    InstitutionModule,
+    StudentNotificationsModule,
   ],
   controllers: [
     AppController,
@@ -67,6 +72,7 @@ import { ConversationsModule } from './conversations/conversations.module';
     RecommenderService,
     CommentLikeService,
     DashboardOverviewService,
+    InstitutionService,
   ],
 })
 export class AppModule {}

@@ -44,29 +44,29 @@ export class DashboardOverviewService {
         this.prisma.comment.count(), // 12
   
         this.prisma.profile.groupBy({
-          by: ['institution'],
-          _count: { institution: true },
+          by: ['institutionId'],
+          _count: { institutionId: true },
         }), // 13
         this.prisma.profile.groupBy({
-          by: ['institution'],
+          by: ['institutionId'],
           where: { createdAt: { gte: today } },
-          _count: { institution: true },
+          _count: { institutionId: true },
         }), // 14
         this.prisma.profile.groupBy({
-          by: ['institution'],
+          by: ['institutionId'],
           where: { createdAt: { gte: sevenDaysAgo } },
-          _count: { institution: true },
+          _count: { institutionId: true },
         }), // 15
         this.prisma.profile.groupBy({
-          by: ['institution'],
+          by: ['institutionId'],
           where: { createdAt: { gte: startOfMonth } },
-          _count: { institution: true },
+          _count: { institutionId: true },
         }), // 16
   
         this.prisma.profile.groupBy({
-          by: ['institution'],
-          _count: { institution: true },
-          orderBy: { _count: { institution: 'desc' } },
+          by: ['institutionId'],
+          _count: { institutionId: true },
+          orderBy: { _count: { institutionId: 'desc' } },
           take: 5,
         }), // 17
   
