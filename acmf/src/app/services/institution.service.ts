@@ -71,7 +71,7 @@ export class InstitutionService {
   }
 
   /** ---------------- MY ANNOUNCEMENTS ---------------- */
-  getMyAnnouncements(): Observable<Announcement[]> {
+  getMyAnnouncements(institutionId: string): Observable<Announcement[]> {
     return this.http.get<Announcement[]>(
       `${this.baseUrl}/my-announcements`,
       { headers: this.getAuthHeaders() },

@@ -53,7 +53,7 @@ export class MyProfileComponent implements OnInit {
         }
       },
       error: () => {
-        this.toastr.error('Error loading your profile');
+        console.error('Error loading your profile');
         this.isLoading = false;
       },
     });
@@ -62,12 +62,12 @@ export class MyProfileComponent implements OnInit {
   loadFollowersAndFollowing(userId: string): void {
     this.profileService.getFollowers(userId).subscribe({
       next: (followers) => (this.followers = followers),
-      error: () => this.toastr.error('Failed to load followers'),
+      error: () => console.error('Failed to load followers'),
     });
 
     this.profileService.getFollowing(userId).subscribe({
       next: (following) => (this.following = following),
-      error: () => this.toastr.error('Failed to load following'),
+      error: () => console.error('Failed to load following'),
     });
   }
 
@@ -80,7 +80,7 @@ export class MyProfileComponent implements OnInit {
           this.profile = updated;
           this.toastr.success('Cover photo updated');
         },
-        error: () => this.toastr.error('Failed to upload cover photo'),
+        error: () => console.error('Failed to upload cover photo'),
       });
     }
   }
@@ -94,7 +94,7 @@ export class MyProfileComponent implements OnInit {
           this.profile = updated;
           this.toastr.success('Profile image updated');
         },
-        error: () => this.toastr.error('Failed to upload profile image'),
+        error: () => console.error('Failed to upload profile image'),
       });
     }
   }
@@ -111,7 +111,7 @@ export class MyProfileComponent implements OnInit {
         this.toastr.success('Followed successfully');
         this.loadProfile();
       },
-      error: () => this.toastr.error('Failed to follow user'),
+      error: () => console.error('Failed to follow user'),
     });
   }
 

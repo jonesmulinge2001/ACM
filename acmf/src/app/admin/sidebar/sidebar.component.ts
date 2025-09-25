@@ -37,6 +37,7 @@ export class SidebarComponent {
     { id: 'messaging', label: 'Messaging/Feedback', icon: 'chat', route: '/admin/manage-messaging' },
     { id: 'analytics', label: 'Analytics & Growth', icon: 'bar_chart', route: '/admin/manage-analytics' },
     { id: 'settings', label: 'Settings', icon: 'settings', route: '/admin/manage-settings' },
+    { id: 'Logout', label: 'Logout', icon: 'logout', route: '/login' },
   ];
 
   onSectionSelect(item: MenuItem) {

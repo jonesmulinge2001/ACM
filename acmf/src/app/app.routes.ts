@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+
 import { RegisterComponent } from './auth/register/register.component';
 import { VerifyEmailComponent } from './auth/verify-email/verify-email.component';
 import { LoginComponent } from './auth/login/login.component';
@@ -13,7 +14,6 @@ import { StudentProfileComponent } from './pages/student-profile/student-profile
 import { HomeComponent } from './components/home/home.component';
 import { NetworkComponent } from './components/network/network.component';
 import { ResourcesComponent } from './components/resources/resources.component';
-import { CreateComponent } from './components/create/create.component';
 import { OpportunitiesComponent } from './components/opportunities/opportunities.component';
 import { PostComponent } from './components/post/post.component';
 import { ResourceUploadModalComponent } from './components/resource-upload-modal/resource-upload-modal.component';
@@ -31,6 +31,10 @@ import { AdminAnnouncementFeedComponent } from './InstitutionAdmin/announcement-
 import { CreateAnnouncementComponent } from './InstitutionAdmin/create-announcement/create-announcement.component';
 import { InstitutionAdminLayoutComponent } from './layouts/institution-admin-layout/institution-admin-layout.component';
 import { AnalyticsComponent } from './InstitutionAdmin/analytics/analytics.component';
+import { InstitutionDashboardComponent } from './InstitutionAdmin/institution-dashboard/institution-dashboard.component';
+
+import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
+import { AnnouncementDetailComponent } from './components/announcement-detail/announcement-detail.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -59,6 +63,10 @@ export const routes: Routes = [
       { path: 'opportunities', component: OpportunitiesComponent },
       { path: 'groups', component: GroupListComponent },
       { path: 'groups/:id', component: GroupDetailComponent },
+
+      // Notifications + Announcements under StudentLayout
+      { path: 'notifications', component: NotificationCenterComponent },
+      { path: 'announcements/:id', component: AnnouncementDetailComponent },
     ]
   },
 
@@ -75,15 +83,14 @@ export const routes: Routes = [
   },
 
   // ==== Institution Admin routes ====
-{
-  path: 'institution-admin',
-  component: InstitutionAdminLayoutComponent,
-  children: [
-    { path: 'announcements', component: AdminAnnouncementFeedComponent },
-    { path: 'announcements/create', component: CreateAnnouncementComponent },
-    // { path: 'announcements/:id/edit', component: AdminAnnouncementFormComponent },
-    { path: 'analytics', component: AnalyticsComponent },
-  ]
-},
-
+  {
+    path: 'institution-admin',
+    component: InstitutionAdminLayoutComponent,
+    children: [
+      { path: 'announcements', component: AdminAnnouncementFeedComponent },
+      { path: 'announcements/create-announcement', component: CreateAnnouncementComponent },
+      { path: 'analytics', component: AnalyticsComponent },
+      { path: 'dashbaord-overview', component: InstitutionDashboardComponent },
+    ]
+  },
 ];

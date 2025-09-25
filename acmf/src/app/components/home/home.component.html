@@ -1,11 +1,11 @@
 <!-- Welcome Banner -->
 <div
-  class="rounded-xl px-6 py-8 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200"
+  class="rounded-lg px-6 py-6 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 shadow-sm"
 >
-  <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
+  <h1 class="text-xl md:text-2xl font-semibold text-gray-900 mb-1">
     Welcome to Academeet!
   </h1>
-  <p class="text-sm md:text-base text-gray-700 mb-4">
+  <p class="text-sm md:text-base text-gray-700 mb-4 leading-relaxed">
     Connect with fellow students, share resources, and discover opportunities to
     grow your academic journey.
   </p>
@@ -20,7 +20,7 @@
 
     <button
       (click)="showUpload = true"
-      class="bg-gray-100 text-gray-800 font-medium px-5 py-1.5 rounded-full hover:bg-gray-200 transition border border-gray-300 shadow-sm"
+      class="bg-white text-gray-700 font-medium px-5 py-1.5 rounded-full hover:bg-gray-50 transition border border-gray-300 shadow-sm"
     >
       Upload Resource
     </button>
@@ -56,7 +56,7 @@
     <ng-container *ngIf="isLoading && posts.length === 0">
       <div
         *ngFor="let placeholder of [1, 2, 3]"
-        class="animate-pulse bg-white rounded-lg shadow border border-gray-200 p-4 space-y-3"
+        class="animate-pulse bg-white rounded-lg border border-gray-200 p-4 space-y-3 shadow-sm"
       >
         <div class="flex items-start gap-3">
           <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
@@ -65,31 +65,16 @@
             <div class="h-3 bg-gray-200 rounded w-1/2"></div>
           </div>
         </div>
-
-        <div class="h-5 bg-gray-300 rounded w-5/6"></div>
-
-        <div class="space-y-2">
-          <div class="h-3 bg-gray-200 rounded w-full"></div>
-          <div class="h-3 bg-gray-200 rounded w-11/12"></div>
-          <div class="h-3 bg-gray-200 rounded w-10/12"></div>
-        </div>
-
-        <div class="flex gap-2">
-          <div class="h-5 bg-gray-200 rounded w-12"></div>
-          <div class="h-5 bg-gray-200 rounded w-16"></div>
-          <div class="h-5 bg-gray-200 rounded w-10"></div>
-        </div>
-
-        <div class="h-48 bg-gray-200 rounded w-full mt-3"></div>
-
-        <div class="flex gap-6 mt-4 h-4 bg-gray-200 rounded w-3/4"></div>
+        <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+        <div class="h-3 bg-gray-200 rounded w-full"></div>
+        <div class="h-48 bg-gray-200 rounded"></div>
       </div>
     </ng-container>
 
     <!-- Actual Posts -->
     <div
       *ngFor="let post of posts"
-      class="bg-white rounded-lg shadow border border-gray-200 hover:shadow-md transition p-4"
+      class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition p-4"
     >
       <!-- Header -->
       <div class="flex items-start gap-3 mb-3 relative">
@@ -97,7 +82,9 @@
           <img
             [src]="post.author.profileImage || 'assets/default-avatar.png'"
             alt="Profile"
-            class="w-10 h-10 rounded-full object-cover border border-gray-300"
+            loading="lazy"
+            decoding="async"
+            class="w-10 h-10 rounded-full object-cover border border-gray-300 !aspect-square"
           />
         </a>
 
@@ -118,40 +105,57 @@
         </div>
 
         <!-- Action Menu -->
-        <div class="ml-auto">
+        <div class="ml-auto relative">
+          <!-- More button -->
           <button
-            *ngIf="post.author.id === loggedInUserId"
             (click)="openActionMenu(post.id, $event)"
-            class="p-1 rounded-full hover:bg-gray-100"
+            class="p-2 rounded-full hover:bg-gray-100 transition"
           >
-            <i class="ri-more-2-fill text-gray-500"></i>
+            <span class="material-icons text-gray-600">more_horiz</span>
           </button>
 
+          <!-- Dropdown -->
           <div
             *ngIf="actionMenuOpen[post.id]"
-            class="origin-top-right absolute right-0 top-8 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+            class="origin-top-right absolute right-0 top-10 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-50 animate-fade-in"
           >
+            <!-- Edit -->
             <button
-              class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+              *ngIf="post.author.id === loggedInUserId"
+              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
               (click)="openEditModal(post)"
             >
-              Edit post
+              <span class="material-icons text-gray-500 text-base">edit</span>
+              <span>Edit post</span>
             </button>
+
+            <!-- Delete -->
             <button
-              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              *ngIf="post.author.id === loggedInUserId"
+              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
               (click)="confirmDeletePost(post)"
             >
-              Delete post
+              <span class="material-icons text-red-500 text-base">delete</span>
+              <span>Delete post</span>
+            </button>
+
+            <!-- Flag -->
+            <button
+              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition"
+              (click)="openFlagModal(post)"
+            >
+              <span class="material-icons text-orange-500 text-base">flag</span>
+              <span>Flag post</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Content -->
-      <h2 class="text-base font-semibold text-gray-800 leading-tight mb-1">
+      <h2 class="text-base font-semibold text-gray-800 mb-1">
         {{ post.title }}
       </h2>
-      <p class="text-gray-700 text-sm mb-2">
+      <p class="text-gray-700 text-sm mb-2 leading-relaxed">
         {{ getPostPreview(post.body, post.id) }}
         <button
           *ngIf="post.body && post.body.split(' ').length > 10"
@@ -162,6 +166,7 @@
         </button>
       </p>
 
+      <!-- Post type -->
       <span
         class="bg-blue-50 text-blue-700 px-3 py-0.5 rounded-full text-xs font-medium"
       >
@@ -183,49 +188,132 @@
         <img
           [src]="post.fileUrl"
           alt="Post image"
-          class="rounded-lg w-full max-h-80 object-cover border border-gray-200"
+          loading="lazy"
+          decoding="async"
+          class="rounded-lg w-full max-h-[500px] object-cover border border-gray-200"
         />
       </div>
 
       <!-- Actions -->
-      <div
-        class="mt-4 border-t border-gray-100 pt-2 flex items-center gap-6 text-sm text-gray-600"
-      >
-        <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
-          (click)="togglePostLike(post)"
-        >
-          <i
-            [class]="'ri-heart-' + (post.likedByCurrentUser ? 'fill' : 'line')"
-          ></i>
-          <span>{{ post.likesCount | numberShort }}</span>
+<!-- Actions -->
+<div
+  class="mt-4 border-t border-gray-100 pt-2 flex items-center gap-6 text-sm text-gray-600"
+>
+  <button
+    class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+    (click)="togglePostLike(post)"
+  >
+    <i
+      [class]="'ri-heart-' + (post.likedByCurrentUser ? 'fill' : 'line')"
+    ></i>
+    <span>{{ post.likesCount | numberShort }}</span>
+  </button>
+
+  <button
+    class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+    (click)="toggleComments(post.id)"
+  >
+    <i class="ri-chat-3-line"></i>
+    <span>{{ commentCounts[post.id] || 0 | numberShort }}</span>
+  </button>
+
+  <button
+    class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+  >
+    <i class="ri-share-line"></i>
+  </button>
+</div>
+
+<!-- ✅ Comments Section -->
+<div *ngIf="commentVisible[post.id]" class="mt-3 border-t border-gray-100 pt-3 space-y-3">
+  <!-- Loading -->
+  <p *ngIf="commentLoading[post.id]" class="text-sm text-gray-500">Loading comments...</p>
+
+  <!-- Comment List -->
+  <div *ngFor="let comment of comments[post.id]" class="flex gap-3">
+    <img
+      [src]="comment.user.profile.profileImage"
+      alt="User"
+      class="w-8 h-8 rounded-full object-cover border border-gray-300"
+    />
+    <div class="flex-1">
+      <p class="text-sm font-medium text-gray-800">
+        {{ comment.user.name }}
+        <span class="text-xs text-gray-400 ml-1">{{ comment.createdAt | timeago }}</span>
+      </p>
+      <p class="text-sm text-gray-700 leading-relaxed">{{ comment.body }}</p>
+
+      <!-- Like + Reply Actions -->
+      <div class="flex gap-4 mt-1 text-xs text-gray-500">
+        <button (click)="toggleLike(comment)" class="flex items-center gap-1 hover:text-blue-600">
+          <i [class]="'ri-heart-' + (comment.isLikedByCurrentUser ? 'fill' : 'line')"></i>
+          <span>{{ comment.likes || 0 }}</span>
         </button>
 
-        <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
-          (click)="toggleComments(post.id)"
-        >
-          <i class="ri-chat-3-line"></i>
-          <span>{{ commentCounts[post.id] || 0 | numberShort }}</span>
-        </button>
-
-        <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
-        >
-          <i class="ri-share-line"></i>
+        <button (click)="repliesVisible[comment.id] = !repliesVisible[comment.id]" class="hover:text-blue-600">
+          Reply
         </button>
       </div>
+
+      <!-- Reply Box -->
+      <div *ngIf="repliesVisible[comment.id]" class="mt-2 ml-8">
+        <input
+          type="text"
+          [(ngModel)]="replyInputs[comment.id]"
+          placeholder="Write a reply..."
+          class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring focus:ring-blue-200"
+        />
+        <button
+          (click)="submitReply(comment.id)"
+          class="mt-1 text-xs text-blue-600 font-medium hover:underline"
+        >
+          Reply
+        </button>
+
+        <!-- Replies -->
+        <div *ngFor="let reply of replies[comment.id]" class="mt-2 flex gap-2">
+          <img
+            [src]="reply.user.profile.profileImage"
+            class="w-6 h-6 rounded-full border border-gray-300"
+          />
+          <div>
+            <p class="text-xs font-medium text-gray-800">
+              {{ reply.user.name }}
+              <span class="text-[10px] text-gray-400 ml-1">{{ reply.createdAt | timeago }}</span>
+            </p>
+            <p class="text-xs text-gray-700">{{ reply.body }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Comment -->
+  <div class="flex gap-2 items-center mt-3">
+    <input
+      [(ngModel)]="newComments[post.id]"
+      placeholder="Write a comment..."
+      class="flex-1 border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring focus:ring-blue-200"
+    />
+    <button
+      (click)="submitComment(post.id)"
+      class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition"
+    >
+      Comment
+    </button>
+  </div>
+</div>
+
     </div>
 
-    <!-- Infinite Scroll Loader -->
+    <!-- Loader -->
     <ng-container *ngIf="isLoading && posts.length > 0">
       <div
         *ngFor="let placeholder of [1, 2]"
-        class="animate-pulse bg-white rounded-lg shadow border border-gray-200 p-4 space-y-2"
+        class="animate-pulse bg-white rounded-lg border border-gray-200 p-4 space-y-2 shadow-sm"
       >
         <div class="h-4 bg-gray-300 rounded w-5/6"></div>
         <div class="h-3 bg-gray-200 rounded w-full"></div>
-        <div class="h-3 bg-gray-200 rounded w-11/12"></div>
       </div>
     </ng-container>
 
@@ -237,40 +325,54 @@
     </div>
   </div>
 
-  <!-- Trending Posts -->
+  <!-- Trending -->
   <div class="hidden lg:block space-y-4">
     <h2 class="text-base font-semibold text-gray-800">Trending Posts</h2>
     <div
       *ngFor="let post of trendingPosts"
-      class="bg-white rounded-lg shadow border border-gray-200 p-4 space-y-3 hover:shadow-md transition"
+      class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3 hover:shadow-md transition"
     >
       <div class="flex items-center gap-3">
         <img
           [src]="post.author.profileImage || 'assets/default-avatar.png'"
           alt="Profile Image"
-          class="w-10 h-10 rounded-full object-cover border border-gray-300"
+          loading="lazy"
+          decoding="async"
+          class="w-10 h-10 rounded-full object-cover border border-gray-300 !aspect-square"
         />
         <div>
           <p class="text-sm font-medium text-gray-900">
             {{ post.author.name }}
           </p>
           <p class="text-xs text-gray-500">
-            {{ post.author.institution?.name || "" }} • {{ post.author.academicLevel || "" }}
+            {{ post.author.institution?.name || "" }} •
+            {{ post.author.academicLevel || "" }}
           </p>
           <p class="text-xs text-gray-400">{{ post.createdAt | timeago }}</p>
         </div>
       </div>
 
       <h3 class="text-sm font-semibold text-gray-800">{{ post.title }}</h3>
-      <p class="text-xs text-gray-700 line-clamp-3">{{ post.body }}</p>
+      <p class="text-xs text-gray-700 line-clamp-3 leading-relaxed">
+        {{ post.body }}
+      </p>
 
       <div *ngIf="post.fileUrl" class="mt-2">
         <img
           [src]="post.fileUrl"
           alt="Post image"
+          loading="lazy"
+          decoding="async"
           class="rounded-lg w-full max-h-72 object-cover border border-gray-200"
         />
       </div>
     </div>
   </div>
 </div>
+<!-- Flag Post Modal -->
+<app-flag-post-modal
+  *ngIf="showFlagModal && selectedPostToFlag"
+  [postId]="selectedPostToFlag.id"
+  (submitFlag)="onSubmitFlag($event)"
+  (closeModal)="onCloseFlagModal()"
+></app-flag-post-modal>

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AdminUser } from '../../interfaces';
 import { AdminUserService } from '../../services/admin-user.service';
 import { FormsModule } from '@angular/forms';
+import Fuse from 'fuse.js';
 
 @Component({
   imports: [CommonModule, FormsModule],
@@ -68,20 +69,35 @@ export class ManageUsersComponent implements OnInit {
     });
   }
 
+
+
   onSearch() {
-    const term = this.searchTerm.toLowerCase();
-
-    this.filteredUsers = this.users.filter(
-      (user) =>
-        user.name.toLowerCase().includes(term) ||
-        user.email.toLowerCase().includes(term) ||
-        user.role.toLowerCase().includes(term) ||
-        user.profile.institution.toLowerCase().includes(term)
-    );
-
+    const term = this.searchTerm.trim();
+  
+    if (!term) {
+      this.filteredUsers = [...this.users];
+    } else {
+      const fuse = new Fuse(this.users, {
+        keys: [
+          'name',
+          'email',
+          'role',
+          'profile.institution.name'
+        ],
+        threshold: 0.3, // smaller = stricter, bigger = fuzzier
+        ignoreLocation: true, // ignore where in the string the match is
+        minMatchCharLength: 2, // only search if 2+ chars entered
+      });
+  
+      this.filteredUsers = fuse.search(term).map(result => result.item);
+    }
+  
     this.totalUsers = this.filteredUsers.length;
-    this.setPage(1); // reset to page 1 after filtering
+    this.setPage(1);
   }
+  
+  
+  
 
   setPage(page: number) {
     if (page < 1 || page > this.totalPages) return;

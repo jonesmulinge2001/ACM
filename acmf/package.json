@@ -20,6 +20,7 @@
     "@angular/router": "^19.2.0",
     "countup.js": "^2.9.0",
     "file-saver": "^2.0.5",
+    "fuse.js": "^7.1.0",
     "material-icons": "^1.13.14",
     "ngx-countup": "^13.2.0",
     "ngx-infinite-scroll": "^19.0.0",

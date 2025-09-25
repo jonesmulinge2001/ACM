@@ -1,26 +1,67 @@
-<div class="flex h-screen">
+<div class="flex h-screen bg-gray-50">
   <!-- Sidebar -->
-  <aside class="w-64 bg-white shadow-md flex flex-col">
+  <aside
+    class="w-64 bg-white shadow-lg flex flex-col transition-all duration-300"
+  >
     <!-- Sidebar Header -->
-    <div class="p-4 font-bold text-lg border-b">
+    <div class="p-5 font-bold text-xl border-b flex items-center gap-2">
+      <span class="material-icons text-blue-600">account_balance</span>
       Institution Admin
     </div>
 
     <!-- Sidebar Navigation -->
-    <nav class="flex-1 p-2 space-y-2">
+    <nav class="flex-1 p-3 space-y-2">
+      <a
+        routerLink="/institution-admin/dashbaord-overview"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
+      >
+        <span class="material-icons">dashboard</span>
+        Dashboard Overview
+      </a>
+
       <a
         routerLink="/institution-admin/announcements"
-        routerLinkActive="bg-gray-200"
-        class="block px-3 py-2 rounded hover:bg-gray-100"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
       >
+        <span class="material-icons">campaign</span>
         Announcements
+      </a>
+
+      <a
+        routerLink="/institution-admin/admins"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
+      >
+        <span class="material-icons">manage_accounts</span>
+        Admin Management
+      </a>
+
+      <a
+        routerLink="/institution-admin/analytics"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
+      >
+        <span class="material-icons">analytics</span>
+        Analytics & Reports
       </a>
       <a
         routerLink="/institution-admin/analytics"
-        routerLinkActive="bg-gray-200"
-        class="block px-3 py-2 rounded hover:bg-gray-100"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
       >
-        Analytics
+        <span class="material-icons">supervisor_account</span>
+        Settings
+      </a>
+      <a
+        routerLink="/institution-admin/analytics"
+        routerLinkActive="!bg-blue-50 !text-blue-600"
+        class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
+      >
+        <span class="material-icons">account_balance</span>
+
+        Institution Profile
       </a>
     </nav>
   </aside>
@@ -32,7 +73,10 @@
       <!-- Search Bar -->
       <div class="flex-1">
         <div class="relative w-96">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+          <span
+            class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+          >
+            <span class="material-icons">search</span>
           </span>
           <input
             type="text"
@@ -46,7 +90,9 @@
       <div class="flex items-center space-x-6">
         <!-- Notifications -->
         <button class="relative">
-          <span class="text-gray-600 text-xl">🔔</span>
+          <span class="material-icons text-gray-600 text-2xl"
+            >notifications</span
+          >
           <span
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 rounded-full"
           >
@@ -55,31 +101,67 @@
         </button>
 
         <!-- Profile Dropdown -->
-        <div class="flex items-center space-x-2 cursor-pointer">
-          <img
-            routerLink="/my-profile"
-            [src]="userImage"
-            class="w-9 h-9 rounded-full border"
-            alt="Profile"
-          />
-          <div class="flex flex-col">
-            <span class="font-semibold text-gray-800">{{ userName }}</span>
-            <!-- <span class="text-sm text-gray-500">Institution Admin</span> -->
+        <!-- Profile Dropdown -->
+        <div class="relative">
+          <div
+            class="flex items-center space-x-2 cursor-pointer select-none"
+            (click)="toggleDropdown()"
+          >
+            <img
+              routerLink="/my-profile"
+              [src]="userImage"
+              class="w-9 h-9 rounded-full border"
+              alt="Profile"
+            />
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-800">{{ userName }}</span>
+            </div>
+            <span
+              class="material-icons text-gray-600 text-lg transition-transform duration-200"
+              [ngClass]="{ 'rotate-180': showDropdown }"
+              >expand_more</span
+            >
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div
+            *ngIf="showDropdown"
+            class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 transform transition-all duration-200 ease-out origin-top"
+            [ngClass]="{
+              'opacity-100 scale-100 translate-y-0': showDropdown,
+              'opacity-0 scale-95 -translate-y-2': !showDropdown
+            }"
+          >
+            <a
+              routerLink="/my-profile"
+              class="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer transition"
+            >
+              <span class="material-icons text-gray-500 mr-2">person</span>
+              My Profile
+            </a>
+
+            <a
+              routerLink="/settings"
+              class="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer transition"
+            >
+              <span class="material-icons text-gray-500 mr-2">settings</span>
+              Settings
+            </a>
+
+            <button
+              (click)="logOut()"
+              class="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500 transition"
+            >
+              <span class="material-icons text-red-500 mr-2">logout</span>
+              Logout
+            </button>
           </div>
         </div>
-
-        <!-- Logout -->
-        <button
-          (click)="logOut()"
-          class="text-sm text-red-500 hover:underline ml-4"
-        >
-          Logout
-        </button>
       </div>
     </header>
 
     <!-- Router Outlet (Page Content) -->
-    <main class="flex-1 bg-gray-50 overflow-y-auto p-4">
+    <main class="flex-1 bg-gray-50 overflow-y-auto p-6">
       <router-outlet></router-outlet>
     </main>
   </div>

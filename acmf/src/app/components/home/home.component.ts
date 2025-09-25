@@ -17,6 +17,7 @@ import { LikeService } from '../../services/like.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { forkJoin, timer } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { FlagPostModalComponent } from "../flag-modal-component/flag-modal-component.component";
 
 @Component({
   standalone: true,
@@ -32,7 +33,8 @@ import { finalize } from 'rxjs/operators';
     ResourceUploadModalComponent,
     EditPostComponent,
     InfiniteScrollModule,
-  ],
+    FlagPostModalComponent
+],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -70,6 +72,9 @@ export class HomeComponent implements OnInit {
 
   expandedPosts: { [postId: string]: boolean } = {};
 
+  showFlagModal = false;
+  selectedPostToFlag?: Post
+
   constructor(
     private postService: PostService,
     private toastr: ToastrService,
@@ -88,7 +93,7 @@ export class HomeComponent implements OnInit {
         this.userProfile = profile;
       },
       error: () => {
-        this.toastr.warning('Failed to load user profile');
+        console.error('Failed to load profile')
       },
     });
 
@@ -97,7 +102,7 @@ export class HomeComponent implements OnInit {
         next: (follows) => {
           this.followingIds = follows.map((f) => f.followingId);
         },
-        error: () => this.toastr.error('Could not load following list'),
+        error: () => console.error('Failed to load following list'),
       });
     }
 
@@ -137,7 +142,7 @@ export class HomeComponent implements OnInit {
         this.nextCursor = posts.nextCursor ?? null;
       },
       error: () => {
-        this.toastr.error('Failed to load more posts');
+        console.error('Failed to load more posts')
       },
     });
   }
@@ -149,7 +154,7 @@ export class HomeComponent implements OnInit {
         this.injectLikesCount(this.trendingPosts);
       },
       error: () => {
-        this.toastr.error('Failed to load trending posts');
+        console.error('Failed to load trending posts')
       },
     });
 
@@ -196,12 +201,12 @@ export class HomeComponent implements OnInit {
                 profile.followersCount = followStats.followers;
                 profile.followingCount = followStats.following;
               },
-              error: () => this.toastr.error('Error fetching profile stats'),
+              error: () => console.error('Error fetching follow stats'),
             });
           }
         });
       },
-      error: () => this.toastr.error('Error loading profiles'),
+      error: () => console.error('Error while loading profiles'),
     });
   }
 
@@ -222,7 +227,7 @@ export class HomeComponent implements OnInit {
           }
         },
         error: () => {
-          this.toastr.error('Failed to load comments');
+          console.error('Failed to load comments');
           this.commentLoading[postId] = false;
         },
       });
@@ -421,6 +426,46 @@ getPostPreview(postBody: string | undefined, postId: string): string {
   return words.slice(0, 10).join(' ') + '...';
 }
 
+// Open modal when user clicks “Flag Post”
+openFlagModal(post: Post) {
+  this.selectedPostToFlag = post;
+  this.showFlagModal = true;
+}
+
+// Handle modal submission
+onSubmitFlag(reason: string) {
+  if (this.selectedPostToFlag) {
+    this.flagPost(this.selectedPostToFlag, reason);
+    this.showFlagModal = false;
+    this.selectedPostToFlag = undefined;
+  }
+}
+
+// Handle modal close
+onCloseFlagModal() {
+  this.showFlagModal = false;
+  this.selectedPostToFlag = undefined;
+}
+
+// Inside HomeComponent class
+flagPost(post: Post, reason: string) {
+  if (!this.loggedInUserId) {
+    this.toastr.warning('You must be logged in to flag a post');
+    return;
+  }
+
+  this.postService.flagPost(post.id, reason).subscribe({
+    next: (response) => {
+      this.toastr.success('Post flagged successfully');
+      console.log('Flag response:', response);
+    },
+    error: (err) => {
+      console.error(err);
+      const message = err?.error?.message || 'Failed to flag post';
+      this.toastr.error(message);
+    },
+  });
+}
 
 
 }

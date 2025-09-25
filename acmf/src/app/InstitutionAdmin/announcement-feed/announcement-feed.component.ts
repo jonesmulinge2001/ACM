@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Announcement } from '../../interfaces';
+import { Announcement, Profile } from '../../interfaces';
 import { InstitutionService } from '../../services/institution.service';
 import { CommonModule } from '@angular/common';
 import { CreateAnnouncementComponent } from "../create-announcement/create-announcement.component";
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   imports: [CommonModule, CreateAnnouncementComponent],
@@ -16,12 +17,25 @@ export class AdminAnnouncementFeedComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
+  deleteModalOpen = false;
+  deleteTargetId: string | null = null;
   editing = false;
 
-  constructor(private announcementService: InstitutionService) {}
+  constructor(
+    private announcementService: InstitutionService,
+    private profileService: ProfileService
+  ) {}
 
   ngOnInit() {
-    this.loadAnnouncements();
+    if (!this.institutionId) {
+      this.profileService.getMyProfile().subscribe((profile: Profile) => {
+        this.institutionId = profile.institutionId;
+        console.log('Loaded institutionId:', this.institutionId);
+        this.loadAnnouncements(); // ✅ load after institutionId is ready
+      });
+    } else {
+      this.loadAnnouncements();
+    }
   }
 
   toggleEdit() {
@@ -34,8 +48,10 @@ export class AdminAnnouncementFeedComponent implements OnInit {
   }
 
   loadAnnouncements() {
+    if (!this.institutionId) return; // ensure institutionId exists
+
     this.loading = true;
-    this.announcementService.getMyAnnouncements().subscribe({
+    this.announcementService.getMyAnnouncements(this.institutionId).subscribe({
       next: (res) => {
         this.announcements = res;
         this.loading = false;
@@ -49,7 +65,6 @@ export class AdminAnnouncementFeedComponent implements OnInit {
   }
 
   refresh(event: Announcement) {
-    // Replace or add updated announcement
     const idx = this.announcements.findIndex((a) => a.id === event.id);
     if (idx >= 0) {
       this.announcements[idx] = event;
@@ -67,5 +82,22 @@ export class AdminAnnouncementFeedComponent implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  openDeleteModal(id: string) {
+    this.deleteTargetId = id;
+    this.deleteModalOpen = true;
+  }
+  
+  closeDeleteModal() {
+    this.deleteTargetId = null;
+    this.deleteModalOpen = false;
+  }
+  
+  confirmDelete() {
+    if (this.deleteTargetId) {
+      this.deleteAnnouncement(this.deleteTargetId);
+    }
+    this.closeDeleteModal();
   }
 }

@@ -3,6 +3,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import Fuse from 'fuse.js';
 import {
   AdminPost,
   PostFlag,
@@ -104,7 +105,7 @@ expandedPosts = new Set<string>();
     this.filteredPosts = term
       ? base.filter((p) => {
           const author = p.author?.name?.toLowerCase() || '';
-          const inst = p.author?.profile?.institution?.toLowerCase() || '';
+          const inst = p.author?.profile?.institution?.name.toLowerCase() || '';
           const title = p.title?.toLowerCase() || '';
           const body = p.body?.toLowerCase() || '';
           return (

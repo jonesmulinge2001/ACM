@@ -236,21 +236,25 @@ export interface DashboardOverview {
   };
 
   topInstitutions: {
-    institution: string;
-    activeUsers: number;
+    name: string;
+    count: number;
   }[];
 
   topPosts: {
     id: string;
     title: string;
-    fileUrl?: string;
+    fileUrl?: string | null;
     likesCount: number;
     commentsCount: number;
   }[];
 }
 
+
 export interface AdminUserProfile {
-  institution: string;
+  institution?: {
+    id: string;
+    name: string;
+  }
   profileImage: string;
 }
 
@@ -280,7 +284,10 @@ export type PostStatusAction = 'DELETE' | 'RESTORE';
 
 export interface AdminPostAuthorProfile {
   profileImage?: string | null;
-  institution?: string | null;
+  institution?: {
+    id: string,
+    name: string;
+  }
   academicLevel?: string | null;
 }
 
@@ -547,3 +554,74 @@ export interface Announcement {
   };
 }
 
+export interface InstitutionAnalytics {
+  studentCount: number;
+  announcementCount: number;
+}
+
+export interface Institution {
+  id: string;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+}
+
+export interface StudentNotification {
+  id: string;
+  recipientId: string;
+  type: string;
+  referenceId: string | null;
+  message: string;
+  status: 'UNREAD' | 'READ' | string;
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+  readAt?: string | null;
+}
+
+export interface AnnouncementSummary {
+  id: string;
+  title: string;
+  content?: string;
+  institution?: { id: string; name?: string };
+  fileUrls?: string[];
+  createdAt?: string;
+}
+
+export interface FlaggedPost {
+  id: string;
+  reason?: string | null;
+  status: string;
+  createdAt: string;
+  reporter: {
+    id: string;
+    name: string;
+    profileImage?: string | null;
+    institution?: {
+      id: string;
+      name: string;
+    };
+  };
+  post: {
+    id: string;
+    title: string;
+    body?: string;
+    fileUrl?: string | null;
+    type: string;
+    author: {
+      id: string;
+      name: string;
+      profileImage?: string | null;
+      institution?: {
+        id: string;
+        name: string;
+      };
+    };
+    likesCount: number;
+    commentsCount: number;
+  };
+}
+
+export interface FlagPostResponse {
+  message: string;
+  flaggedPost: FlaggedPost;
+}

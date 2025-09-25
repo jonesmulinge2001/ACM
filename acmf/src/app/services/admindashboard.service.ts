@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { DashboardOverview } from '../interfaces';
 
 @Injectable({
@@ -13,9 +13,8 @@ export class AdmindashboardService {
     private http: HttpClient
   ) { }
 
-  getOverview(): Observable<{ statusCode: number; message: string; data: DashboardOverview }> {
-    return this.http.get<{ statusCode: number; message: string; data: DashboardOverview }>(
-      `${this.baseUrl}/overview`
-    );
+  getOverview(): Observable<DashboardOverview> {
+    return this.http.get<DashboardOverview>(`${this.baseUrl}/overview`);
   }
+  
 }

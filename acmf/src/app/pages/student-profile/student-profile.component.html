@@ -87,7 +87,7 @@
       />
       <div>
         <h2 class="text-2xl font-bold text-gray-900">{{ userProfile.name }}</h2>
-        <p class="text-sm text-gray-600">{{ userProfile.academicLevel }} · {{ userProfile.institution }}</p>
+        <p class="text-sm text-gray-600">{{ userProfile.academicLevel }} · {{ userProfile.institution?.name }}</p>
         <p class="text-xs text-gray-500">{{ userProfile.course }}</p>
       </div>
     </div>

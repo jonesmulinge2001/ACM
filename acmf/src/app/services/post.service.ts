@@ -1,8 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { Post } from '../interfaces';
-import { response } from 'express';
+import { FlagPostResponse, Post } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -88,14 +87,29 @@ export class PostService {
     });
   }
 
-getInfinitePosts(limit: number, cursor?: string): Observable<{ posts: Post[]; nextCursor?: string }> {
-  let params: any = { limit };
-  if (cursor) params.cursor = cursor;
+  getInfinitePosts(
+    limit: number,
+    cursor?: string
+  ): Observable<{ posts: Post[]; nextCursor?: string }> {
+    let params: any = { limit };
+    if (cursor) params.cursor = cursor;
 
-  return this.http.get<{ posts: Post[]; nextCursor?: string }>(
-    `${this.baseUrl}/infinite`,
-    { params }
-  );
-}
+    return this.http.get<{ posts: Post[]; nextCursor?: string }>(
+      `${this.baseUrl}/infinite`,
+      { params }
+    );
+  }
 
+  /**
+   * Flag a post as inappropriate
+   * @param postId The ID of the post to flag
+   * @param reason Optional reason for flagging
+   */
+  flagPost(postId: string, reason?: string): Observable<FlagPostResponse> {
+    return this.http.post<FlagPostResponse>(
+      `${this.baseUrl}/${postId}/flag`,
+      { reason },
+      { headers: this.getAuthHeaders() }
+    );
+  }
 }
