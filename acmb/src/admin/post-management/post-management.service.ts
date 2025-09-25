@@ -28,7 +28,12 @@ export class PostManagementService {
               profile: {
                 select: {
                   profileImage: true,
-                  institution: true,
+                  institution: {
+                    select:{
+                      id: true,
+                      name: true,
+                    }
+                  }
                 },
               },
             },
@@ -247,7 +252,12 @@ async getAllFlaggedPosts() {
                   profile: {
                     select: {
                       profileImage: true,
-                      institution: true,
+                      institution: {
+                        select:{
+                          id: true,
+                          name: true,
+                        }
+                      }
                     },
                   },
                 },
@@ -267,7 +277,12 @@ async getAllFlaggedPosts() {
               profile: {
                 select: {
                   profileImage: true,
-                  institution: true,
+                  institution: {
+                    select: {
+                      id: true,
+                      name: true,
+                    }
+                  }
                 },
               },
             },

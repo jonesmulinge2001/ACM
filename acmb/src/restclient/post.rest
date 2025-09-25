@@ -68,3 +68,13 @@ Content-Type: application/json
 ### get posts by user
 GET http://localhost:3000/post/user/146ba0b7-e513-418d-89dd-539ffec59a04
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDY3ODcwMSwiZXhwIjoxNzU0NzY1MTAxfQ.x_RZeE2k8u88mim52Atd2C6ulvXnhNrkZfKOToWthnY
+
+
+### flag a post
+POST  http://localhost:3000/post/9010854c-c0d0-483a-bb95-92efb3d11ab0/flag
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTg3NTcyODYsImV4cCI6MTc1ODg0MzY4Nn0.Gg7RsGmB9OIdt5dZCgpf0JD9IP3FhzzttRjKDtel_bk
+Content-Type: application/json
+
+{
+  "reason": "This post has not is causing confusion"
+}

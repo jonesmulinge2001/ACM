@@ -14,6 +14,6 @@ export class DashboardOverviewController {
       @UseGuards(AuthGuard('jwt'))
       @RequirePermissions(Permission.MANAGE_USERS)
     async getOverview() {
-        return this.dashboardOverviewService.getOverView();
+        return this.dashboardOverviewService.getOverview();
     }
 }

@@ -49,7 +49,12 @@ export class ProfileService {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
       include: {
-        institution: { select: { id: true, name: true}}
+        institution: { 
+          select: { 
+            id: true, 
+            name: true
+          }
+        },
       }
     });
 
@@ -60,21 +65,29 @@ export class ProfileService {
     return profile;
   }
 
-  //>>> get profile by id
-  async getProfileById(id: string) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { id },
-      include: {
-        user: true,
+// >>> get profile by id
+async getProfileById(id: string) {
+  const profile = await this.prisma.profile.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      institution: {
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true, // optional
+        },
       },
-    });
+    },
+  });
 
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
-
-    return profile;
+  if (!profile) {
+    throw new NotFoundException('Profile not found');
   }
+
+  return profile;
+}
+
 
   // Update your profile
   async updateProfile(userId: string, dto: UpdateProfileDto) {

@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
 import { MailerService } from 'src/shared/mailer/mailer.service';
 
@@ -12,7 +13,7 @@ export class UserManagementService {
 
   constructor(private readonly mailerService: MailerService) {}
 
-  // ✅ Get all users (with stats)
+  // Get all users (with stats)
   async getAllUsers() {
     const users = await this.prisma.user.findMany({
       select: {
@@ -22,7 +23,15 @@ export class UserManagementService {
         role: true,
         status: true,
         profile: {
-          select: { institution: true, profileImage: true },
+          select: {
+            profileImage: true,
+            institution: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
         posts: { select: { id: true } },
         followers: { select: { id: true } },
@@ -36,7 +45,7 @@ export class UserManagementService {
     }));
   }
 
-  // ✅ Get user by ID
+  // Get user by ID
   async getUserById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -47,7 +56,15 @@ export class UserManagementService {
         role: true,
         status: true,
         profile: {
-          select: { institution: true, profileImage: true },
+          select: {
+            profileImage: true,
+            institution: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
         posts: { select: { id: true } },
         followers: { select: { id: true } },
@@ -63,7 +80,7 @@ export class UserManagementService {
     };
   }
 
-  // ✅ Update user (safe)
+  //  Update user (safe)
   async updateUser(id: string, updateData: Partial<any>) {
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) throw new NotFoundException('User not found');
@@ -78,13 +95,20 @@ export class UserManagementService {
         role: true,
         status: true,
         profile: {
-          select: { institution: true, profileImage: true },
+          select: {
+            profileImage: true,
+            institution: {
+              select: {
+                id: true,
+                 name: true,},
+            },
+          },
         },
       },
     });
   }
 
-  // ✅ Delete user
+  //  Delete user
   async deleteUser(id: string) {
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) throw new NotFoundException('User not found');
@@ -93,7 +117,7 @@ export class UserManagementService {
     return { message: 'User deleted successfully' };
   }
 
-  // ✅ Suspend user (with reason + log)
+  //  Suspend user (with reason + log)
   async suspendUser(id: string, adminId: string, reason: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -102,18 +126,23 @@ export class UserManagementService {
       where: { id },
       data: { status: 'SUSPENDED' },
       select: {
-        id: true, name: true, email: true, role: true, status: true,
-        profile: { select: { institution: true, profileImage: true } },
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        profile: {
+          select: {
+            profileImage: true,
+            institution: { select: { id: true, name: true, logoUrl: true } },
+          },
+        },
       },
     });
 
     // Log suspension
     await this.prisma.userSuspension.create({
-      data: {
-        userId: id,
-        adminId,
-        reason,
-      },
+      data: { userId: id, adminId, reason },
     });
 
     // Notify user
@@ -131,7 +160,7 @@ export class UserManagementService {
     return updatedUser;
   }
 
-  // ✅ Restore user (log restore)
+  //  Restore user (log restore)
   async restoreUser(id: string, adminId: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -144,18 +173,25 @@ export class UserManagementService {
       where: { id },
       data: { status: 'ACTIVE' },
       select: {
-        id: true, name: true, email: true, role: true, status: true,
-        profile: { select: { institution: true, profileImage: true } },
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        profile: {
+          select: {
+            profileImage: true,
+            institution: { select: { id: true, name: true, logoUrl: true } },
+          },
+        },
       },
     });
 
-    // Update suspension log (set restoredAt)
     await this.prisma.userSuspension.updateMany({
       where: { userId: id, restoredAt: null },
-      data: { restoredAt: new Date(), restoredBy: adminId},
+      data: { restoredAt: new Date(), restoredBy: adminId },
     });
 
-    // Notify user
     await this.mailerService.sendEmail({
       to: updatedUser.email,
       subject: 'Your Academeet account has been restored',
@@ -170,7 +206,7 @@ export class UserManagementService {
     return updatedUser;
   }
 
-  // ✅ Mass suspend
+  //  Mass suspend
   async suspendUsers(ids: string[], adminId: string, reason: string) {
     const users = await this.prisma.user.findMany({
       where: { id: { in: ids } },
@@ -182,7 +218,6 @@ export class UserManagementService {
       data: { status: 'SUSPENDED' },
     });
 
-    // Log & email each user
     for (const user of users) {
       await this.prisma.userSuspension.create({
         data: { userId: user.id, adminId, reason },
@@ -192,14 +227,18 @@ export class UserManagementService {
         to: user.email,
         subject: 'Your Academeet account has been suspended',
         template: 'email/suspend',
-        context: { username: user.name, supportEmail: 'support@academeet.com', reason },
+        context: {
+          username: user.name,
+          supportEmail: 'support@academeet.com',
+          reason,
+        },
       });
     }
 
     return { message: `${ids.length} users suspended successfully` };
   }
 
-  // ✅ Mass restore
+  //  Mass restore
   async restoreUsers(ids: string[], adminId: string) {
     const users = await this.prisma.user.findMany({
       where: { id: { in: ids }, status: 'SUSPENDED' },
@@ -214,7 +253,7 @@ export class UserManagementService {
     for (const user of users) {
       await this.prisma.userSuspension.updateMany({
         where: { userId: user.id, restoredAt: null },
-        data: { restoredAt: new Date(), restoredBy: adminId},
+        data: { restoredAt: new Date(), restoredBy: adminId },
       });
 
       await this.mailerService.sendEmail({
@@ -236,21 +275,20 @@ export class UserManagementService {
     if (!ids || ids.length === 0) {
       throw new BadRequestException('No user IDs provided');
     }
-  
+
     const users = await this.prisma.user.findMany({
       where: { id: { in: ids } },
       select: { id: true },
     });
-  
+
     if (users.length === 0) {
       throw new NotFoundException('No users found with the given IDs');
     }
-  
+
     await this.prisma.user.deleteMany({
       where: { id: { in: ids } },
     });
-  
+
     return { message: `${users.length} user(s) deleted successfully` };
   }
-  
 }

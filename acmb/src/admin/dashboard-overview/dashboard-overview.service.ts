@@ -1,207 +1,193 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+// institution-overview.service.ts
+
+import { Injectable } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
 
 @Injectable()
 export class DashboardOverviewService {
   private prisma = new PrismaClient();
+  constructor() {}
 
-  async getOverView() {
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-  
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
-  
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  
-      // ====== PARALLEL QUERIES WITH DEBUGGING ======
-      const queries = [
-        this.prisma.user.count(), // 0
-        this.prisma.post.count(), // 1
-        this.prisma.academicResource.count(), // 2
-        this.prisma.user.count({ where: { createdAt: { gte: today } } }), // 3
-        this.prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }), // 4
-        this.prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }), // 5
-  
-        this.prisma.user.count({ where: { lastLogin: { gte: today } } }), // 6
-        this.prisma.user.count({ where: { lastLogin: { gte: sevenDaysAgo } } }), // 7
-        this.prisma.user.count({ where: { lastLogin: { gte: startOfMonth } } }), // 8
-  
-        this.prisma.post.count({ where: { createdAt: { gte: today } } }), // 9
-        this.prisma.post.count({ where: { createdAt: { gte: sevenDaysAgo } } }), // 10
-  
-        this.prisma.like.count(), // 11
-        this.prisma.comment.count(), // 12
-  
-        this.prisma.profile.groupBy({
-          by: ['institutionId'],
-          _count: { institutionId: true },
-        }), // 13
-        this.prisma.profile.groupBy({
-          by: ['institutionId'],
-          where: { createdAt: { gte: today } },
-          _count: { institutionId: true },
-        }), // 14
-        this.prisma.profile.groupBy({
-          by: ['institutionId'],
-          where: { createdAt: { gte: sevenDaysAgo } },
-          _count: { institutionId: true },
-        }), // 15
-        this.prisma.profile.groupBy({
-          by: ['institutionId'],
-          where: { createdAt: { gte: startOfMonth } },
-          _count: { institutionId: true },
-        }), // 16
-  
-        this.prisma.profile.groupBy({
-          by: ['institutionId'],
-          _count: { institutionId: true },
-          orderBy: { _count: { institutionId: 'desc' } },
-          take: 5,
-        }), // 17
-  
-        this.prisma.post.findMany({
-          take: 5,
-          orderBy: [
-            { likes: { _count: 'desc' } },
-            { comments: { _count: 'desc' } }
-          ],
-          include: {
-            _count: {
-              select: {
-                likes: true,
-                comments: true,
-              },
-            },
+  async getOverview() {
+    // Get institution map for lookup
+    const institutions = await this.prisma.institution.findMany({
+      select: { id: true, name: true },
+    });
+    const institutionMap: Record<string, string> = institutions.reduce(
+      (acc, inst) => {
+        acc[inst.id] = inst.name;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    // Queries
+    const [
+      usersCount,
+      postsCount,
+      academicResourceCount,
+      newSignUpsToday,
+      newSignUpsLast7Days,
+      newSignUpsThisMonth,
+      dailyActiveUsers,
+      weeklyActiveUsers,
+      monthlyActiveUsers,
+      postsToday,
+      postsLast7Days,
+      likesCount,
+      commentsCount,
+      studentsPerInstitutionTotal,
+      studentsPerInstitutionToday,
+      studentsPerInstitutionLast7Days,
+      studentsPerInstitutionThisMonth,
+      topInstitutions,
+      topPosts,
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.post.count(),
+      this.prisma.academicResource.count(),
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
           },
-        })
-        
-      ];
-  
-      const results = await Promise.allSettled(queries);
-  
-      results.forEach((res, idx) => {
-        if (res.status === 'rejected') {
-          console.error(`❌ Query ${idx} failed:`, res.reason);
-        } else {
-          console.log(`✅ Query ${idx} success`);
-        }
-      });
-  
-      // If any query failed, throw an error immediately
-      const hasError = results.some((r) => r.status === 'rejected');
-      if (hasError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: 'One or more queries failed – check logs above ⬆️',
-            failedQueries: results
-              .map((r, idx) => (r.status === 'rejected' ? idx : null))
-              .filter((i) => i !== null),
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setDate(1)),
           },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-  
-      // Extract values safely
-      const [
-        usersCount,
-        postsCount,
-        academicResourceCount,
-        newSignUpsToday,
-        newSignUpsLast7Days,
-        newSignUpsThisMonth,
-        dailyActiveUsers,
-        weeklyActiveUsers,
-        monthlyActiveUsers,
-        postsToday,
-        postsLast7Days,
-        likesCount,
-        commentsCount,
-        studentsPerInstitutionTotal,
-        studentsPerInstitutionToday,
-        studentsPerInstitutionLast7Days,
-        studentsPerInstitutionThisMonth,
-        topInstitutions,
-        topPosts,
-      ] = results.map((r: any) => r.value);
-  
-      // ====== Same formatting logic as before ======
-      const formatInstitutionCounts = (arr: any[], allInstitutions: string[]) => {
-        const counts = arr.reduce((acc, item) => {
-          acc[item.institution] = item._count.institution;
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          lastLogin: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          lastLogin: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+          },
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          lastLogin: {
+            gte: new Date(new Date().setDate(1)),
+          },
+        },
+      }),
+      this.prisma.post.count({
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      }),
+      this.prisma.post.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+          },
+        },
+      }),
+      this.prisma.like.count(),
+      this.prisma.comment.count(),
+      this.prisma.profile.groupBy({
+        by: ['institutionId'],
+        _count: { institutionId: true },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['institutionId'],
+        _count: { institutionId: true },
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['institutionId'],
+        _count: { institutionId: true },
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+          },
+        },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['institutionId'],
+        _count: { institutionId: true },
+        where: {
+          createdAt: { gte: new Date(new Date().setDate(1)) },
+        },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['institutionId'],
+        _count: { institutionId: true },
+        orderBy: { _count: { institutionId: 'desc' } },
+        take: 5,
+      }),
+      this.prisma.post.findMany({
+        orderBy: { likesCount: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          fileUrl: true,
+          likesCount: true,
+          commentsCount: true,
+        },
+      }),
+    ]);
+
+    // Helper for formatting
+    const formatInstitutionCounts = (
+      arr: Array<{
+        institutionId: string | null;
+        _count: { institutionId: number };
+      }>,
+    ) => {
+      return arr.reduce(
+        (acc, item) => {
+          const instName =
+            institutionMap[item.institutionId ?? ''] || 'Unknown';
+          acc[instName] = item._count.institutionId;
           return acc;
-        }, {} as Record<string, number>);
-  
-        allInstitutions.forEach((inst) => {
-          if (!(inst in counts)) counts[inst] = 0;
-        });
-  
-        return counts;
-      };
-  
-      const allInstitutions = studentsPerInstitutionTotal.map(
-        (item) => item.institution,
-      );
-  
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Overview fetched successfully',
-        data: {
-          usersCount,
-          postsCount,
-          academicResourceCount,
-          newSignUpsToday,
-          newSignUpsLast7Days,
-          newSignUpsThisMonth,
-          dailyActiveUsers,
-          weeklyActiveUsers,
-          monthlyActiveUsers,
-          postsToday,
-          postsLast7Days,
-          likesCount,
-          commentsCount,
-          studentsPerInstitution: {
-            total: formatInstitutionCounts(studentsPerInstitutionTotal, allInstitutions),
-            today: formatInstitutionCounts(studentsPerInstitutionToday, allInstitutions),
-            last7Days: formatInstitutionCounts(studentsPerInstitutionLast7Days, allInstitutions),
-            thisMonth: formatInstitutionCounts(studentsPerInstitutionThisMonth, allInstitutions),
-          },
-          topInstitutions: topInstitutions.map((t) => ({
-            institution: t.institution,
-            activeUsers: t._count.institution,
-          })),
-          topPosts: topPosts.map((p) => ({
-            id: p.id,
-            title: p.title,
-            fileUrl: p.fileUrl,
-            likesCount: p._count.likes,
-            commentsCount: p._count.comments,
-          })),
-          
-          
         },
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Failed to fetch overview',
-          error,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        {} as Record<string, number>,
       );
-    }
+    };
+
+    return {
+      usersCount,
+      postsCount,
+      academicResourceCount,
+      newSignUpsToday,
+      newSignUpsLast7Days,
+      newSignUpsThisMonth,
+      dailyActiveUsers,
+      weeklyActiveUsers,
+      monthlyActiveUsers,
+      postsToday,
+      postsLast7Days,
+      likesCount,
+      commentsCount,
+      studentsPerInstitution: {
+        total: formatInstitutionCounts(studentsPerInstitutionTotal),
+        today: formatInstitutionCounts(studentsPerInstitutionToday),
+        last7Days: formatInstitutionCounts(studentsPerInstitutionLast7Days),
+        thisMonth: formatInstitutionCounts(studentsPerInstitutionThisMonth),
+      },
+      topInstitutions: topInstitutions.map((item) => ({
+        name: institutionMap[item.institutionId ?? ''] || 'Unknown',
+        count: item._count.institutionId,
+      })),
+      topPosts,
+    };
   }
-  
 }

@@ -1,16 +1,18 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable prettier/prettier */
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
+import { NotificationsGateway } from './notifications.gateway';
+import { StudentNotificationDto } from 'src/dto/student-notification';
 
 @Injectable()
 export class StudentNotificationsService {
   private prisma = new PrismaClient();
+
+  constructor(private readonly notificationsGateway: NotificationsGateway) {}
 
   /** Fetch all notifications for a student */
   async getNotifications(studentId: string) {
@@ -44,7 +46,27 @@ export class StudentNotificationsService {
     });
   }
 
-  /** Fetch all announcements for the student's institution */
+  /** Create a notification and push it via WebSocket */
+  async createNotification(
+    studentId: string,
+    data: Omit<StudentNotificationDto, 'id' | 'createdAt' | 'readAt'>,
+  ) {
+    const newNotification = await this.prisma.notification.create({
+      data: {
+        recipientId: studentId,
+        type: data.type,
+        referenceId: data.referenceId,
+        message: data.message,
+      },
+    });
+
+    // ✅ Push to client in real-time
+    this.notificationsGateway.sendToStudent(studentId, newNotification);
+
+    return newNotification;
+  }
+
+  /** Fetch announcements for the student's institution */
   async getInstitutionAnnouncements(studentId: string) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: studentId },

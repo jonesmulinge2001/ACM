@@ -444,4 +444,102 @@ export class PostService {
       nextCursor,
     };
   }
+
+// Flag a post 
+async flagPost(userId: string, postId: string, reason?: string) {
+  // Check if post exists and is not deleted
+  const post = await this.prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, isDeleted: true },
+  });
+
+  if (!post || post.isDeleted) {
+    throw new NotFoundException('Post not found');
+  }
+
+  // Prevent duplicate flags by the same user
+  const existingFlag = await this.prisma.postFlag.findFirst({
+    where: { postId, reporterId: userId },
+  });
+
+  if (existingFlag) {
+    throw new InternalServerErrorException('You have already flagged this post');
+  }
+
+  // Create the flag
+  const flaggedPost = await this.prisma.postFlag.create({
+    data: {
+      postId,
+      reporterId: userId,
+      reason: reason || null,
+    },
+    include: {
+      reporter: {
+        select: {
+          id: true,
+          name: true,
+          profile: {
+            select: {
+              profileImage: true,
+              institution: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+      post: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              profile: {
+                select: {
+                  profileImage: true,
+                  institution: { select: { id: true, name: true } },
+                },
+              },
+            },
+          },
+          _count: {
+            select: { likes: true, comments: true },
+          },
+        },
+      },
+    },
+  });
+
+  // Map to clean frontend-friendly structure
+  return {
+    message: 'Post flagged successfully',
+    flaggedPost: {
+      id: flaggedPost.id,
+      reason: flaggedPost.reason,
+      status: flaggedPost.status || 'PENDING',
+      createdAt: flaggedPost.createdAt,
+      reporter: {
+        id: flaggedPost.reporter.id,
+        name: flaggedPost.reporter.name,
+        profileImage: flaggedPost.reporter.profile?.profileImage,
+        institution: flaggedPost.reporter.profile?.institution,
+      },
+      post: {
+        id: flaggedPost.post.id,
+        title: flaggedPost.post.title,
+        body: flaggedPost.post.body,
+        fileUrl: flaggedPost.post.fileUrl,
+        type: flaggedPost.post.type,
+        author: {
+          id: flaggedPost.post.author.id,
+          name: flaggedPost.post.author.name,
+          profileImage: flaggedPost.post.author.profile?.profileImage,
+          institution: flaggedPost.post.author.profile?.institution,
+        },
+        likesCount: flaggedPost.post._count.likes,
+        commentsCount: flaggedPost.post._count.comments,
+      },
+    },
+  };
+}
+
+
 }

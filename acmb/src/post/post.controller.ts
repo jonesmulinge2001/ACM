@@ -31,6 +31,7 @@ import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostType } from 'generated/prisma';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FlagPostDto } from 'src/dto/flag-post.dto';
 
 
 @Controller('post')
@@ -161,6 +162,23 @@ export class PostController {
     return this.postService.getPostsByUser(userId, currentUserId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
+  @RequirePermissions(Permission.CREATE_POST)
+  @Post(':id/flag')
+  async flagPost(
+    @Param('id') postId: string,
+    @Body() body: FlagPostDto,
+    @Req() req: RequestWithUser,
+  ) {
+    const userId = req.user.id;
+    const flaggedPost = await this.postService.flagPost(userId, postId, body.reason);
+
+    return {
+      message: 'Post flagged successfully',
+      flaggedPost,
+    };
+  }
   
 
 }
