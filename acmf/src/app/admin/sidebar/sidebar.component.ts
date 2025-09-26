@@ -33,10 +33,10 @@ export class SidebarComponent {
     { id: 'dashboard', label: 'Dashboard Overview', icon: 'dashboard', route: '/admin/dashboard' },
     { id: 'users', label: 'User Management', icon: 'group', route: '/admin/manage-users' },
     { id: 'content', label: 'Posts & Content', icon: 'article', route: '/admin/manage-posts' },
-    { id: 'reports', label: 'Reports & Flags', icon: 'flag', route: '/admin/manage-reports' },
     { id: 'messaging', label: 'Messaging/Feedback', icon: 'chat', route: '/admin/manage-messaging' },
     { id: 'analytics', label: 'Analytics & Growth', icon: 'bar_chart', route: '/admin/manage-analytics' },
-    { id: 'settings', label: 'Settings', icon: 'settings', route: '/admin/manage-settings' },
+    { id: 'groups', label: 'Groups Management', icon: 'group', route: '/admin/manage-analytics' },
+    { id: 'Institution-Management', label: 'Institution Management', icon: 'account_balance', route: '/admin/institution-management' },
     { id: 'Logout', label: 'Logout', icon: 'logout', route: '/login' },
   ];
 

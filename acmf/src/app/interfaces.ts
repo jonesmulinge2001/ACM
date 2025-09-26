@@ -217,6 +217,12 @@ export interface PostLikeResponse {
   likes: PostLike[];
 }
 
+export interface InstitutionStats {
+  institutionId: string;
+  institutionName: string;
+  totalPosts: number;
+  totalResources: number;
+}
 export interface DashboardOverview {
   usersCount: number;
   postsCount: number;
@@ -247,6 +253,8 @@ export interface DashboardOverview {
     likesCount: number;
     commentsCount: number;
   }[];
+
+  institutionStats: InstitutionStats[];
 }
 
 
@@ -320,7 +328,10 @@ export interface PostFlagLiteReporter {
   name: string;
   profile: {
     profileImage?: string | null;
-    institution?: string | null;
+    institution?: {
+      id: string;
+      name: string;
+    }
   };
 }
 

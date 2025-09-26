@@ -31,15 +31,13 @@
       <li *ngFor="let item of menuItems">
         <button
           (click)="onSectionSelect(item)"
-          class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
+          class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-300"
           [ngClass]="[
             activeSection === item.id
-              ? isDarkMode
-                ? 'bg-blue-900/20 text-blue-400'
-                : 'bg-blue-50 text-blue-700'
+              ? 'bg-gradient-to-r from-[#3e7ff5] to-[#9234ea] text-white shadow-md'
               : isDarkMode
-              ? 'text-gray-300 hover:text-white hover:bg-gray-800'
-              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              ? 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-[#3e7ff5]/20 hover:to-[#9234ea]/20'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gradient-to-r hover:from-[#3e7ff5]/10 hover:to-[#9234ea]/10'
           ]"
         >
           <span class="material-icons flex-shrink-0">{{ item.icon }}</span>

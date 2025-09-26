@@ -321,7 +321,7 @@
     </div>
   </div>
 
-  <!-- FLAGGED TAB -->
+  <!-- FLAGGED POSTS TAB -->
   <div *ngIf="!loading && activeTab === 'FLAGGED'">
     <div class="bg-white rounded-2xl shadow overflow-x-auto">
       <table class="w-full table-auto divide-y divide-gray-200">
@@ -397,7 +397,7 @@
                 />
                 <div class="text-xs text-gray-600">
                   {{ f.post.author.name }} ·
-                  {{ f.post.author.profile.institution }}
+                  {{ f.post.author.profile.institution?.name }}
                 </div>
               </div>
             </td>
@@ -409,7 +409,7 @@
                   class="h-6 w-6 rounded-full object-cover"
                 />
                 <div class="text-xs text-gray-700">
-                  {{ f.reporter.name }} · {{ f.reporter.profile.institution }}
+                  {{ f.reporter.name }} · {{ f.reporter.profile.institution?.name }}
                 </div>
               </div>
             </td>
