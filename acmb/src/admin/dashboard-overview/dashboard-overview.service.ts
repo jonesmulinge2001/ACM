@@ -1,8 +1,11 @@
 /* eslint-disable prettier/prettier */
+ 
+/* eslint-disable prettier/prettier */
 // institution-overview.service.ts
 
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
+import { InstitutionActivity } from 'src/dto/institution-activity.dto';
 
 @Injectable()
 export class DashboardOverviewService {
@@ -190,4 +193,46 @@ export class DashboardOverviewService {
       topPosts,
     };
   }
+
+  async getInstitutionActivity(): Promise<InstitutionActivity[]> {
+    const institutions = await this.prisma.institution.findMany({
+      select: { id: true, name: true },
+    });
+  
+    const activity = await Promise.all(
+      institutions.map(async (inst) => {
+        // Count posts (via User -> Profile -> Institution)
+        const totalPosts = await this.prisma.post.count({
+          where: {
+            author: {
+              profile: {
+                institutionId: inst.id,
+              },
+            },
+          },
+        });
+  
+        // Count resources (via Profile -> Institution)
+        const totalResources = await this.prisma.academicResource.count({
+          where: {
+            uploader: {
+              institutionId: inst.id,
+            },
+          },
+        });
+  
+        return {
+          institutionId: inst.id,
+          institutionName: inst.name,
+          totalPosts,
+          totalResources,
+        };
+      }),
+    );
+  
+    return activity;
+  }
+  
+
+
 }
