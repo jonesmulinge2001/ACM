@@ -1,10 +1,14 @@
 ### Variables
 @baseUrl = http://localhost:3000
-@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTcwNTQ5MTYsImV4cCI6MTc1NzE0MTMxNn0.DsbWCZEN4BHzl-2daR0pBPldLsdD22UM8xkZIIaICyo
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTg5MTU4NTAsImV4cCI6MTc1OTAwMjI1MH0.ozfR0Hi5BiCLrZKmGX-Hh5y4t6kVzFSgF5TZjB8hzrc
 @groupId = 501c3b00-7e5d-4716-90a5-a787c0cdb740
 @messageId = 
 
 @userId = 9be5bf48-3343-4ad3-8706-d25a939ca7ed
+
+@resourceId = 2032dc40-7754-4022-ad16-427359d83088
+
+@commentId = 24d7dd02-7f31-49eb-ad80-fa92fbc4dfd3
 
 ### Create Group
 POST {{baseUrl}}/groups
@@ -48,7 +52,7 @@ Content-Type: application/json
 
 {
   "groupId": "{{groupId}}",
-  "title": "Operating Systems Notes",
+  "content": "Operating Systems Notes",
   "resourceUrl": "https://drive.google.com/file/d/abc123/view",
   "description": "Full lecture slides and summaries"
 }
@@ -131,3 +135,42 @@ Content-Type: application/json
   "userIds": ["user-2", "user-3"],
   "role": "ADMIN"
 }
+
+### like group resource
+POST {{baseUrl}}/groups/resources/{{resourceId}}/like
+Authorization: Bearer {{jwtToken}}
+
+### unlike group resource
+DELETE {{baseUrl}}/groups/resources/{{resourceId}}/like
+Authorization: Bearer {{jwtToken}}
+
+### comment on a group resource
+POST {{baseUrl}}/groups/resources/{{resourceId}}/comment
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Helpful!"
+}
+
+
+### update comment (owner) only
+PATCH {{baseUrl}}/groups/resources/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Helful alot"
+}
+
+
+### delete a comment (owner only)
+DELETE {{baseUrl}}/groups/resources/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+
+
+### get group feed (with resources likes, comments)
+GET {{baseUrl}}/groups/{{groupId}}/feed
+Authorization: Bearer {{jwtToken}}
+
+

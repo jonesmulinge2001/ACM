@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -12,10 +14,11 @@ import {
 } from '@nestjs/common';
 import { GroupRole, PrismaClient } from 'generated/prisma';
 import { BulkAddMembersDto, BulkRemoveMembersDto, BulkRestoreMembersDto, BulkUpdateRolesDto } from 'src/dto/bulk-member-action.dto';
+import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
+import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
 import { CreateGroupDto } from 'src/dto/create-group.dto';
 import { JoinGroup } from 'src/dto/join-group.dto';
 import { SendMessageDto } from 'src/dto/send-message.dto';
-import { ShareResourceDto } from 'src/dto/share-resource.dto';
 import { UpdateGroupDto } from 'src/dto/update-group.dto';
 import {
   AcademeetCloudinaryService,
@@ -78,6 +81,7 @@ export class GroupsService {
   }
   
 
+  // helper function to determine whether group exists
   private async ensureGroupExists(groupId: string) {
     const g = await this.prisma.group.findUnique({
       where: { id: groupId },
@@ -168,39 +172,81 @@ export class GroupsService {
     });
   }
 
-  // share a resource in a group(verify memebership)
-  async shareResource(
-    userId: string,
-    dto: ShareResourceDto,
-    file?: Express.Multer.File, // file comes from controller via Multer
-  ) {
-    // ensure membership
-    const isMember = await this.prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId: dto.groupId, userId } },
-    });
-    if (!isMember) throw new ForbiddenException('Not a group member');
+// share a resource in a group (verify membership)
+async shareResource(
+  userId: string,
+  dto: CreateGroupResourceDto,
+  file?: Express.Multer.File,
+) {
+  // 1️⃣ Ensure user is a member of the group
+  const isMember = await this.prisma.groupMember.findUnique({
+    where: { groupId_userId: { groupId: dto.groupId, userId } },
+  });
+  if (!isMember) throw new ForbiddenException('Not a group member');
 
-    let resourceUrl = dto.resourceurl;
-
-    // If file is provided, upload to Cloudinary
-    if (file) {
-      const uploadResult = await this.cloudinary.uploadRaw(
-        file,
-        AcademeetUploadType.RESOURCE_FILE,
-      );
-      resourceUrl = uploadResult.secure_url;
-    }
-
-    // Save in DB
-    return this.prisma.groupResource.create({
-      data: {
-        title: dto.title,
-        resourceUrl,
-        groupId: dto.groupId,
-        sharedById: userId,
-      },
-    });
+  // 2️⃣ Handle optional file upload
+  let resourceUrl = dto.resourceUrl;
+  if (file) {
+    const uploadResult = await this.cloudinary.uploadRaw(
+      file,
+      AcademeetUploadType.RESOURCE_FILE,
+    );
+    resourceUrl = uploadResult.secure_url;
   }
+
+  // 3️⃣ Create the resource and include related user info
+  const resource = await this.prisma.groupResource.create({
+    data: {
+      content: dto.content,
+      resourceUrl,
+      groupId: dto.groupId,
+      sharedById: userId,
+    },
+    include: {
+      sharedBy: {
+        select: {
+          id: true,
+          name: true,
+          profile: {
+            select: {
+              profileImage: true,
+              institution: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // 4️⃣ Return clean structured response
+  return {
+    id: resource.id,
+    content: resource.content,
+    resourceUrl: resource.resourceUrl,
+    createdAt: resource.createdAt,
+    groupId: resource.groupId,
+    likesCount: resource.likesCount,
+    commentsCount: resource.commentsCount,
+    sharedBy: {
+      id: resource.sharedBy.id,
+      name: resource.sharedBy.name,
+      profileImage: resource.sharedBy.profile?.profileImage ?? null,
+      institution: resource.sharedBy.profile?.institution
+        ? {
+            id: resource.sharedBy.profile.institution.id,
+            name: resource.sharedBy.profile.institution.name,
+          }
+        : null,
+    },
+  };
+}
+
+  
 
   /** Persist a group message and return saved message */
   async sendMessage(userId: string, dto: SendMessageDto) {
@@ -298,7 +344,7 @@ export class GroupsService {
     });
   }
 
- /** 🔑 Central helper: ensure user has one of the allowed roles in a group */
+ /**  Central helper: ensure user has one of the allowed roles in a group */
  private async ensureGroupRole(
   groupId: string,
   userId: string,
@@ -383,5 +429,132 @@ async bulkUpdateRoles(groupId: string, currentUserId: string, dto: BulkUpdateRol
   );
   return { count: results.reduce((acc, r) => acc + r.count, 0) };
 }
+
+// Like / Unlike
+async likeResource(userId: string, resourceId: string) {
+  const resource = await this.prisma.groupResource.findUnique({
+    where: { id: resourceId },
+  });
+  if (!resource) throw new NotFoundException('Resource not found');
+
+  const membership = await this.prisma.groupMember.findUnique({
+    where: { groupId_userId: { groupId: resource.groupId, userId } },
+  });
+  if (!membership) throw new ForbiddenException('Not a group member');
+
+  try {
+    return await this.prisma.groupResourceLike.create({
+      data: { userId, resourceId },
+    });
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      throw new BadRequestException('Already liked');
+    }
+    throw err;
+  }
+}
+
+async unlikeResource(userId: string, resourceId: string) {
+  return this.prisma.groupResourceLike.deleteMany({
+    where: { userId, resourceId },
+  });
+}
+
+// Comment on Resource
+async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
+  const resource = await this.prisma.groupResource.findUnique({
+    where: { id: dto.resourceId },
+  });
+  if (!resource) throw new NotFoundException('Resource not found');
+
+  const membership = await this.prisma.groupMember.findUnique({
+    where: { groupId_userId: { groupId: resource.groupId, userId } },
+  });
+  if (!membership) throw new ForbiddenException('Not a group member');
+
+  return this.prisma.groupResourceComment.create({
+    data: {
+      userId,
+      resourceId: dto.resourceId,
+      content: dto.content,
+    },
+  });
+}
+
+// edit comment
+async editComment(userId: string, commentId: string, newContent: string) {
+  // 1️⃣ Fetch comment
+  const comment = await this.prisma.groupResourceComment.findUnique({
+    where: { id: commentId },
+  });
+
+  // 2️⃣ Validate
+  if (!comment) {
+    throw new NotFoundException('Comment not found');
+  }
+
+  if (comment.userId !== userId) {
+    throw new ForbiddenException('You can only edit your own comment');
+  }
+
+  // 3️⃣ Update content
+  return this.prisma.groupResourceComment.update({
+    where: { id: commentId },
+    data: { content: newContent },
+  });
+}
+
+
+// Get Group Feed
+async getGroupFeed(groupId: string, userId: string, limit = 20) {
+  await this.ensureGroupExists(groupId);
+
+  const resources = await this.prisma.groupResource.findMany({
+    where: { groupId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    include: {
+      sharedBy: {
+        select: { id: true, name: true, profile: { select: { profileImage: true } } },
+      },
+      likes: true,
+      comments: {
+        include: {
+          user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } },
+        },
+      },
+    },
+  });
+
+  return resources.map((r) => ({
+    ...r,
+    likesCount: r.likes.length,
+    commentsCount: r.comments.length,
+    isLiked: r.likes.some((l) => l.userId === userId),
+  }));
+}
+
+async deleteComment(userId: string, commentId: string) {
+  // 1Find the comment
+  const comment = await this.prisma.groupResourceComment.findUnique({
+    where: { id: commentId },
+  });
+
+  // Validate existence
+  if (!comment) {
+    throw new NotFoundException('Comment not found');
+  }
+
+  // Check ownership
+  if (comment.userId !== userId) {
+    throw new ForbiddenException('You can only delete your own comment');
+  }
+
+  //  Delete comment
+  return this.prisma.groupResourceComment.delete({
+    where: { id: commentId },
+  });
+}
+
   
 }

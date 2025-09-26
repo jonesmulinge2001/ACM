@@ -1,13 +1,10 @@
 /* eslint-disable prettier/prettier */
-
+import { RequestWithUser } from './../interfaces/requestwithUser.interface';
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+/* eslint-disable prettier/prettier */
 /* eslint-disable prettier/prettier */
 import {
   Body,
@@ -30,7 +27,6 @@ import { GroupsService } from './groups.service';
 import { CreateGroupDto } from 'src/dto/create-group.dto';
 import { UpdateGroupDto } from 'src/dto/update-group.dto';
 import { JoinGroup } from 'src/dto/join-group.dto';
-import { ShareResourceDto } from 'src/dto/share-resource.dto';
 import { SendMessageDto } from 'src/dto/send-message.dto';
 import { GroupRole } from 'generated/prisma';
 import {
@@ -41,6 +37,9 @@ import {
 } from 'src/dto/bulk-member-action.dto';
 import { AcademeetCloudinaryService, AcademeetUploadType } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
+import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
+import { UpdateGroupResourceCommentDto } from 'src/dto/update-group-resource-comment.dto';
 
 @Controller('groups')
 @UseGuards(JwtAuthGuard)
@@ -96,7 +95,7 @@ export class GroupsController {
 
   @Post(':id/join')
   @HttpCode(HttpStatus.CREATED)
-  async join(@Req() req, @Param('id') id: string, @Body() dto?: JoinGroup) {
+  async join(@Req() req: RequestWithUser, @Param('id') id: string, @Body() dto?: JoinGroup) {
     // allow joining with path param
     const parsed: JoinGroup = { groupId: id, ...(dto ?? {}) } as JoinGroup;
     return this.groupService.joinGroup(req.user.id, parsed);
@@ -104,16 +103,16 @@ export class GroupsController {
 
   @Post(':id/leave')
   @HttpCode(HttpStatus.OK)
-  async leave(@Req() req, @Param('id') id: string) {
+  async leave(@Req() req: RequestWithUser, @Param('id') id: string) {
     return this.groupService.leaveGroup(req.user.id, id);
   }
 
   @Post(':id/resources')
   @HttpCode(HttpStatus.CREATED)
   async shareResource(
-    @Req() req,
+    @Req() req: RequestWithUser,
     @Param('id') id: string,
-    @Body() dto: ShareResourceDto,
+    @Body() dto: CreateGroupResourceDto
   ) {
     // enforce groupId matches path
     if (dto.groupId !== id) dto.groupId = id;
@@ -141,7 +140,7 @@ export class GroupsController {
   @Post(':id/messages')
   @HttpCode(HttpStatus.CREATED)
   async postMessage(
-    @Req() req,
+    @Req() req: RequestWithUser,
     @Param('id') id: string,
     @Body() dto: SendMessageDto,
   ) {
@@ -215,4 +214,48 @@ export class GroupsController {
   ) {
     return this.groupService.bulkUpdateRoles(groupId, req.user.id, dto);
   }
+
+  @Post('resources/:id/like')
+async like(@Req() req: RequestWithUser, @Param('id') id: string) {
+  return this.groupService.likeResource(req.user.id, id);
+}
+
+@Delete('resources/:id/like')
+async unlike(@Req() req: RequestWithUser, @Param('id') id: string) {
+  return this.groupService.unlikeResource(req.user.id, id);
+}
+
+@Post('resources/:id/comment')
+async comment(
+  @Req() req: RequestWithUser,
+  @Param('id') id: string,
+  @Body() dto: CommentGroupResourceDto,
+) {
+  return this.groupService.commentOnResource(req.user.id, { ...dto, resourceId: id });
+}
+
+
+@Get(':groupId/feed')
+async getFeed(@Req() req: RequestWithUser, @Param('groupId') groupId: string) {
+  return this.groupService.getGroupFeed(groupId, req.user.id);
+}
+
+@Patch('resources/comments/:commentId')
+async updateComment(
+  @Req() req: RequestWithUser,
+  @Param('commentId') commentId: string,
+  @Body() dto: UpdateGroupResourceCommentDto,
+) {
+  return this.groupService.editComment(req.user.id, commentId, dto.content);
+}
+
+// delete comment
+@Delete('resources/comments/:commentId')
+async deleteComment(
+  @Req() req: RequestWithUser,
+  @Param('commentId') commentId: string,
+) {
+  return this.groupService.deleteComment(req.user.id, commentId);
+}
+
 }

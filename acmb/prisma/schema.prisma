@@ -15,60 +15,63 @@ datasource db {
 }
 
 model User {
-  id                   String        @id @default(uuid())
-  email                String        @unique
+  id                   String                    @id @default(uuid())
+  email                String                    @unique
   password             String
   name                 String
-  role                 UserRole      @default(STUDENT)
-  institutionAdmins InstitutionAdmin[]
-  phone                String?       @unique
-  status               AccountStatus @default(ACTIVE)
+  role                 UserRole                  @default(STUDENT)
+  institutionAdmins    InstitutionAdmin[]
+  phone                String?                   @unique
+  status               AccountStatus             @default(ACTIVE)
   profile              Profile?
-  announcements InstitutionAnnouncement[]
+  announcements        InstitutionAnnouncement[]
   likes                Like[]
-  followers            Follow[]      @relation("followers")
-  following            Follow[]      @relation("following")
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  isVerified           Boolean       @default(false)
+  followers            Follow[]                  @relation("followers")
+  following            Follow[]                  @relation("following")
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  isVerified           Boolean                   @default(false)
   resetToken           String?
-  interactions         Interaction[] 
+  interactions         Interaction[]
   resetTokenExpiresAt  DateTime?
   verifyToken          String
   verifyTokenExpiresAt DateTime?
-  lastLogin            DateTime?  
-  isDeleted            Boolean       @default(false)
+  lastLogin            DateTime?
+  isDeleted            Boolean                   @default(false)
   deletedAt            DateTime?
 
   // Relations
-  posts                Post[]
-  requests             Request[]
-  comments             Comment[]
-  commentLikes         CommentLike[] 
-  notifications        Notification[] @relation("UserNotifications")
-  reportedFlags PostFlag[]
-  profileViewsMade     ProfileView[] @relation("Viewer")
-  profileViewsReceived ProfileView[] @relation("Viewed")
-  participants ConversationParticipant[]
-  messages     ConversationMessage[]
-  createdInstitutionAdmins InstitutionAdmin[] @relation("CreatedInstitutionAdmins")
+  posts                    Post[]
+  requests                 Request[]
+  comments                 Comment[]
+  commentLikes             CommentLike[]
+  notifications            Notification[]            @relation("UserNotifications")
+  reportedFlags            PostFlag[]
+  profileViewsMade         ProfileView[]             @relation("Viewer")
+  profileViewsReceived     ProfileView[]             @relation("Viewed")
+  participants             ConversationParticipant[]
+  messages                 ConversationMessage[]
+  createdInstitutionAdmins InstitutionAdmin[]        @relation("CreatedInstitutionAdmins")
 
   // flag relations
   resourceFlagsReported AcademicResourceFlag[] @relation("AcademicResourceFlagsReported")
   resourceFlagsReviewed AcademicResourceFlag[] @relation("AcademicResourceFlagsReviewed")
 
-  groupsCreated   Group[]        @relation("GroupCreator")
-  groupMemberships GroupMember[]
-  groupMessages   GroupMessage[]
-  groupResources  GroupResource[]
+  // group relations
+  groupsCreated             Group[]                    @relation("GroupCreator")
+  groupMemberships          GroupMember[]
+  groupMessages             GroupMessage[]
+  groupResources            GroupResource[]
+  groupResourceLikes        GroupResourceLike[]
+  groupResourceComments     GroupResourceComment[]
+  groupResourceCommentLikes GroupResourceCommentLike[]
 
-  activityLogs ResourceActivityLog[]
+  activityLogs        ResourceActivityLog[]
   //Add opposite relations
-  userSuspensions      UserSuspension[] @relation("UserSuspensions")
-  adminSuspensions     UserSuspension[] @relation("AdminSuspensions")
-  restoredSuspensions  UserSuspension[] @relation("UserSuspensionRestorer")
+  userSuspensions     UserSuspension[]      @relation("UserSuspensions")
+  adminSuspensions    UserSuspension[]      @relation("AdminSuspensions")
+  restoredSuspensions UserSuspension[]      @relation("UserSuspensionRestorer")
 }
-
 
 model Institution {
   id          String   @id @default(uuid())
@@ -78,22 +81,21 @@ model Institution {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  admins      InstitutionAdmin[]
+  admins        InstitutionAdmin[]
   invites       InstitutionInvite[]
   announcements InstitutionAnnouncement[]
-  profiles    Profile[]
+  profiles      Profile[]
 }
 
-
 model InstitutionAdmin {
-  id            String       @id @default(uuid())
+  id            String   @id @default(uuid())
   userId        String
   institutionId String
-  isActive      Boolean      @default(true)
-  createdAt     DateTime     @default(now())
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
 
-  createdById   String
-  createdBy     User     @relation("CreatedInstitutionAdmins", fields: [createdById], references: [id])
+  createdById String
+  createdBy   User        @relation("CreatedInstitutionAdmins", fields: [createdById], references: [id])
   // Relations
   user        User        @relation(fields: [userId], references: [id])
   institution Institution @relation(fields: [institutionId], references: [id])
@@ -103,59 +105,58 @@ model InstitutionAdmin {
 }
 
 model InstitutionInvite {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   email         String
   institutionId String
-  token         String   @unique
+  token         String    @unique
   expiresAt     DateTime
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
   usedAt        DateTime?
-  createdBy     String?  // userId who created the invite
+  createdBy     String? // userId who created the invite
   createdById   String
-  isActive      Boolean  @default(true)
+  isActive      Boolean   @default(true)
 
   institution Institution @relation(fields: [institutionId], references: [id])
 }
 
 model InstitutionAnnouncement {
-  id            String   @id @default(uuid())
-  title         String
-  fileUrls      String[]
-  content       String
-  isPublished   Boolean   @default(false)
-  publishedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  title       String
+  fileUrls    String[]
+  content     String
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // relations
   institution   Institution @relation(fields: [institutionId], references: [id])
   institutionId String
 
-  createdBy     User       @relation(fields: [createdById], references: [id])
-  createdById   String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
 }
 
-
 model Profile {
-  id            String   @id @default(uuid())
-  name          String
-  institutionId String       // new foreign key
-  academicLevel String
-  skills        String[]
-  bio           String?
-  profileImage  String?
-  coverPhoto    String?
-  course       String? 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  postLikes Like[]
-  interests     String[]
+  id                String             @id @default(uuid())
+  name              String
+  institutionId     String // new foreign key
+  academicLevel     String
+  skills            String[]
+  bio               String?
+  profileImage      String?
+  coverPhoto        String?
+  course            String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  postLikes         Like[]
+  interests         String[]
   academicResources AcademicResource[]
   // Relation to User
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id])
 
-  institution   Institution @relation(fields: [institutionId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
 
   // indexes
   @@index([skills], type: Gin)
@@ -166,38 +167,37 @@ model Profile {
 }
 
 model UserSuspension {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String
   adminId    String
   reason     String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   restoredAt DateTime?
 
-  user       User @relation("UserSuspensions", fields: [userId], references: [id])
-  admin      User @relation("AdminSuspensions", fields: [adminId], references: [id])
+  user  User @relation("UserSuspensions", fields: [userId], references: [id])
+  admin User @relation("AdminSuspensions", fields: [adminId], references: [id])
 
-  restoredBy String?
-  restoredByUser User? @relation("UserSuspensionRestorer", fields: [restoredBy], references: [id])
+  restoredBy     String?
+  restoredByUser User?   @relation("UserSuspensionRestorer", fields: [restoredBy], references: [id])
 }
 
 model Notification {
-  id           String             @id @default(uuid())
-  recipientId  String
-  type         NotificationType
-  referenceId  String?            
-  message      String
-  status       NotificationStatus @default(UNREAD)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  readAt       DateTime? 
+  id          String             @id @default(uuid())
+  recipientId String
+  type        NotificationType
+  referenceId String?
+  message     String
+  status      NotificationStatus @default(UNREAD)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  readAt      DateTime?
 
-  recipient    User               @relation("UserNotifications", fields: [recipientId], references: [id])
+  recipient User @relation("UserNotifications", fields: [recipientId], references: [id])
 
   @@index([recipientId])
   @@index([status])
   @@index([createdAt])
 }
-
 
 model Follow {
   id          String @id @default(uuid())
@@ -209,38 +209,38 @@ model Follow {
 }
 
 model ProfileView {
-  id  String  @id @default(uuid())
+  id        String   @id @default(uuid())
   viewerId  String
   viewedId  String
   createdAt DateTime @default(now())
 
-  viewer  User  @relation("Viewer", fields: [viewerId], references: [id])
-  viewed  User  @relation("Viewed", fields: [viewedId], references: [id])
+  viewer User @relation("Viewer", fields: [viewerId], references: [id])
+  viewed User @relation("Viewed", fields: [viewedId], references: [id])
 }
 
 model Post {
-  id            String       @id @default(uuid())
-  title         String
-  body          String?
-  fileUrl       String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id        String   @id @default(uuid())
+  title     String
+  body      String?
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // NEW: engagement counters (denormalized for speed)
-  likesCount    Int          @default(0)
-  commentsCount Int          @default(0)
+  likesCount    Int @default(0)
+  commentsCount Int @default(0)
 
-  likes         Like[]
-  interactions  Interaction[]
-  type          PostType     @default(GENERAL)
-  comments      Comment[]
-  flags      PostFlag[]
-  isDeleted   Boolean  @default(false)
-  deletedAt   DateTime?
+  likes        Like[]
+  interactions Interaction[]
+  type         PostType      @default(GENERAL)
+  comments     Comment[]
+  flags        PostFlag[]
+  isDeleted    Boolean       @default(false)
+  deletedAt    DateTime?
 
-  tags          PostTag[]
-  authorId      String
-  author        User         @relation(fields: [authorId], references: [id])
+  tags     PostTag[]
+  authorId String
+  author   User      @relation(fields: [authorId], references: [id])
 
   // Helpful indexes for feed/dashboards
   @@index([createdAt], name: "idx_post_createdAt")
@@ -248,51 +248,49 @@ model Post {
   @@index([isDeleted, createdAt], name: "idx_post_isDeleted_createdAt")
 }
 
-
 model Like {
-  id  String @id @default(uuid())
-  userId  String
-  postId  String
-  profileId   String?
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  profileId String?
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  post    Post     @relation(fields: [postId], references: [id])
   profile Profile? @relation(fields: [profileId], references: [id])
 
-  deleted   Boolean  @default(false)
+  deleted Boolean @default(false)
+
   @@unique([userId, postId]) // prevent duplicate likes
 }
-
 
 model Comment {
   id        String   @id @default(uuid())
   body      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  postId  String?
-  post   Post?   @relation(fields: [postId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
 
-  deleted   Boolean  @default(false)
-  likes      CommentLike[] 
-  parentId  String?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   Comment[] @relation("CommentReplies")
-
+  deleted  Boolean       @default(false)
+  likes    CommentLike[]
+  parentId String?
+  parent   Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[]     @relation("CommentReplies")
 }
 
 model PostFlag {
-  id         String   @id @default(cuid())
-  post       Post     @relation(fields: [postId], references: [id])
+  id         String     @id @default(cuid())
+  post       Post       @relation(fields: [postId], references: [id])
   postId     String
-  reporter   User     @relation(fields: [reporterId], references: [id])
+  reporter   User       @relation(fields: [reporterId], references: [id])
   reporterId String
   reason     String?
   status     FlagStatus @default(PENDING) // PENDING, REVIEWED, RESOLVED
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   @@index([postId])
   @@index([reporterId])
@@ -310,49 +308,50 @@ model Request {
 }
 
 model Interaction {
-  id          String @id @default(uuid())
-  userId      String
-  postId      String
-  type        interactionType
-  createdAt   DateTime @default(now())
+  id        String          @id @default(uuid())
+  userId    String
+  postId    String
+  type      interactionType
+  createdAt DateTime        @default(now())
 
-  user        User  @relation(fields: [userId], references: [id])
-  post        Post  @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
 }
 
 model CommentLike {
-  id          String @id @default(uuid())
-  userId      String
-  commentId   String
-  createdAt   DateTime @default(now())
-  
-  user        User    @relation(fields: [userId], references: [id])
-  comment     Comment @relation(fields: [commentId], references: [id])
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  comment Comment @relation(fields: [commentId], references: [id])
+
   @@unique([userId, commentId]) // prevent duplicate likes
 }
 
 model AcademicResource {
-  id           String   @id @default(uuid())
-  title        String
-  description  String
-  course       String
-  unitName     String
-  semester     String
-  year         String
-  institution  String
-  fileUrl      String? 
-  downloadCount Int      @default(0)   // Optional file upload
-  uploadedAt   DateTime @default(now())
-  uploader     Profile  @relation(fields: [uploaderId], references: [id])
-  uploaderId   String
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  course        String
+  unitName      String
+  semester      String
+  year          String
+  institution   String
+  fileUrl       String?
+  downloadCount Int      @default(0) // Optional file upload
+  uploadedAt    DateTime @default(now())
+  uploader      Profile  @relation(fields: [uploaderId], references: [id])
+  uploaderId    String
 
-  flags AcademicResourceFlag[]
+  flags        AcademicResourceFlag[]
   activityLogs ResourceActivityLog[]
-  isApproved     Boolean   @default(false)
-  approvedAt     DateTime?
-  approvedBy     String?
-  isDeleted   Boolean  @default(false)
-  deletedAt   DateTime?
+  isApproved   Boolean                @default(false)
+  approvedAt   DateTime?
+  approvedBy   String?
+  isDeleted    Boolean                @default(false)
+  deletedAt    DateTime?
 }
 
 model AcademicResourceFlag {
@@ -367,8 +366,8 @@ model AcademicResourceFlag {
 
   // Relations
   resource   AcademicResource @relation(fields: [resourceId], references: [id])
-  reporter   User  @relation("AcademicResourceFlagsReported", fields: [reporterId], references: [id])
-  reviewedBy User? @relation("AcademicResourceFlagsReviewed", fields: [reviewedById], references: [id])
+  reporter   User             @relation("AcademicResourceFlagsReported", fields: [reporterId], references: [id])
+  reviewedBy User?            @relation("AcademicResourceFlagsReviewed", fields: [reviewedById], references: [id])
 
   @@index([resourceId])
   @@index([reporterId])
@@ -376,12 +375,12 @@ model AcademicResourceFlag {
 }
 
 model ResourceActivityLog {
-  id          String   @id @default(uuid())
-  resourceId  String
-  userId      String?
-  action      ResourceAction
-  details     String?   // optional metadata (reason, status, etc.)
-  createdAt   DateTime @default(now())
+  id         String         @id @default(uuid())
+  resourceId String
+  userId     String?
+  action     ResourceAction
+  details    String? // optional metadata (reason, status, etc.)
+  createdAt  DateTime       @default(now())
 
   // Relations
   resource AcademicResource @relation(fields: [resourceId], references: [id])
@@ -391,53 +390,51 @@ model ResourceActivityLog {
   @@index([userId])
 }
 
-
 model Tag {
-  id      String @id  @default(uuid())
-  name    String  @unique
-  posts   PostTag[]
+  id    String    @id @default(uuid())
+  name  String    @unique
+  posts PostTag[]
 }
 
 model PostTag {
   postId String
   tagId  String
 
-  post   Post @relation(fields: [postId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
 }
 
-
 model Group {
-  id          String       @id @default(uuid())
+  id          String          @id @default(uuid())
   name        String
   description String?
   coverImage  String?
   visibility  GroupVisibility @default(PUBLIC)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   // Relations
   creatorId String
-  creator   User          @relation("GroupCreator", fields: [creatorId], references: [id])
+  creator   User            @relation("GroupCreator", fields: [creatorId], references: [id])
   members   GroupMember[]
   messages  GroupMessage[]
   resources GroupResource[]
 }
 
 model GroupMember {
-  id        String     @id @default(uuid())
-  groupId   String
-  userId    String
-  role      GroupRole  @default(MEMBER)
-  joinedAt  DateTime   @default(now())
+  id       String    @id @default(uuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
 
   // Relations
   group Group @relation(fields: [groupId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 
-  isDeleted Boolean    @default(false)
+  isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
   @@unique([groupId, userId]) // prevent duplicate membership
@@ -451,42 +448,98 @@ model GroupMessage {
   groupId String
   userId  String
 
-  group   Group @relation(fields: [groupId], references: [id])
-  user    User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
 }
 
 model GroupResource {
-  id         String   @id @default(uuid())
-  title      String
-  resourceUrl String
-  createdAt  DateTime @default(now())
+  id          String   @id @default(uuid())
+  content     String
+  resourceUrl String?
+  createdAt   DateTime @default(now())
 
   groupId    String
   sharedById String
 
-  group      Group @relation(fields: [groupId], references: [id])
-  sharedBy   User  @relation(fields: [sharedById], references: [id])
+  // denormalized counters to speed up feed queries
+  likesCount    Int @default(0)
+  commentsCount Int @default(0)
+
+  group    Group @relation(fields: [groupId], references: [id])
+  sharedBy User  @relation(fields: [sharedById], references: [id])
+
+  likes    GroupResourceLike[]
+  comments GroupResourceComment[]
+
+  @@index([groupId])
+  @@index([sharedById])
 }
 
+model GroupResourceLike {
+  id         String   @id @default(uuid())
+  userId     String
+  resourceId String
+  createdAt  DateTime @default(now())
+
+  user     User          @relation(fields: [userId], references: [id])
+  resource GroupResource @relation(fields: [resourceId], references: [id])
+
+  @@unique([userId, resourceId]) // prevents duplicate likes
+  @@index([resourceId])
+}
+
+model GroupResourceComment {
+  id         String   @id @default(uuid())
+  userId     String
+  resourceId String
+  content    String
+  parentId   String? // optional for replies
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id])
+  resource GroupResource @relation(fields: [resourceId], references: [id])
+
+  parent  GroupResourceComment?  @relation("ResourceCommentReplies", fields: [parentId], references: [id])
+  replies GroupResourceComment[] @relation("ResourceCommentReplies")
+
+  likes GroupResourceCommentLike[]
+
+  @@index([resourceId])
+  @@index([userId])
+}
+
+model GroupResourceCommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User                 @relation(fields: [userId], references: [id])
+  comment GroupResourceComment @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+}
 
 model Conversation {
-  id            String                     @id @default(uuid())
-  title         String?                    // optional for group convs
-  isGroup       Boolean                    @default(false)
-  oneOnOneKey   String?                    @unique // deterministic key for 1:1 (sorted ids)
-  createdAt     DateTime                   @default(now())
-  updatedAt     DateTime                   @updatedAt
+  id          String   @id @default(uuid())
+  title       String? // optional for group convs
+  isGroup     Boolean  @default(false)
+  oneOnOneKey String?  @unique // deterministic key for 1:1 (sorted ids)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  participants  ConversationParticipant[]
-  messages      ConversationMessage[]
+  participants ConversationParticipant[]
+  messages     ConversationMessage[]
 }
 
 model ConversationParticipant {
-  id             String       @id @default(uuid())
+  id             String    @id @default(uuid())
   conversationId String
   userId         String
-  lastReadAt     DateTime?    // used to compute unread counts
-  createdAt      DateTime     @default(now())
+  lastReadAt     DateTime? // used to compute unread counts
+  createdAt      DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
@@ -497,20 +550,18 @@ model ConversationParticipant {
 }
 
 model ConversationMessage {
-  id             String    @id @default(uuid())
+  id             String   @id @default(uuid())
   conversationId String
   senderId       String
   content        String?
-  attachments    Json?     // array of { url, type } or whatever you want
-  createdAt      DateTime  @default(now())
+  attachments    Json? // array of { url, type } or whatever you want
+  createdAt      DateTime @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   sender       User         @relation(fields: [senderId], references: [id])
 
   @@index([conversationId, createdAt])
 }
-
-
 
 enum GroupRole {
   OWNER
@@ -522,7 +573,6 @@ enum GroupVisibility {
   PUBLIC
   PRIVATE
 }
-
 
 enum interactionType {
   LIKE
@@ -539,7 +589,7 @@ enum FlagStatus {
 
 enum UserRole {
   ADMIN // global system admin (oversees all)
-  STUDENT  // normal student user
+  STUDENT // normal student user
   INSTITUTION_ADMIN // manages one institution
 }
 
