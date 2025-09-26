@@ -19,7 +19,7 @@ import { GroupResource } from '../../interfaces';
             class="p-3 border rounded-lg hover:bg-gray-50 flex justify-between items-center"
           >
             <div>
-              <p class="font-medium text-blue-600">{{ res.title }}</p>
+              <p class="font-medium text-blue-600">{{ res.content }}</p>
               <p class="text-sm text-gray-500">
                 by {{ res.sharedBy?.name }} ·
                 {{ res.createdAt | date: 'short' }}

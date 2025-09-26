@@ -46,7 +46,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   currentUserId: string | null = null;
 
-  activeTab: 'feed' | 'chat' | 'members' | 'resources' = 'feed';
+  activeTab: 'feed' | 'chat' | 'discussion' |'members' |'resources' = 'feed';
 
   dmUserId: string | null = null;
 

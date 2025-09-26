@@ -30,9 +30,9 @@
       alt="avatar"
     />
     <div>
-      <h3 class="text-lg font-semibold text-gray-900">{{ profile.name }}</h3>
-      <p class="text-sm text-gray-600">
-        {{ profile.academicLevel }} • {{ profile.institution }}
+      <h3 class="text-sm font-semibold text-gray-900">{{ profile.name }}</h3>
+      <p class="text-xs text-gray-600">
+        {{ profile.academicLevel }} • {{ profile.institution?.name }}
       </p>
     </div>
   </div>

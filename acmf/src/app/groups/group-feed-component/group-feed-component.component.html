@@ -1,0 +1,168 @@
+<div class="max-w-2xl mx-auto mt-6">
+    <!-- Error State -->
+    <div *ngIf="errorMessage" class="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+      {{ errorMessage }}
+    </div>
+  
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-10">
+      <div
+        class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gradient-to-r from-blue-500 to-purple-500"
+      ></div>
+    </div>
+  
+    <!-- Feed Posts -->
+    <div *ngFor="let resource of feed" class="mb-6">
+      <div
+        class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5"
+      >
+        <!-- Resource Header -->
+        <div class="flex items-center mb-3">
+          <img
+            [src]="
+              resource.sharedBy?.profile?.profileImage ||
+              'https://ui-avatars.com/api/?name=' + resource.sharedBy?.name
+            "
+            class="w-10 h-10 rounded-full mr-3"
+            alt="User"
+          />
+          <div>
+            <h3 class="text-gray-900 font-semibold">
+              {{ resource.sharedBy?.name }}
+            </h3>
+            <p class="text-xs text-gray-500">
+              {{ resource.createdAt | date: 'short' }}
+            </p>
+          </div>
+        </div>
+  
+        <!-- Resource Content -->
+        <p class="text-gray-800 mb-3 whitespace-pre-line">
+          {{ resource.content }}
+        </p>
+  
+        <!-- Actions -->
+        <div
+          class="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-3"
+        >
+          <button
+            (click)="toggleLike(resource)"
+            class="flex items-center space-x-2 hover:text-blue-600 transition-colors duration-200"
+          >
+            <i
+              class="ri-thumb-up-fill"
+              [class.text-blue-600]="resource.isLikedByCurrentUser"
+            ></i>
+            <span>{{ resource.likesCount || 0 }}</span>
+          </button>
+  
+          <button
+            class="flex items-center space-x-2 hover:text-purple-600 transition-colors duration-200"
+          >
+            <i class="ri-chat-1-line"></i>
+            <span>{{ resource.commentsCount || 0 }}</span>
+          </button>
+        </div>
+  
+        <!-- Comments Section -->
+        <div class="mt-4 space-y-4">
+          <div
+            *ngFor="let comment of resource.comments"
+            class="flex items-start space-x-3"
+          >
+            <img
+              [src]="
+                comment.user.profile?.profileImage ||
+                'https://ui-avatars.com/api/?name=' + comment.user.name
+              "
+              class="w-8 h-8 rounded-full"
+              alt="Comment User"
+            />
+            <div class="flex-1 bg-gray-50 rounded-2xl p-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium text-gray-800">{{ comment.user.name }}</p>
+  
+                  <!-- ✅ Editing State -->
+                  <div
+                    *ngIf="
+                      editingComment &&
+                      editingComment.id === comment.id;
+                      else viewMode
+                    "
+                  >
+                    <textarea
+                      [(ngModel)]="editingComment.content"
+                      rows="2"
+                      class="w-full mt-1 text-sm p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400"
+                    ></textarea>
+                    <div class="flex space-x-2 mt-2">
+                      <button
+                        (click)="saveEdit(resource)"
+                        class="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs"
+                      >
+                        Save
+                      </button>
+                      <button
+                        (click)="cancelEdit()"
+                        class="px-3 py-1 bg-gray-200 rounded-lg text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+  
+                  <!-- View Mode -->
+                  <ng-template #viewMode>
+                    <p class="text-sm text-gray-700 whitespace-pre-line">
+                      {{ comment.content }}
+                    </p>
+                  </ng-template>
+                </div>
+  
+                <!-- Action Menu -->
+                <div class="flex space-x-2 text-xs text-gray-500">
+                  <button
+                    (click)="toggleCommentLike(resource, comment)"
+                    class="flex items-center space-x-1 hover:text-blue-600"
+                  >
+                    <i
+                      class="ri-thumb-up-fill"
+                      [class.text-blue-600]="comment.isLikedByCurrentUser"
+                    ></i>
+                    <span>{{ comment.likesCount || 0 }}</span>
+                  </button>
+                  <button (click)="startEdit(comment)" class="hover:text-purple-600">
+                    Edit
+                  </button>
+                  <button
+                    (click)="deleteComment(resource, comment.id)"
+                    class="hover:text-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Add Comment Box -->
+        <div class="mt-4 flex items-center space-x-2">
+          <input
+            type="text"
+            [(ngModel)]="newComment[resource.id]"
+            placeholder="Write a comment..."
+            class="flex-1 text-sm border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            (click)="addComment(resource)"
+            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm transition-transform transform hover:scale-105"
+          >
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

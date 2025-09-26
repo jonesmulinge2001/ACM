@@ -373,17 +373,52 @@ export interface GroupMember {
   };
 }
 
+
+export interface GroupResourceComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    profile?: {
+      profileImage?: string;
+      institution: {
+        id: string;
+        name: string;
+      }
+    };
+  };
+
+  likesCount?: number; 
+  isLikedByCurrentUser?: boolean; 
+}
+
+
 export interface GroupResource {
   id: string;
-  title: string;
+  content: string;
   resourceUrl: string;
   createdAt: string;
   sharedById: string;
   sharedBy?: {
     id: string;
     name: string;
+    profile: {
+      profileImage: string;
+      institution: {
+        id: string;
+        name: string;
+      } 
+    }
   };
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  commentsCount: number;
+  comments: GroupResourceComment[];
+  
 }
+
 
 export interface GroupMessage {
   id: string;
@@ -393,6 +428,8 @@ export interface GroupMessage {
   createdAt: string;
   user?: { id: string; name: string; profileImage?: string | null };
 }
+
+
 
 export interface Group {
   id: string;
@@ -405,8 +442,14 @@ export interface Group {
   updatedAt?: string;
   members?: GroupMember[];
   resources?: GroupResource[];
-  _count?: { members?: number; resources?: number };
+  _count?: { 
+    members?: number; 
+    resources?: number 
+  };
 }
+
+
+
 
 export interface BulkAddMembersDto {
   userIds: string[];
