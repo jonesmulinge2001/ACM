@@ -226,7 +226,7 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // NEW: engagement counters (denormalized for speed)
+  // engagement counters (denormalized for speed)
   likesCount    Int @default(0)
   commentsCount Int @default(0)
 
@@ -454,7 +454,7 @@ model GroupMessage {
 
 model GroupResource {
   id          String   @id @default(uuid())
-  content     String
+  content     String?
   resourceUrl String?
   createdAt   DateTime @default(now())
 
