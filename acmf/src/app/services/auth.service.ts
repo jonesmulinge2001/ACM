@@ -125,7 +125,7 @@ export class AuthService {
           this.router.navigate(['/admin/dashboard']);
         } 
         else if (user.role === 'INSTITUTION_ADMIN') {
-          this.router.navigate(['/institution-admin/announcements']);
+          this.router.navigate(['/institution-admin/dashbaord-overview']);
         } 
         else {
           this.router.navigate(['/home']);

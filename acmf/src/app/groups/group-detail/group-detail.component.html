@@ -120,22 +120,13 @@
     <div class="p-6">
       <!-- FEED -->
       <ng-container *ngIf="activeTab === 'feed'">
-        <!-- Composer (only if joined) -->
-        <div *ngIf="joined" class="flex items-start space-x-3 mb-6">
-          <img
-            [src]="
-              (auth.currentUser$ | async)?.profileImage ||
-              '/assets/default-avatar.png'
-            "
-            class="w-10 h-10 rounded-full"
-          />
-          <input
-            type="text"
-            placeholder="What would you like to share with the group?"
-            class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none"
-          />
+        <!-- Composer & Feed -->
+        <div *ngIf="joined">
+          <app-group-feed [groupId]="group.id"></app-group-feed>
         </div>
-        <div class="text-gray-500 text-sm">Group posts will show up here.</div>
+        <div *ngIf="!joined" class="text-center text-gray-500 mt-6">
+          Join the group to view and post in the feed.
+        </div>
       </ng-container>
 
       <!-- CHAT -->
@@ -165,6 +156,5 @@
     </div>
 
     <app-dm-popup-host #dmHost></app-dm-popup-host>
-
   </ng-container>
 </div>

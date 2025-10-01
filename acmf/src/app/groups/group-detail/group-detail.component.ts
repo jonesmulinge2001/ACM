@@ -8,7 +8,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { Observable, Subscription } from 'rxjs';
-import { Group, Profile, GroupResource } from '../../interfaces';
+import { Group, Profile } from '../../interfaces';
 import { AuthService } from '../../services/auth.service';
 import { GroupsService } from '../../services/group.service';
 import { SocketService } from '../../services/socket.service';
@@ -19,8 +19,11 @@ import { GroupResourcesComponent } from '../group-resources/group-resources.comp
 import { EditGroupComponent } from '../edit-group/edit-group.component';
 import { DmChatComponent } from "../../components/dm-chat/dm-chat/dm-chat.component";
 import { DmPopupHostComponent } from '../../components/dm-popup-host/dm-popup-host.component';
+import { GroupFeedComponent } from '../group-feed-component/group-feed-component.component';
 
 @Component({
+  selector: 'app-group-detail',
+  standalone: true,
   imports: [
     CommonModule,
     GroupChatComponent,
@@ -28,9 +31,9 @@ import { DmPopupHostComponent } from '../../components/dm-popup-host/dm-popup-ho
     GroupResourcesComponent,
     EditGroupComponent,
     DmChatComponent,
-    DmPopupHostComponent
-],
-  selector: 'app-group-detail',
+    DmPopupHostComponent,
+    GroupFeedComponent,
+  ],
   templateUrl: './group-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -39,19 +42,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   members$!: Observable<Profile[]>;
   resources$!: Observable<Group['resources']>;
   private sub = new Subscription();
-  groupId!: string;
   joined = false;
 
   editing = false;
-
-  currentUserId: string | null = null;
-
-  activeTab: 'feed' | 'chat' | 'discussion' |'members' |'resources' = 'feed';
-
+  activeTab: 'feed' | 'chat' | 'members' | 'resources' = 'feed';
   dmUserId: string | null = null;
 
   @ViewChild('dmHost') dmPopupHost!: DmPopupHostComponent;
-
 
   constructor(
     private route: ActivatedRoute,
@@ -61,39 +58,27 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.groupId = this.route.snapshot.paramMap.get('id')!;
-  
-    // Load group
-    this.group$ = this.groups.getGroupById(this.groupId);
-  
-    // When group or user changes, recalc joined
+    const groupId = this.route.snapshot.paramMap.get('id')!;
+    this.group$ = this.groups.getGroupById(groupId);
+
     this.sub.add(
       this.group$.subscribe(group => {
-        const currentUserId = this.auth.getUserId(); // from localStorage
+        const currentUserId = this.auth.getUserId();
         this.joined = !!group.members?.some(
           m => m.userId === currentUserId && !m.isDeleted
         );
-        console.log('Joined status:', this.joined);
       })
     );
-  
-    // Keep resources & members streams
+
     this.members$ = this.group$.pipe(
       map(group => (group.members ?? []).map(m => this.toProfile(m.user?.profile)))
     );
-  
-    this.resources$ = this.group$.pipe(map(group => group.resources ?? []));
-  
-    // Setup socket connection
-    this.socket.connect();
-    this.sub.add(this.socket.onUserJoined().subscribe(() => {}));
-    this.sub.add(this.socket.onUserLeft().subscribe(() => {}));
-  }
-  
-  
-  
 
-  // Converts user.profile or undefined to a valid Profile
+    this.resources$ = this.group$.pipe(map(group => group.resources ?? []));
+
+    this.socket.connect();
+  }
+
   private toProfile(user?: Profile | null): Profile {
     return {
       id: user?.id || '',
@@ -118,42 +103,39 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   join() {
-    this.groups.joinGroup(this.groupId).subscribe(() => {
-      this.socket.join(this.groupId);
+    const groupId = this.route.snapshot.paramMap.get('id')!;
+    this.groups.joinGroup(groupId).subscribe(() => {
+      this.socket.join(groupId);
       this.joined = true;
     });
   }
 
   leave() {
-    this.groups.leaveGroup(this.groupId).subscribe(() => {
-      this.socket.leave(this.groupId);
+    const groupId = this.route.snapshot.paramMap.get('id')!;
+    this.groups.leaveGroup(groupId).subscribe(() => {
+      this.socket.leave(groupId);
       this.joined = false;
     });
   }
 
-  ngOnDestroy() {
-    this.sub.unsubscribe();
-  }
-
   onGroupUpdated(updated: Group) {
-    this.group$ = this.groups.getGroupById(this.groupId);
+    const groupId = this.route.snapshot.paramMap.get('id')!;
+    this.group$ = this.groups.getGroupById(groupId);
     this.editing = false;
-    this.groups.getGroupById(this.groupId).subscribe();
   }
 
   isGroupAdminOrOwner(group: Group, userId: string | null | undefined): boolean {
     if (!userId) return false;
-  
-    // creator is always considered owner even if membership row is wrong
     if (group.creatorId === userId) return true;
-  
-    // otherwise check the membership role
-    const member = group.members?.find((m) => m.userId === userId);
+    const member = group.members?.find(m => m.userId === userId);
     return member?.role === 'OWNER' || member?.role === 'ADMIN';
   }
 
   openDm(userId: string) {
     this.dmPopupHost.openForUser(userId);
   }
-  
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
 }
