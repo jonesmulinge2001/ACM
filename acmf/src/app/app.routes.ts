@@ -35,6 +35,7 @@ import { InstitutionDashboardComponent } from './InstitutionAdmin/institution-da
 
 import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
 import { AnnouncementDetailComponent } from './components/announcement-detail/announcement-detail.component';
+import { AuthGuard } from './auth.guard';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -48,6 +49,7 @@ export const routes: Routes = [
   {
     path: '',
     component: StudentLayoutComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: HomeComponent },
       { path: 'home', component: HomeComponent },
@@ -74,6 +76,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayoutComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: DashboardOverviewComponent },
       { path: 'manage-users', component: ManageUsersComponent },
@@ -85,6 +88,7 @@ export const routes: Routes = [
   // ==== Institution Admin routes ====
   {
     path: 'institution-admin',
+    canActivate: [AuthGuard],
     component: InstitutionAdminLayoutComponent,
     children: [
       { path: 'announcements', component: AdminAnnouncementFeedComponent },
@@ -94,3 +98,4 @@ export const routes: Routes = [
     ]
   },
 ];
+  

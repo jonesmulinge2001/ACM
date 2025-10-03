@@ -182,4 +182,13 @@ export class GroupsService {
       { headers: this.getAuthHeaders() }
     );
   }
+
+  getGroupResources(groupId: string, limit = 20) {
+    const params = new HttpParams().set('limit', limit);
+    return this.http.get<GroupResource[]>(
+      `${this.base}/${groupId}/resources`,
+      { params, headers: this.getAuthHeaders() }
+    );
+  }
+  
 }

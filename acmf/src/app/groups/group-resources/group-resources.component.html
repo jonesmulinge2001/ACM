@@ -1,1 +1,58 @@
-<p>group-resources works!</p>
+<div class="p-4 bg-white rounded-xl shadow">
+    <h3 class="text-lg font-semibold mb-3">📂 Shared Resources</h3>
+  
+    <!-- Loading -->
+    <ng-container *ngIf="loading">
+      <p class="text-gray-500 text-sm">Loading resources...</p>
+    </ng-container>
+  
+    <!-- Grid layout -->
+    <ng-container *ngIf="!loading && resources?.length; else empty">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          *ngFor="let res of resources"
+          class="p-4 border rounded-lg hover:shadow-md transition bg-gray-50 flex flex-col justify-between"
+        >
+          <div>
+            <p class="font-medium text-blue-600 flex items-center space-x-2 mb-1">
+              <span>
+                {{
+                  getFileIcon(
+                    res.fileType || getFileExtension(res.resourceUrl || '')
+                  )
+                }}
+              </span>
+  
+              <span class="truncate" [title]="res.originalName">
+                {{ res.originalName || 'Shared File' }}
+              </span>
+            </p>
+  
+            <p class="text-sm text-gray-500 mb-2">
+              by {{ res.sharedBy?.name || 'Unknown' }} ·
+              {{ res.createdAt | date : 'short' }}
+            </p>
+  
+            <div class="flex items-center space-x-4 text-xs text-gray-500">
+              <span>👍 {{ res.likesCount }}</span>
+              <span>💬 {{ res.commentsCount }}</span>
+            </div>
+          </div>
+  
+          <a
+            [href]="res.resourceUrl"
+            target="_blank"
+            class="mt-4 text-center text-sm px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            View / Download
+          </a>
+        </div>
+      </div>
+    </ng-container>
+  
+    <!-- Empty -->
+    <ng-template #empty>
+      <p class="text-gray-500 text-sm">No file resources shared yet.</p>
+    </ng-template>
+  </div>
+  

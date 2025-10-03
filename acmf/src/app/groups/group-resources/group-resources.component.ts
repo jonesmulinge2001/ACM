@@ -1,47 +1,83 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { catchError, of } from 'rxjs';
+import { GroupsService } from '../../services/group.service';
 import { GroupResource } from '../../interfaces';
-
-
 
 @Component({
   selector: 'app-group-resources',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="p-4 bg-white rounded-xl shadow">
-      <h3 class="text-lg font-semibold mb-3">Shared Resources</h3>
-
-      <ng-container *ngIf="resources?.length; else empty">
-        <ul class="space-y-3">
-          <li
-            *ngFor="let res of resources"
-            class="p-3 border rounded-lg hover:bg-gray-50 flex justify-between items-center"
-          >
-            <div>
-              <p class="font-medium text-blue-600">{{ res.content }}</p>
-              <p class="text-sm text-gray-500">
-                by {{ res.sharedBy?.name }} ·
-                {{ res.createdAt | date: 'short' }}
-              </p>
-            </div>
-            <a
-              [href]="res.resourceUrl"
-              target="_blank"
-              class="text-sm px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-            >
-              View
-            </a>
-          </li>
-        </ul>
-      </ng-container>
-
-      <ng-template #empty>
-        <p class="text-gray-500 text-sm">No resources shared yet.</p>
-      </ng-template>
-    </div>
-  `,
+  templateUrl: './group-resources.component.html',
 })
-export class GroupResourcesComponent {
-  @Input() resources: GroupResource[] = [];
+export class GroupResourcesComponent implements OnInit {
+  @Input() groupId?: string;
+  resources: GroupResource[] = [];
+  loading = true;
+
+  constructor(private groupsService: GroupsService) {}
+
+  ngOnInit() {
+    if (this.groupId) {
+      console.log('Fetching resources for group:', this.groupId);
+      this.groupsService
+        .getGroupResources(this.groupId)
+        .pipe(
+          catchError((err) => {
+            console.error('Failed to load resources', err);
+            this.loading = false;
+            return of([]);
+          })
+        )
+        .subscribe((data) => {
+          console.log('Group data:', data);
+          this.resources = data.filter((r) => !!r.resourceUrl);
+          this.loading = false;
+
+          this.resources.forEach((res) => {
+            console.log('Detected filename:', this.getFileName(res.resourceUrl));
+            console.log('Detected extension:', this.getFileExtension(res.resourceUrl));
+          });
+        });
+    }
+  }
+
+  // 🧠 Extract file name from URL
+  getFileName(url: string | null | undefined): string {
+    if (!url) return 'File';
+    try {
+      const decoded = decodeURIComponent(url);
+      const clean = decoded.split('?')[0];
+      const file = clean.split('/').pop();
+      return file || 'File';
+    } catch {
+      return 'File';
+    }
+  }
+
+  // 🧠 Extract file extension safely
+  getFileExtension(url: string | null | undefined): string {
+    if (!url) return '';
+    try {
+      const decoded = decodeURIComponent(url);
+      const clean = decoded.split('?')[0];
+      const parts = clean.split('.');
+      return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
+    } catch {
+      return '';
+    }
+  }
+
+  // 🧠 Choose icon based on file type
+  getFileIcon(fileType?: string): string {
+    if (!fileType) return '📁';
+    const ext = fileType.toLowerCase();
+
+    if (['pdf', 'doc', 'docx', 'txt'].includes(ext)) return '📄';
+    if (['zip', 'rar', '7z'].includes(ext)) return '📦';
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) return '🖼️';
+    if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return '🎥';
+    if (['mp3', 'wav', 'ogg'].includes(ext)) return '🎵';
+    return '📁';
+  }
 }

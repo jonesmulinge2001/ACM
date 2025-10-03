@@ -149,9 +149,11 @@
 
       <!-- RESOURCES -->
       <ng-container *ngIf="activeTab === 'resources'">
-        <app-group-resources
-          [resources]="(resources$ | async) ?? []"
-        ></app-group-resources>
+        <ng-container *ngIf="group$ | async as group">
+          <app-group-resources [groupId]="group.id"></app-group-resources>
+        </ng-container>
+        
+
       </ng-container>
     </div>
 

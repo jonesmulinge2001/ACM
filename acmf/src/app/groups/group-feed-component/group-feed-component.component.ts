@@ -27,7 +27,6 @@ export class GroupFeedComponent implements OnInit {
   previewUrl: string | null = null;
   fileType: 'image' | 'video' | 'doc' | null = null;
 
-  // Optional: You may fetch this from your auth service
   currentUser = { name: 'User', profileImage: null };
 
   constructor(
@@ -44,7 +43,6 @@ export class GroupFeedComponent implements OnInit {
     this.loadFeed();
   }
 
-  /** Load all feed posts */
   loadFeed(): void {
     this.loading = true;
     this.groupsService.getGroupFeed(this.groupId).subscribe({
@@ -55,15 +53,13 @@ export class GroupFeedComponent implements OnInit {
         }));
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Feed load failed', err);
+      error: () => {
         this.errorMessage = 'Could not load feed';
         this.loading = false;
       },
     });
   }
 
-  /** Like or unlike a post */
   toggleLike(resource: GroupResource): void {
     const req = resource.isLikedByCurrentUser
       ? this.groupsService.unlikeFeedPost(this.groupId, resource.id)
@@ -78,7 +74,6 @@ export class GroupFeedComponent implements OnInit {
     });
   }
 
-  /** Add a new comment */
   addComment(resource: GroupResource): void {
     const content = (this.newComment[resource.id] ?? '').trim();
     if (!content) return;
@@ -95,12 +90,10 @@ export class GroupFeedComponent implements OnInit {
       });
   }
 
-  /** Start editing a comment */
   startEdit(comment: GroupResourceComment): void {
     this.editingComment = { id: comment.id, content: comment.content };
   }
 
-  /** Save edited comment */
   saveEdit(resource: GroupResource): void {
     if (!this.editingComment) return;
     const content = this.editingComment.content.trim();
@@ -116,7 +109,6 @@ export class GroupFeedComponent implements OnInit {
           }
           this.cancelEdit();
         },
-        error: (err) => console.error('Edit failed', err),
       });
   }
 
@@ -124,7 +116,6 @@ export class GroupFeedComponent implements OnInit {
     this.editingComment = null;
   }
 
-  /** Delete comment */
   deleteComment(resource: GroupResource, commentId: string): void {
     this.groupsService
       .deleteFeedComment(this.groupId, resource.id, commentId)
@@ -137,11 +128,9 @@ export class GroupFeedComponent implements OnInit {
             0
           );
         },
-        error: (err) => console.error('Delete failed', err),
       });
   }
 
-  /** Like/unlike comment */
   toggleCommentLike(
     resource: GroupResource,
     comment: GroupResourceComment
@@ -165,11 +154,9 @@ export class GroupFeedComponent implements OnInit {
           (comment.likesCount ?? 0) +
           (comment.isLikedByCurrentUser ? 1 : -1);
       },
-      error: (err) => console.error('Toggle like failed', err),
     });
   }
 
-  /** File upload + preview */
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
@@ -184,31 +171,19 @@ export class GroupFeedComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  /** Create a new feed post */
   createPost(): void {
-    const content = this.newPost.content?.trim() || ''; // safely handle undefined
-  
-    // prevent empty post
+    const content = this.newPost.content?.trim() || '';
     if (!content && !this.selectedFile) {
       this.errorMessage = 'Please write something or attach a file.';
       return;
     }
-  
+
     this.creatingPost = true;
-    this.errorMessage = '';
-  
     const formData = new FormData();
-  
-    // Only append content if not empty
-    if (content) {
-      formData.append('content', content);
-    }
-  
-    // Append file if selected
-    if (this.selectedFile) {
-      formData.append('file', this.selectedFile);
-    }
-  
+
+    if (content) formData.append('content', content);
+    if (this.selectedFile) formData.append('file', this.selectedFile);
+
     this.groupsService.shareResource(this.groupId, formData).subscribe({
       next: (newResource) => {
         this.feed.unshift(newResource);
@@ -219,11 +194,23 @@ export class GroupFeedComponent implements OnInit {
         this.creatingPost = false;
       },
       error: (err) => {
-        console.error('Post failed', err);
-        this.errorMessage = err.error?.message?.join(', ') || 'Failed to create post';
+        this.errorMessage = err.error?.message || 'Failed to create post';
         this.creatingPost = false;
       },
     });
   }
-  
+
+  /** Return icon by fileType */
+  getFileIcon(fileType?: string | null): string {
+    if (!fileType) return '📁';
+    const type = fileType.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(type)) return '🖼️';
+    if (['mp4', 'mov', 'avi'].includes(type)) return '🎥';
+    if (['pdf'].includes(type)) return '📄';
+    if (['doc', 'docx'].includes(type)) return '📝';
+    if (['ppt', 'pptx'].includes(type)) return '📊';
+    if (['xls', 'xlsx'].includes(type)) return '📈';
+    if (['zip', 'rar'].includes(type)) return '🗜️';
+    return '📁';
+  }
 }

@@ -416,6 +416,8 @@ export interface GroupResource {
   isLikedByCurrentUser: boolean;
   commentsCount: number;
   comments: GroupResourceComment[];
+  originalName?: string | null;
+  fileType?: string | null; 
   
 }
 
