@@ -133,7 +133,6 @@ export class GroupsController {
   ) {
     // dto will now be parsed correctly
     return this.groupService.shareResource(id, req.user.id, dto, file);
-
   }
 
   @Get(':id')
@@ -154,12 +153,12 @@ export class GroupsController {
   }
 
   @Get(':id/resources')
-async getGroupResources(
-  @Req() req: RequestWithUser,
-  @Param('id') id: string,
-) {
-  return this.groupService.getGroupResources(id, req.user.id);
-}
+  async getGroupResources(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+  ) {
+    return this.groupService.getGroupResources(id, req.user.id);
+  }
 
   // Optionally: send message via REST (useful for bots or fallback)
   @Post(':id/messages')

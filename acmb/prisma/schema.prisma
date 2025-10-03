@@ -456,6 +456,8 @@ model GroupResource {
   id          String   @id @default(uuid())
   content     String?
   resourceUrl String?
+  originalName   String?
+  fileType       String? 
   createdAt   DateTime @default(now())
 
   groupId    String

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -192,22 +192,28 @@ export class GroupsService {
     dto: CreateGroupResourceDto,
     file?: Express.Multer.File,
   ) {
-    // 1️⃣ Ensure user is group member
+    //  Ensure user is group member
     const isMember = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
     if (!isMember) throw new ForbiddenException('You are not a group member');
-
+  
     // Upload file if provided
     let resourceUrl: string | null = null;
+    let originalName: string | null = null;
+    let fileType: string | null = null;
+  
     if (file) {
       const uploadResult = await this.cloudinary.uploadRaw(
         file,
         AcademeetUploadType.RESOURCE_FILE,
       );
       resourceUrl = uploadResult.secure_url;
+      originalName = file.originalname; 
+      const parts = file.originalname.split('.');
+      fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
     }
-
+  
     // 3️⃣ Create resource
     const resource = await this.prisma.groupResource.create({
       data: {
@@ -215,6 +221,8 @@ export class GroupsService {
         sharedById: userId,
         content: dto.content,
         resourceUrl,
+        originalName,
+        fileType,
       },
       include: {
         sharedBy: {
@@ -231,12 +239,14 @@ export class GroupsService {
         },
       },
     });
-
-    //  Return formatted response
+  
+    // 4️⃣ Return formatted response
     return {
       id: resource.id,
       content: resource.content,
       resourceUrl: resource.resourceUrl,
+      originalName: resource.originalName,
+      fileType: resource.fileType,
       createdAt: resource.createdAt,
       groupId: resource.groupId,
       likesCount: resource.likesCount,
@@ -254,6 +264,7 @@ export class GroupsService {
       },
     };
   }
+  
 
   /** Persist a group message and return saved message */
   async sendMessage(userId: string, dto: SendMessageDto) {
@@ -573,47 +584,46 @@ export class GroupsService {
   }
 
   //  Fetch only posts with files (resources)
-async getGroupResources(groupId: string, userId: string, limit = 20) {
-  await this.ensureGroupExists(groupId);
+  async getGroupResources(groupId: string, userId: string, limit = 20) {
+    await this.ensureGroupExists(groupId);
 
-  const resources = await this.prisma.groupResource.findMany({
-    where: {
-      groupId,
-      resourceUrl: { not: null }, // Only file posts
-    },
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-    include: {
-      sharedBy: {
-        select: {
-          id: true,
-          name: true,
-          profile: { select: { profileImage: true } },
-        },
+    const resources = await this.prisma.groupResource.findMany({
+      where: {
+        groupId,
+        resourceUrl: { not: null }, // Only file posts
       },
-      likes: true,
-      comments: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profile: { select: { profileImage: true } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        sharedBy: {
+          select: {
+            id: true,
+            name: true,
+            profile: { select: { profileImage: true } },
+          },
+        },
+        likes: true,
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: { select: { profileImage: true } },
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  return resources.map((r) => ({
-    ...r,
-    likesCount: r.likes.length,
-    commentsCount: r.comments.length,
-    isLiked: r.likes.some((l) => l.userId === userId),
-  }));
-}
-
+    return resources.map((r) => ({
+      ...r,
+      likesCount: r.likes.length,
+      commentsCount: r.comments.length,
+      isLiked: r.likes.some((l) => l.userId === userId),
+    }));
+  }
 
   async deleteComment(userId: string, commentId: string) {
     // 1Find the comment

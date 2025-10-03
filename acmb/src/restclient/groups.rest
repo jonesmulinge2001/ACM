@@ -1,6 +1,6 @@
 ### Variables
 @baseUrl = http://localhost:3000
-@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTg5MTU4NTAsImV4cCI6MTc1OTAwMjI1MH0.ozfR0Hi5BiCLrZKmGX-Hh5y4t6kVzFSgF5TZjB8hzrc
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1OTQ3NTU1OSwiZXhwIjoxNzU5NTYxOTU5fQ.A0V7ICnGU5jMN_Hfm-C2Dz5amH6u_dk2wztFAlVBAsU
 @groupId = 501c3b00-7e5d-4716-90a5-a787c0cdb740
 @messageId = 
 
@@ -174,3 +174,6 @@ GET {{baseUrl}}/groups/{{groupId}}/feed
 Authorization: Bearer {{jwtToken}}
 
 
+### get group resources
+GET http://localhost:3000/groups/{{groupId}}/resources
+Authorization: Bearer {{jwtToken}}
