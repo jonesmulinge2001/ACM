@@ -10,7 +10,7 @@ import {
   BulkRemoveMembersDto,
   BulkRestoreMembersDto,
   BulkUpdateRolesDto,
-  GroupResourceComment
+  GroupResourceComment,
 } from '../interfaces';
 
 @Injectable({ providedIn: 'root' })
@@ -30,34 +30,60 @@ export class GroupsService {
   // All authenticated routes should use headers
 
   getAllGroups(): Observable<Group[]> {
-    return this.http.get<Group[]>(this.base, { headers: this.getAuthHeaders() });
+    return this.http.get<Group[]>(this.base, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getGroupById(groupId: string): Observable<Group> {
-    return this.http.get<Group>(`${this.base}/${groupId}`, { headers: this.getAuthHeaders() });
+    return this.http.get<Group>(`${this.base}/${groupId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   createGroup(payload: Partial<Group>): Observable<Group> {
-    return this.http.post<Group>(this.base, payload, { headers: this.getAuthHeaders() });
+    return this.http.post<Group>(this.base, payload, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  updateGroup(groupId: string, dto: Partial<Group> | FormData): Observable<Group> {
-    return this.http.patch<Group>(`${this.base}/${groupId}`, dto, { headers: this.getAuthHeaders() });
+  updateGroup(
+    groupId: string,
+    dto: Partial<Group> | FormData
+  ): Observable<Group> {
+    return this.http.patch<Group>(`${this.base}/${groupId}`, dto, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   joinGroup(groupId: string): Observable<any> {
-    return this.http.post(`${this.base}/${groupId}/join`, {}, { headers: this.getAuthHeaders() });
+    return this.http.post(
+      `${this.base}/${groupId}/join`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   leaveGroup(groupId: string): Observable<any> {
-    return this.http.post(`${this.base}/${groupId}/leave`, {}, { headers: this.getAuthHeaders() });
+    return this.http.post(
+      `${this.base}/${groupId}/leave`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   //  Share text or file resource
-  shareResource(groupId: string, formData: FormData): Observable<GroupResource> {
-    return this.http.post<GroupResource>(`${this.base}/${groupId}/resources`, formData, {
-      headers: this.getAuthHeaders(),
-    });
+  shareResource(
+    groupId: string,
+    formData: FormData
+  ): Observable<GroupResource> {
+    return this.http.post<GroupResource>(
+      `${this.base}/${groupId}/resources`,
+      formData,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   // Messages
@@ -71,38 +97,66 @@ export class GroupsService {
   }
 
   sendMessage(groupId: string, dto: { groupId: string; content: string }) {
-    return this.http.post<GroupMessage>(`${this.base}/${groupId}/messages`, dto, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.post<GroupMessage>(
+      `${this.base}/${groupId}/messages`,
+      dto,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   // Bulk admin actions
   bulkAddMembers(groupId: string, dto: BulkAddMembersDto) {
-    return this.http.post(`${this.base}/${groupId}/members/bulk-add`, dto, { headers: this.getAuthHeaders() });
+    return this.http.post(`${this.base}/${groupId}/members/bulk-add`, dto, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   bulkRemoveMembers(groupId: string, dto: BulkRemoveMembersDto) {
-    return this.http.post(`${this.base}/${groupId}/members/bulk-remove`, dto, { headers: this.getAuthHeaders() });
+    return this.http.post(`${this.base}/${groupId}/members/bulk-remove`, dto, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   bulkRestoreMembers(groupId: string, dto: BulkRestoreMembersDto) {
-    return this.http.post(`${this.base}/${groupId}/members/bulk-restore`, dto, { headers: this.getAuthHeaders() });
+    return this.http.post(`${this.base}/${groupId}/members/bulk-restore`, dto, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   bulkUpdateRoles(groupId: string, dto: BulkUpdateRolesDto) {
-    return this.http.post(`${this.base}/${groupId}/members/bulk-update-roles`, dto, { headers: this.getAuthHeaders() });
+    return this.http.post(
+      `${this.base}/${groupId}/members/bulk-update-roles`,
+      dto,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
-  addMemberAsAdmin(groupId: string, userId: string, role: 'OWNER' | 'ADMIN' | 'MEMBER') {
-    return this.http.post(`${this.base}/${groupId}/members/${userId}`, { role }, { headers: this.getAuthHeaders() });
+  addMemberAsAdmin(
+    groupId: string,
+    userId: string,
+    role: 'OWNER' | 'ADMIN' | 'MEMBER'
+  ) {
+    return this.http.post(
+      `${this.base}/${groupId}/members/${userId}`,
+      { role },
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   removeMemberAsAdmin(groupId: string, userId: string) {
-    return this.http.delete(`${this.base}/${groupId}/members/${userId}`, { headers: this.getAuthHeaders() });
+    return this.http.delete(`${this.base}/${groupId}/members/${userId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   // Feed (posts/resources)
-  getGroupFeed(groupId: string, page = 1, limit = 10): Observable<GroupResource[]> {
+  getGroupFeed(
+    groupId: string,
+    page = 1,
+    limit = 10
+  ): Observable<GroupResource[]> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.http.get<GroupResource[]>(`${this.base}/${groupId}/feed`, {
       params,
@@ -114,12 +168,19 @@ export class GroupsService {
     groupId: string,
     payload: { content: string; resourceUrl?: string | null }
   ): Observable<GroupResource> {
-    return this.http.post<GroupResource>(`${this.base}/${groupId}/feed`, payload, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.post<GroupResource>(
+      `${this.base}/${groupId}/feed`,
+      payload,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
-  likeFeedPost(groupId: string, postId: string): Observable<{ message: string }> {
+  likeFeedPost(
+    groupId: string,
+    postId: string
+  ): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.base}/${groupId}/feed/${postId}/like`,
       {},
@@ -127,20 +188,36 @@ export class GroupsService {
     );
   }
 
-  unlikeFeedPost(groupId: string, postId: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.base}/${groupId}/feed/${postId}/like`, {
-      headers: this.getAuthHeaders(),
-    });
+  unlikeFeedPost(
+    groupId: string,
+    postId: string
+  ): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.base}/${groupId}/feed/${postId}/like`,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   // Comments
-  getFeedComments(groupId: string, postId: string): Observable<GroupResourceComment[]> {
-    return this.http.get<GroupResourceComment[]>(`${this.base}/${groupId}/feed/${postId}/comments`, {
-      headers: this.getAuthHeaders(),
-    });
+  getFeedComments(
+    groupId: string,
+    postId: string
+  ): Observable<GroupResourceComment[]> {
+    return this.http.get<GroupResourceComment[]>(
+      `${this.base}/${groupId}/feed/${postId}/comments`,
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
-  addFeedComment(groupId: string, postId: string, body: string): Observable<GroupResourceComment> {
+  addFeedComment(
+    groupId: string,
+    postId: string,
+    body: string
+  ): Observable<GroupResourceComment> {
     return this.http.post<GroupResourceComment>(
       `${this.base}/${groupId}/feed/${postId}/comments`,
       { body },
@@ -161,14 +238,22 @@ export class GroupsService {
     );
   }
 
-  deleteFeedComment(groupId: string, postId: string, commentId: string): Observable<{ message: string }> {
+  deleteFeedComment(
+    groupId: string,
+    postId: string,
+    commentId: string
+  ): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(
       `${this.base}/${groupId}/feed/${postId}/comments/${commentId}`,
       { headers: this.getAuthHeaders() }
     );
   }
 
-  likeFeedComment(groupId: string, postId: string, commentId: string): Observable<{ message: string }> {
+  likeFeedComment(
+    groupId: string,
+    postId: string,
+    commentId: string
+  ): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.base}/${groupId}/feed/${postId}/comments/${commentId}/like`,
       {},
@@ -176,7 +261,11 @@ export class GroupsService {
     );
   }
 
-  unlikeFeedComment(groupId: string, postId: string, commentId: string): Observable<{ message: string }> {
+  unlikeFeedComment(
+    groupId: string,
+    postId: string,
+    commentId: string
+  ): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(
       `${this.base}/${groupId}/feed/${postId}/comments/${commentId}/like`,
       { headers: this.getAuthHeaders() }
@@ -185,10 +274,38 @@ export class GroupsService {
 
   getGroupResources(groupId: string, limit = 20) {
     const params = new HttpParams().set('limit', limit);
-    return this.http.get<GroupResource[]>(
-      `${this.base}/${groupId}/resources`,
-      { params, headers: this.getAuthHeaders() }
+    return this.http.get<GroupResource[]>(`${this.base}/${groupId}/resources`, {
+      params,
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  //  Update group resource (content + optional file)
+  updateGroupResource(
+    groupId: string,
+    resourceId: string,
+    content: string,
+    file?: File
+  ): Observable<GroupResource> {
+    const formData = new FormData();
+    formData.append('content', content);
+    if (file) {
+      formData.append('file', file);
+    }
+    return this.http.patch<GroupResource>(
+      `${this.base}/${groupId}/resources/${resourceId}`,
+      formData
     );
   }
-  
+
+  // Delete a group resource (post)
+  deleteGroupResource(
+    groupId: string,
+    resourceId: string
+  ): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.base}/${groupId}/resources/${resourceId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 }

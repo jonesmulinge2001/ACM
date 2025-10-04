@@ -18,6 +18,15 @@ export class GroupFeedComponent implements OnInit {
   newComment: Record<string, string> = {};
   editingComment: { id: string; content: string } | null = null;
 
+  // 🆕 For editing posts
+  editingPost: {
+    id: string;
+    content: string;
+    file: File | null;
+    previewUrl: string | null;
+    fileType: 'image' | 'video' | 'doc' | null;
+  } | null = null;
+
   loading = false;
   creatingPost = false;
   errorMessage: string | null = null;
@@ -28,6 +37,13 @@ export class GroupFeedComponent implements OnInit {
   fileType: 'image' | 'video' | 'doc' | null = null;
 
   currentUser = { name: 'User', profileImage: null };
+
+  commentSectionOpen: { [key: string]: boolean } = {};
+
+  postToDelete: GroupResource | null = null;
+  isDeleteModalOpen = false;
+
+  menuOpen: { [id: string]: boolean } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -116,6 +132,36 @@ export class GroupFeedComponent implements OnInit {
     this.editingComment = null;
   }
 
+  // 🧭 Open the modal
+openDeleteModal(resource: GroupResource): void {
+  this.postToDelete = resource;
+  this.isDeleteModalOpen = true;
+}
+
+// ❌ Close modal
+closeDeleteModal(): void {
+  this.postToDelete = null;
+  this.isDeleteModalOpen = false;
+}
+
+// ✅ Confirm deletion
+confirmDeletePost(): void {
+  if (!this.postToDelete) return;
+
+  this.groupsService
+    .deleteGroupResource(this.groupId, this.postToDelete.id)
+    .subscribe({
+      next: () => {
+        this.feed = this.feed.filter((r) => r.id !== this.postToDelete!.id);
+        this.closeDeleteModal();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete post';
+        this.closeDeleteModal();
+      },
+    });
+}
+
   deleteComment(resource: GroupResource, commentId: string): void {
     this.groupsService
       .deleteFeedComment(this.groupId, resource.id, commentId)
@@ -129,6 +175,10 @@ export class GroupFeedComponent implements OnInit {
           );
         },
       });
+  }
+
+  toggleComments(resourceId: string) {
+    this.commentSectionOpen[resourceId] = !this.commentSectionOpen[resourceId];
   }
 
   toggleCommentLike(
@@ -200,17 +250,78 @@ export class GroupFeedComponent implements OnInit {
     });
   }
 
-  /** Return icon by fileType */
-  getFileIcon(fileType?: string | null): string {
-    if (!fileType) return '📁';
-    const type = fileType.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(type)) return '🖼️';
-    if (['mp4', 'mov', 'avi'].includes(type)) return '🎥';
-    if (['pdf'].includes(type)) return '📄';
-    if (['doc', 'docx'].includes(type)) return '📝';
-    if (['ppt', 'pptx'].includes(type)) return '📊';
-    if (['xls', 'xlsx'].includes(type)) return '📈';
-    if (['zip', 'rar'].includes(type)) return '🗜️';
-    return '📁';
+  // 🆕 Start editing a post
+  startEditPost(resource: GroupResource): void {
+    this.editingPost = {
+      id: resource.id,
+      content: resource.content,
+      file: null,
+      previewUrl: resource.resourceUrl || null,
+      fileType: resource.fileType
+        ? (['jpg', 'jpeg', 'png', 'gif'].includes(resource.fileType)
+            ? 'image'
+            : ['mp4', 'mov', 'avi'].includes(resource.fileType)
+            ? 'video'
+            : 'doc')
+        : null,
+    };
   }
+
+  onEditFileSelected(event: any): void {
+    if (!this.editingPost) return;
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.editingPost.file = file;
+    const type = file.type.split('/')[0];
+    this.editingPost.fileType =
+      type === 'image' ? 'image' : type === 'video' ? 'video' : 'doc';
+
+    const reader = new FileReader();
+    reader.onload = () => (this.editingPost!.previewUrl = reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  savePostEdit(): void {
+    if (!this.editingPost) return;
+    const { id, content, file } = this.editingPost;
+    this.groupsService
+      .updateGroupResource(this.groupId, id, content.trim(), file || undefined)
+      .subscribe({
+        next: (updated: GroupResource) => {
+          const index = this.feed.findIndex((f) => f.id === updated.id);
+          if (index !== -1) {
+            this.feed[index] = updated;
+          }
+          this.cancelPostEdit();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to update post';
+        },
+      });
+  }
+
+  cancelPostEdit(): void {
+    this.editingPost = null;
+  }
+
+  /** Return Material Icon name by fileType */
+  getFileIcon(fileType?: string | null): string {
+    if (!fileType) return 'folder';
+    const type = fileType.toLowerCase();
+
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(type)) return 'image';
+    if (['mp4', 'mov', 'avi'].includes(type)) return 'movie';
+    if (['pdf'].includes(type)) return 'picture_as_pdf';
+    if (['doc', 'docx'].includes(type)) return 'description'; // or 'article'
+    if (['ppt', 'pptx'].includes(type)) return 'slideshow';
+    if (['xls', 'xlsx'].includes(type)) return 'table_chart';
+    if (['zip', 'rar'].includes(type)) return 'folder_zip';
+    return 'insert_drive_file';
+  }
+
+  toggleMenu(resourceId: string): void {
+    this.menuOpen[resourceId] = !this.menuOpen[resourceId];
+  }
+
 }

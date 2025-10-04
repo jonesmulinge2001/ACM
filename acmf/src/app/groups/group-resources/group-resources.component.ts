@@ -68,16 +68,19 @@ export class GroupResourcesComponent implements OnInit {
     }
   }
 
-  // 🧠 Choose icon based on file type
-  getFileIcon(fileType?: string): string {
-    if (!fileType) return '📁';
-    const ext = fileType.toLowerCase();
+// Choose Material Icon based on file type
+getFileIcon(fileType?: string): string {
+  if (!fileType) return 'folder';
+  const ext = fileType.toLowerCase();
 
-    if (['pdf', 'doc', 'docx', 'txt'].includes(ext)) return '📄';
-    if (['zip', 'rar', '7z'].includes(ext)) return '📦';
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) return '🖼️';
-    if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return '🎥';
-    if (['mp3', 'wav', 'ogg'].includes(ext)) return '🎵';
-    return '📁';
-  }
+  if (['pdf'].includes(ext)) return 'picture_as_pdf';
+  if (['doc', 'docx', 'txt'].includes(ext)) return 'description'; 
+  if (['zip', 'rar', '7z'].includes(ext)) return 'folder_zip';
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) return 'image';
+  if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return 'movie';
+  if (['mp3', 'wav', 'ogg'].includes(ext)) return 'audiotrack';
+
+  return 'insert_drive_file'; // fallback generic file icon
+}
+
 }

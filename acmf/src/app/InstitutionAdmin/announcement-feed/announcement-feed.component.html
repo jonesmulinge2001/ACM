@@ -23,7 +23,7 @@
   </div>
 
   <!-- Content -->
-  <ng-container *ngIf="!editing; else editForm">
+  <ng-container *ngIf="editingId !== announcement.id; else editForm">
     <h3 class="font-semibold text-lg mb-2 text-gray-900">{{ announcement.title }}</h3>
     <p class="text-gray-700 leading-relaxed mb-4">{{ announcement.content }}</p>
 
@@ -57,7 +57,7 @@
     <div class="flex justify-end gap-3 border-t pt-4">
       <button
         class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center gap-1 transition"
-        (click)="toggleEdit()"
+        (click)="toggleEdit(announcement.id)"
       >
         <span class="material-icons text-base text-blue-600">edit</span>
         Edit
@@ -82,7 +82,7 @@
     <div class="flex justify-end mt-3">
       <button
         class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 flex items-center gap-1"
-        (click)="toggleEdit()"
+        (click)="toggleEdit(announcement.id)"
       >
         <span class="material-icons text-base">close</span>
         Cancel

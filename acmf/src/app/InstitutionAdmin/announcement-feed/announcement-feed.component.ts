@@ -12,14 +12,13 @@ import { ProfileService } from '../../services/profile.service';
 })
 export class AdminAnnouncementFeedComponent implements OnInit {
   @Input() institutionId!: string;
-  @Input() announcement!: Announcement;
   announcements: Announcement[] = [];
   loading = false;
   error: string | null = null;
 
   deleteModalOpen = false;
   deleteTargetId: string | null = null;
-  editing = false;
+  editingId: string | null = null;   // ✅ track which announcement is being edited
 
   constructor(
     private announcementService: InstitutionService,
@@ -31,24 +30,24 @@ export class AdminAnnouncementFeedComponent implements OnInit {
       this.profileService.getMyProfile().subscribe((profile: Profile) => {
         this.institutionId = profile.institutionId;
         console.log('Loaded institutionId:', this.institutionId);
-        this.loadAnnouncements(); // ✅ load after institutionId is ready
+        this.loadAnnouncements(); 
       });
     } else {
       this.loadAnnouncements();
     }
   }
 
-  toggleEdit() {
-    this.editing = !this.editing;
+  toggleEdit(id: string) {
+    this.editingId = this.editingId === id ? null : id;
   }
   
   onSaved(updated: Announcement) {
     this.refresh(updated);
-    this.toggleEdit();
+    this.editingId = null; // ✅ close edit after save
   }
 
   loadAnnouncements() {
-    if (!this.institutionId) return; // ensure institutionId exists
+    if (!this.institutionId) return;
 
     this.loading = true;
     this.announcementService.getMyAnnouncements(this.institutionId).subscribe({

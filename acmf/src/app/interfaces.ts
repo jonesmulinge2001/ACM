@@ -418,7 +418,7 @@ export interface GroupResource {
   comments: GroupResourceComment[];
   originalName?: string | null;
   fileType?: string | null; 
-  
+  showMenu?: boolean;
 }
 
 
