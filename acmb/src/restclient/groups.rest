@@ -6,7 +6,7 @@
 
 @userId = 9be5bf48-3343-4ad3-8706-d25a939ca7ed
 
-@resourceId = 2032dc40-7754-4022-ad16-427359d83088
+@resourceId = f61769fd-c2ea-4654-bffc-a76d993bd940
 
 @commentId = 24d7dd02-7f31-49eb-ad80-fa92fbc4dfd3
 
@@ -177,3 +177,13 @@ Authorization: Bearer {{jwtToken}}
 ### get group resources
 GET http://localhost:3000/groups/{{groupId}}/resources
 Authorization: Bearer {{jwtToken}}
+
+
+### Edit group resource (update text content only)
+PATCH {{baseUrl}}/groups/{{groupId}}/resources/{{resourceId}}
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Hello great team"
+}

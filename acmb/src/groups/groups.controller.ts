@@ -285,4 +285,29 @@ export class GroupsController {
   ) {
     return this.groupService.deleteComment(req.user.id, commentId);
   }
+
+  @Patch(':groupId/resources/:resourceId')
+@UseInterceptors(FileInterceptor('file'))
+async editResource(
+  @Param('groupId') groupId: string,
+  @Param('resourceId') resourceId: string,
+  @Req() req: RequestWithUser,
+  @Body() dto: { content?: string },
+  @UploadedFile() file?: Express.Multer.File,
+) {
+  const userId = req.user.id;
+  return await this.groupService.editResource(userId, resourceId, dto, file);
+}
+
+@Delete(':groupId/resources/:resourceId')
+async deleteResource(
+  @Param('groupId') groupId: string,
+  @Param('resourceId') resourceId: string,
+  @Req() req: RequestWithUser,
+) {
+  const userId = req.user.id;
+  return await this.groupService.deleteResource(userId, resourceId);
+}
+
+
 }

@@ -1,5 +1,8 @@
 /* eslint-disable prettier/prettier */
- 
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
+
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -197,23 +200,23 @@ export class GroupsService {
       where: { groupId_userId: { groupId, userId } },
     });
     if (!isMember) throw new ForbiddenException('You are not a group member');
-  
+
     // Upload file if provided
     let resourceUrl: string | null = null;
     let originalName: string | null = null;
     let fileType: string | null = null;
-  
+
     if (file) {
       const uploadResult = await this.cloudinary.uploadRaw(
         file,
         AcademeetUploadType.RESOURCE_FILE,
       );
       resourceUrl = uploadResult.secure_url;
-      originalName = file.originalname; 
+      originalName = file.originalname;
       const parts = file.originalname.split('.');
       fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
     }
-  
+
     // 3️⃣ Create resource
     const resource = await this.prisma.groupResource.create({
       data: {
@@ -239,7 +242,7 @@ export class GroupsService {
         },
       },
     });
-  
+
     // 4️⃣ Return formatted response
     return {
       id: resource.id,
@@ -264,7 +267,6 @@ export class GroupsService {
       },
     };
   }
-  
 
   /** Persist a group message and return saved message */
   async sendMessage(userId: string, dto: SendMessageDto) {
@@ -549,7 +551,7 @@ export class GroupsService {
     await this.ensureGroupExists(groupId);
 
     const resources = await this.prisma.groupResource.findMany({
-      where: { groupId },
+      where: { groupId, isDeleted: false },
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
@@ -591,6 +593,7 @@ export class GroupsService {
       where: {
         groupId,
         resourceUrl: { not: null }, // Only file posts
+        isDeleted: false,
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -646,4 +649,80 @@ export class GroupsService {
       where: { id: commentId },
     });
   }
+
+  // edit post
+  async editResource(
+    userId: string,
+    resourceId: string,
+    dto: { content?: string },
+    file?: Express.Multer.File,
+  ) {
+    // 1️⃣ Find the existing resource
+    const resource = await this.prisma.groupResource.findUnique({
+      where: { id: resourceId },
+    });
+
+    if (!resource) throw new NotFoundException('Resource not found');
+
+    // 2️⃣ Ensure the user owns the post
+    if (resource.sharedById !== userId) {
+      throw new ForbiddenException('You can only edit your own post');
+    }
+
+    // 3️⃣ Keep old file info, unless a new file is provided
+    let resourceUrl = resource.resourceUrl;
+    let originalName = resource.originalName;
+    let fileType = resource.fileType;
+
+    // 4️⃣ If a new file is uploaded, replace the file details
+    if (file) {
+      const uploadResult = await this.cloudinary.uploadRaw(
+        file,
+        AcademeetUploadType.RESOURCE_FILE,
+      );
+      resourceUrl = uploadResult.secure_url;
+      originalName = file.originalname;
+      const parts = file.originalname.split('.');
+      fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
+    }
+
+    //  Update the database with new content and/or file
+    return this.prisma.groupResource.update({
+      where: { id: resourceId },
+      data: {
+        content: dto.content ?? resource.content, // fallback if not provided
+        resourceUrl,
+        originalName,
+        fileType,
+      },
+    });
+  }
+
+  async deleteResource(userId: string, resourceId: string) {
+    // Find the resource
+    const resource = await this.prisma.groupResource.findUnique({
+      where: { id: resourceId },
+    });
+  
+    if (!resource) {
+      throw new NotFoundException('Resource not found');
+    }
+  
+    //  Ensure user owns the post
+    if (resource.sharedById !== userId) {
+      throw new ForbiddenException('You can only delete your own post');
+    }
+  
+    // Soft delete (mark as deleted)
+    const updated = await this.prisma.groupResource.update({
+      where: { id: resourceId },
+      data: { isDeleted: true },
+    });
+  
+    return {
+      message: 'Post deleted successfully (soft delete)',
+      resource: updated,
+    };
+  }
+  
 }

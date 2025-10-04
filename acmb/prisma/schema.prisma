@@ -469,7 +469,7 @@ model GroupResource {
 
   group    Group @relation(fields: [groupId], references: [id])
   sharedBy User  @relation(fields: [sharedById], references: [id])
-
+  isDeleted      Boolean   @default(false)
   likes    GroupResourceLike[]
   comments GroupResourceComment[]
 
