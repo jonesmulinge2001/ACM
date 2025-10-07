@@ -24,7 +24,6 @@ import { FlagPostModalComponent } from "../flag-modal-component/flag-modal-compo
   selector: 'app-home',
   imports: [
     CommonModule,
-    CountUpDirective,
     RouterModule,
     NumberShortPipe,
     ReactiveFormsModule,
