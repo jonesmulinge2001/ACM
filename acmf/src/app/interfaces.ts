@@ -419,6 +419,7 @@ export interface GroupResource {
   originalName?: string | null;
   fileType?: string | null; 
   showMenu?: boolean;
+  previewImage?: string;
 }
 
 

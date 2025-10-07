@@ -21,7 +21,6 @@ import { ResourceUploadModalComponent } from './components/resource-upload-modal
 import { StudentLayoutComponent } from './layouts/student-layout/student-layout.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { ManageUsersComponent } from './admin/manage-users/manage-users.component';
-import { ManageResourcesComponent } from './admin/manage-resources/manage-resources.component';
 import { DashboardOverviewComponent } from './admin/dashboard/dashboard.component';
 import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 import { AdminPostsComponent } from './admin/admin-posts/admin-posts.component';

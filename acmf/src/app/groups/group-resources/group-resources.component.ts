@@ -1,8 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { catchError, of } from 'rxjs';
 import { GroupsService } from '../../services/group.service';
 import { GroupResource } from '../../interfaces';
+import { catchError, of } from 'rxjs';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure PDF.js worker
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`;
 
 @Component({
   selector: 'app-group-resources',
@@ -19,7 +23,6 @@ export class GroupResourcesComponent implements OnInit {
 
   ngOnInit() {
     if (this.groupId) {
-      console.log('Fetching resources for group:', this.groupId);
       this.groupsService
         .getGroupResources(this.groupId)
         .pipe(
@@ -30,57 +33,91 @@ export class GroupResourcesComponent implements OnInit {
           })
         )
         .subscribe((data) => {
-          console.log('Group data:', data);
           this.resources = data.filter((r) => !!r.resourceUrl);
           this.loading = false;
-
-          this.resources.forEach((res) => {
-            console.log('Detected filename:', this.getFileName(res.resourceUrl));
-            console.log('Detected extension:', this.getFileExtension(res.resourceUrl));
-          });
+          this.generatePreviews();
         });
     }
   }
 
-  // 🧠 Extract file name from URL
-  getFileName(url: string | null | undefined): string {
-    if (!url) return 'File';
-    try {
-      const decoded = decodeURIComponent(url);
-      const clean = decoded.split('?')[0];
-      const file = clean.split('/').pop();
-      return file || 'File';
-    } catch {
-      return 'File';
+  /** Generate PDF previews for all PDF files */
+  async generatePreviews() {
+    for (const res of this.resources) {
+      const ext = this.getFileExtension(res.resourceUrl);
+      if (ext === 'pdf') {
+        try {
+          res.previewImage = await this.generatePdfThumbnail(res.resourceUrl);
+        } catch (err) {
+          console.error('Failed to generate PDF preview', err);
+        }
+      }
     }
   }
 
-  // 🧠 Extract file extension safely
+  /** Create a base64 image preview from the first PDF page */
+  async generatePdfThumbnail(url: string): Promise<string> {
+    const loadingTask = (pdfjsLib as any).getDocument(url);
+    const pdf = await loadingTask.promise;
+    const page = await pdf.getPage(1);
+
+    const viewport = page.getViewport({ scale: 1.2 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d')!;
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    const renderContext = { canvasContext: context, viewport };
+    await page.render(renderContext).promise;
+
+    // Crop to top half for a more "chat-like" preview
+    const croppedCanvas = document.createElement('canvas');
+    const croppedContext = croppedCanvas.getContext('2d')!;
+    croppedCanvas.width = canvas.width;
+    croppedCanvas.height = canvas.height / 2;
+    croppedContext.drawImage(
+      canvas,
+      0,
+      0,
+      canvas.width,
+      canvas.height / 2,
+      0,
+      0,
+      canvas.width,
+      canvas.height / 2
+    );
+
+    return croppedCanvas.toDataURL();
+  }
+
+  getFileName(url: string | null | undefined): string {
+    if (!url) return '';
+    return url.split('/').pop() || 'file';
+  }
+
   getFileExtension(url: string | null | undefined): string {
     if (!url) return '';
-    try {
-      const decoded = decodeURIComponent(url);
-      const clean = decoded.split('?')[0];
-      const parts = clean.split('.');
-      return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
-    } catch {
-      return '';
-    }
+    const parts = url.split('.');
+    return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
   }
 
-// Choose Material Icon based on file type
-getFileIcon(fileType?: string): string {
-  if (!fileType) return 'folder';
-  const ext = fileType.toLowerCase();
-
-  if (['pdf'].includes(ext)) return 'picture_as_pdf';
-  if (['doc', 'docx', 'txt'].includes(ext)) return 'description'; 
-  if (['zip', 'rar', '7z'].includes(ext)) return 'folder_zip';
-  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(ext)) return 'image';
-  if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) return 'movie';
-  if (['mp3', 'wav', 'ogg'].includes(ext)) return 'audiotrack';
-
-  return 'insert_drive_file'; // fallback generic file icon
-}
-
+  getFileIcon(fileType?: string): string {
+    switch (fileType) {
+      case 'pdf':
+        return 'picture_as_pdf';
+      case 'doc':
+      case 'docx':
+        return 'description';
+      case 'ppt':
+      case 'pptx':
+        return 'slideshow';
+      case 'xls':
+      case 'xlsx':
+        return 'grid_on';
+      case 'zip':
+      case 'rar':
+        return 'archive';
+      default:
+        return 'insert_drive_file';
+    }
+  }
 }

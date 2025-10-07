@@ -81,7 +81,7 @@
             >
               <td class="p-3 font-medium text-gray-900">{{ inst }}</td>
               <td class="p-3 text-center">
-                {{ overview?.studentsPerInstitution?.[activeTab]?.[inst] }}
+                {{ getStudentCount(inst) }}
               </td>
             </tr>
 

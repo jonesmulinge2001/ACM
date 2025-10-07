@@ -99,4 +99,32 @@ export class AdminAnnouncementFeedComponent implements OnInit {
     }
     this.closeDeleteModal();
   }
+
+  // 🔹 Extract filename from URL
+extractFileName(fileUrl: string): string {
+  try {
+    const parts = fileUrl.split('/');
+    return decodeURIComponent(parts[parts.length - 1]);
+  } catch {
+    return 'Download File';
+  }
+}
+
+// 🔹 Pick a Material icon based on file type
+getFileIcon(fileUrl: string): string {
+  const ext = fileUrl.split('.').pop()?.toLowerCase() || '';
+  if (['pdf'].includes(ext)) return 'picture_as_pdf';
+  if (['doc', 'docx'].includes(ext)) return 'description';
+  if (['ppt', 'pptx'].includes(ext)) return 'slideshow';
+  if (['xls', 'xlsx'].includes(ext)) return 'grid_on';
+  return 'attach_file';
+}
+
+// 🔹 (Optional) Mock file info like size/pages — later you can fetch this from backend metadata
+getFileMeta(ext: string): string {
+  if (ext === 'pdf') return 'PDF • 1 page • 338 kB';
+  if (['doc', 'docx'].includes(ext)) return 'Word Document • 245 kB';
+  return 'File';
+}
+
 }
