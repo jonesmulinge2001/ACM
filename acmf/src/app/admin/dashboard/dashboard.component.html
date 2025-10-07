@@ -77,7 +77,24 @@
           <tbody class="bg-white divide-y divide-gray-200 text-sm">
             <ng-container *ngIf="overview as ov">
               <tr
-                *ngFor="let inst of objectKeys(ov.studentsPerInstitution[activeTab] || {})"
+                *ngFor="
+                  let inst of objectKeys(
+                    ov.studentsPerInstitution[activeTab] || {}
+                  )
+                "
+                class="hover:bg-blue-50 transition-colors duration-200"
+              >
+                <td class="p-3 font-medium text-gray-900">{{ inst }}</td>
+                <td class="p-3 text-center">
+                  {{ getStudentCount(inst) }}
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- Fallback if no data -->
+            <ng-container *ngIf="overview?.studentsPerInstitution && overview.studentsPerInstitution[activeTab] as current">
+              <tr
+                *ngFor="let inst of objectKeys(current)"
                 class="hover:bg-blue-50 transition-colors duration-200"
               >
                 <td class="p-3 font-medium text-gray-900">{{ inst }}</td>
@@ -87,18 +104,6 @@
               </tr>
             </ng-container>
             
-
-            <!-- Fallback if no data -->
-            <tr
-              *ngIf="
-                objectKeys(overview?.studentsPerInstitution?.[activeTab] || {})
-                  .length === 0
-              "
-            >
-              <td colspan="2" class="p-3 text-center text-gray-500 italic">
-                No data available
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -124,12 +129,13 @@
           </div>
 
           <!-- Progress bar -->
-          <div class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden my-2 sm:my-0">
+          <div
+            class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden my-2 sm:my-0"
+          >
             <div
               class="h-full bg-gradient-to-r from-[#437bf5] to-[#9036eb] transition-all duration-500"
               [style.width.%]="
-                (inst.totalPosts + inst.totalResources) /
-                getMaxActivity() *
+                ((inst.totalPosts + inst.totalResources) / getMaxActivity()) *
                 100
               "
             ></div>
