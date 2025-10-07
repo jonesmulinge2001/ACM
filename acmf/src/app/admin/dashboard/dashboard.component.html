@@ -92,7 +92,7 @@
             </ng-container>
 
             <!-- Fallback if no data -->
-            <ng-container *ngIf="overview?.studentsPerInstitution && overview.studentsPerInstitution[activeTab] as current">
+            <ng-container *ngIf="overview.studentsPerInstitution && overview.studentsPerInstitution[activeTab] as current">
               <tr
                 *ngFor="let inst of objectKeys(current)"
                 class="hover:bg-blue-50 transition-colors duration-200"

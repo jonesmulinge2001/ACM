@@ -103,7 +103,7 @@
 
           <!-- User Info -->
           <td class="px-4 py-4 flex items-center space-x-3">
-            <ng-container *ngIf="user.profile?.profileImage; else noProfile">
+            <ng-container *ngIf="user.profile.profileImage; else noProfile">
               <img
                 [src]="user.profile.profileImage"
                 alt="{{ user.name }}"
