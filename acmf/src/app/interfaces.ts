@@ -234,11 +234,11 @@ export interface DashboardOverview {
   likesCount: number;
   commentsCount: number;
 
-  studentsPerInstitution: {
-    total: Record<string, number>;
-    today: Record<string, number>;
-    last7Days: Record<string, number>;
-    thisMonth: Record<string, number>;
+  studentsPerInstitution?: {
+    total?: Record<string, number>;
+    today?: Record<string, number>;
+    last7Days?: Record<string, number>;
+    thisMonth?: Record<string, number>;
   };
 
   topInstitutions: {
