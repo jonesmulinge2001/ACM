@@ -129,8 +129,9 @@ export class DashboardOverviewComponent implements OnInit {
   }
 
   getStudentCount(inst: string): number {
-    const data = this.overview?.studentsPerInstitution[this.activeTab];
+    const data = this.overview?.studentsPerInstitution?.[this.activeTab];
     return data ? data[inst] ?? 0 : 0;
   }
+  
   
 }
