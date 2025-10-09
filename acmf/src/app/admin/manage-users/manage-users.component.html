@@ -135,13 +135,14 @@
 
           <!-- User Info -->
           <td class="px-4 py-4 flex items-center space-x-3">
-            <ng-container *ngIf="user.profile?.profileImage; else noProfile">
+            <div *ngIf="user.profile as profile">
               <img
-                [src]="user.profile?.profileImage"
+                [src]="profile.profileImage || 'assets/default-avatar.png'"
                 alt="{{ user.name }}"
-                class="h-10 w-10 rounded-full object-cover shadow-sm"
+                class="rounded-full w-10 h-10 object-cover"
               />
-            </ng-container>
+            </div>
+            
 
             <ng-template #noProfile>
               <div
