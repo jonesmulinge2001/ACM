@@ -263,7 +263,9 @@ export interface AdminUserProfile {
     id: string;
     name: string;
   }
+
   profileImage: string | null;
+
 }
 
 export interface AdminUser {
@@ -273,10 +275,10 @@ export interface AdminUser {
   role: 'ADMIN' | 'STUDENT';
   status: 'ACTIVE' | 'SUSPENDED';
   profile: AdminUserProfile | null;
-  //  counts for analytics
+  // counts for analytics
   totalPosts?: number;
   totalFollowers?: number;
-  //  for convenience
+  // for convenience
   posts?: { id: string }[];
   followers?: { id: string }[];
 }
@@ -316,6 +318,9 @@ export interface AdminPost {
   deletedAt?: string | null;
 
   author: AdminPostAuthor;
+
+
+  // counts coming from `_count`
 
   likesCount: number;
   commentsCount: number;

@@ -102,29 +102,30 @@
           </td>
 
           <!-- User Info -->
-          <td class="px-4 py-4 flex items-center space-x-3">
-            <ng-container *ngIf="user.profile?.profileImage; else noProfile">
-              <img
-                [src]="user.profile?.profileImage"
-                alt="{{ user.name }}"
-                class="h-10 w-10 rounded-full object-cover shadow-sm"
-              />
-            </ng-container>
-            
-            <ng-template #noProfile>
-              <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <span class="text-gray-500 text-xs">N/A</span>
-              </div>
-            </ng-template>
+       <td class="px-4 py-4 flex items-center space-x-3">
+  <ng-container *ngIf="user.profile?.profileImage; else noProfile">
+    <img
+      [src]="user.profile?.profileImage"
+      alt="{{ user.name }}"
+      class="h-10 w-10 rounded-full object-cover shadow-sm"
+    />
+  </ng-container>
 
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 truncate">{{ user.name }}</p>
-              <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
-              <p class="text-xs text-gray-400 truncate">
-                {{ user.profile?.institution?.name || "No Institution" }}
-              </p>
-            </div>
-          </td>
+  <ng-template #noProfile>
+    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+      <span class="text-gray-500 text-xs">N/A</span>
+    </div>
+  </ng-template>
+
+  <div class="min-w-0">
+    <p class="text-sm font-medium text-gray-900 truncate">{{ user.name }}</p>
+    <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+    <p class="text-xs text-gray-400 truncate">
+      {{ user.profile?.institution?.name || 'No Institution' }}
+    </p>
+  </div>
+</td>
+
 
           <!-- Role -->
           <td class="px-4 py-4 hidden sm:table-cell">
