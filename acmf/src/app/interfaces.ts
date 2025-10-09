@@ -264,7 +264,7 @@ export interface AdminUserProfile {
     name?: string;
   }
 
-  profileImage: string | null;
+  profileImage?: string | null;
 
 }
 
@@ -274,7 +274,7 @@ export interface AdminUser {
   email: string;
   role: 'ADMIN' | 'STUDENT';
   status: 'ACTIVE' | 'SUSPENDED';
-  profile: AdminUserProfile | null;
+  profile?: AdminUserProfile | null;
   // counts for analytics
   totalPosts?: number;
   totalFollowers?: number;
