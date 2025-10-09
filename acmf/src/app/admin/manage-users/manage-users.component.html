@@ -135,33 +135,40 @@
 
           <!-- User Info -->
           <td class="px-4 py-4 flex items-center space-x-3">
-            <div *ngIf="user.profile as profile">
+            <div *ngIf="user.profile as profile; else noProfile" class="flex items-center space-x-3">
               <img
                 [src]="profile.profileImage || 'assets/default-avatar.png'"
                 alt="{{ user.name }}"
                 class="rounded-full w-10 h-10 object-cover"
               />
+          
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {{ user.name }}
+                </p>
+                <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                <p class="text-xs text-gray-400 truncate">
+                  {{ profile.institution?.name || "No Institution" }}
+                </p>
+              </div>
             </div>
-            
-
+          
             <ng-template #noProfile>
               <div
                 class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center"
               >
                 <span class="text-gray-500 text-xs">N/A</span>
               </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {{ user.name }}
+                </p>
+                <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                <p class="text-xs text-gray-400 truncate">No Institution</p>
+              </div>
             </ng-template>
-
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 truncate">
-                {{ user.name }}
-              </p>
-              <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
-              <p class="text-xs text-gray-400 truncate">
-                {{ user.profile?.institution?.name || "No Institution" }}
-              </p>
-            </div>
           </td>
+          
 
           <!-- Role -->
           <td class="px-4 py-4 hidden sm:table-cell">
