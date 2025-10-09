@@ -261,7 +261,7 @@ export interface DashboardOverview {
 export interface AdminUserProfile {
   institution?: {
     id: string;
-    name: string;
+    name?: string;
   }
 
   profileImage: string | null;

@@ -9,7 +9,7 @@ import Fuse from 'fuse.js';
 @Component({
   imports: [CommonModule, FormsModule],
   selector: 'app-admin-users',
-  templateUrl: './manage-users.component.html',
+  templateUrl: './manage-users.component.html'
 })
 export class ManageUsersComponent implements OnInit {
   users: AdminUser[] = [];
