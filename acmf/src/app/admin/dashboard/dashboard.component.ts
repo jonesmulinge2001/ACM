@@ -35,7 +35,6 @@ export class DashboardOverviewComponent implements OnInit {
   ];
 
   activeTab: TabKey = 'total';
-
   objectKeys = Object.keys;
 
   constructor(private dashboardService: AdmindashboardService) {}
@@ -55,58 +54,7 @@ export class DashboardOverviewComponent implements OnInit {
           return;
         }
 
-        // metrics mapping
-        this.metrics = [
-          {
-            label: 'Total Users',
-            value: this.overview.usersCount ?? 0,
-            icon: 'group',
-            color: 'bg-blue-100 text-blue-600',
-          },
-          {
-            label: 'Total Posts',
-            value: this.overview.postsCount ?? 0,
-            icon: 'article',
-            color: 'bg-orange-100 text-orange-600',
-          },
-          {
-            label: 'Academic Resources',
-            value: this.overview.academicResourceCount ?? 0,
-            icon: 'menu_book',
-            color: 'bg-teal-100 text-teal-600',
-          },
-          {
-            label: 'New Signups Today',
-            value: this.overview.newSignUpsToday ?? 0,
-            icon: 'person_add',
-            color: 'bg-purple-100 text-purple-600',
-          },
-          {
-            label: 'New Signups (Last 7 Days)',
-            value: this.overview.newSignUpsLast7Days ?? 0,
-            icon: 'date_range',
-            color: 'bg-green-100 text-green-600',
-          },
-          {
-            label: 'New Signups (This Month)',
-            value: this.overview.newSignUpsThisMonth ?? 0,
-            icon: 'calendar_month',
-            color: 'bg-pink-100 text-pink-600',
-          },
-          {
-            label: 'Total Likes',
-            value: this.overview.likesCount ?? 0,
-            icon: 'thumb_up',
-            color: 'bg-yellow-100 text-yellow-600',
-          },
-          {
-            label: 'Total Comments',
-            value: this.overview.commentsCount ?? 0,
-            icon: 'comment',
-            color: 'bg-indigo-100 text-indigo-600',
-          },
-        ];
-
+        this.buildMetrics();
         this.loading = false;
       },
       error: () => {
@@ -116,9 +64,24 @@ export class DashboardOverviewComponent implements OnInit {
     });
   }
 
+  private buildMetrics(): void {
+    if (!this.overview) return;
+
+    const o = this.overview;
+    this.metrics = [
+      { label: 'Total Users', value: o.usersCount ?? 0, icon: 'group', color: 'bg-blue-100 text-blue-600' },
+      { label: 'Total Posts', value: o.postsCount ?? 0, icon: 'article', color: 'bg-orange-100 text-orange-600' },
+      { label: 'Academic Resources', value: o.academicResourceCount ?? 0, icon: 'menu_book', color: 'bg-teal-100 text-teal-600' },
+      { label: 'New Signups Today', value: o.newSignUpsToday ?? 0, icon: 'person_add', color: 'bg-purple-100 text-purple-600' },
+      { label: 'New Signups (Last 7 Days)', value: o.newSignUpsLast7Days ?? 0, icon: 'date_range', color: 'bg-green-100 text-green-600' },
+      { label: 'New Signups (This Month)', value: o.newSignUpsThisMonth ?? 0, icon: 'calendar_month', color: 'bg-pink-100 text-pink-600' },
+      { label: 'Total Likes', value: o.likesCount ?? 0, icon: 'thumb_up', color: 'bg-yellow-100 text-yellow-600' },
+      { label: 'Total Comments', value: o.commentsCount ?? 0, icon: 'comment', color: 'bg-indigo-100 text-indigo-600' },
+    ];
+  }
+
   getTabLabel(key: TabKey): string {
-    const found = this.tabs.find((t) => t.key === key);
-    return found ? found.label : '';
+    return this.tabs.find((t) => t.key === key)?.label ?? '';
   }
 
   getMaxActivity(): number {
@@ -131,11 +94,9 @@ export class DashboardOverviewComponent implements OnInit {
   getStudentCount(inst: string): number {
     const overview = this.overview;
     if (!overview || !overview.studentsPerInstitution) return 0;
-  
-    const data = overview.studentsPerInstitution[this.activeTab];
+
+    // ✅ Use non-null assertion to satisfy AOT + strict mode
+    const data = overview.studentsPerInstitution![this.activeTab];
     return data?.[inst] ?? 0;
   }
-  
-  
-  
 }
