@@ -1,0 +1,37 @@
+<!-- src/app/components/dm-sidebar/dm-sidebar.component.html -->
+<div class="w-72 bg-white border-r h-full flex flex-col">
+  <!-- Header -->
+  <div class="px-4 py-3 border-b font-semibold text-gray-700">Messages</div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="p-4 text-gray-500">Loading...</div>
+
+  <!-- Conversation list -->
+  <ul class="flex-1 overflow-y-auto">
+    <li
+      *ngFor="let convo of conversations"
+      (click)="open(convo.id)"
+      class="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+    >
+      <img
+        [src]="
+          getOtherParticipant(convo)?.profileImage ||
+          '/assets/default-avatar.png'
+        "
+        class="w-10 h-10 rounded-full object-cover"
+      />
+      <div class="flex-1">
+        <div class="font-medium">
+          {{ getOtherParticipant(convo)?.name || "Unknown" }}
+        </div>
+        <div class="text-xs text-gray-500 truncate">
+          {{ convo.lastMessage?.content || "No messages yet" }}
+        </div>
+      </div>
+      <!-- show badge only when > 0 -->
+      <span *ngIf="(convo.unreadCount ?? 0) > 0" class="badge">
+        {{ convo.unreadCount ?? 0 }}
+      </span>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,162 @@
+<div
+  class="p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen"
+>
+  <h2 class="text-2xl font-semibold mb-6 text-gray-900">Dashboard Overview</h2>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center py-10">
+    <div
+      class="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-b-4 border-gray-300"
+    ></div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="text-red-700 bg-red-100 p-4 rounded-2xl shadow-md">
+    {{ error }}
+  </div>
+
+  <!-- Metrics Grid -->
+  <div
+    *ngIf="!loading && !error"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"
+  >
+    <div
+      *ngFor="let metric of metrics"
+      class="bg-white rounded-2xl shadow-md p-6 flex justify-between items-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+    >
+      <div>
+        <p class="text-sm text-gray-500">{{ metric.label }}</p>
+        <h3 class="text-3xl font-bold text-gray-900">
+          {{ metric.value | number }}
+        </h3>
+      </div>
+      <div
+        class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#437bf5] to-[#9036eb] text-white"
+      >
+        <span class="material-icons text-2xl">{{ metric.icon }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Responsive Grid for Institution Sections -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Students Per Institution -->
+    <div *ngIf="overview" class="bg-white rounded-2xl shadow-md p-6">
+      <h3 class="text-xl font-semibold mb-4 text-gray-900">
+        Students Per Institution
+      </h3>
+
+      <!-- Tabs -->
+      <div class="flex space-x-2 mb-4 border-b overflow-x-auto">
+        <button
+          *ngFor="let tab of tabs"
+          (click)="activeTab = tab.key"
+          class="px-4 py-2 rounded-t-lg text-sm font-medium whitespace-nowrap transition-all duration-300"
+          [ngClass]="
+            activeTab === tab.key
+              ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+          "
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <!-- Institution Table -->
+      <div
+        *ngIf="overview?.studentsPerInstitution"
+        class="overflow-x-auto rounded-xl border border-gray-200"
+      >
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 text-gray-600 text-sm">
+            <tr>
+              <th class="p-3 text-left">Institution</th>
+              <th class="p-3 text-center">{{ getTabLabel(activeTab) }}</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 text-sm">
+            <ng-container *ngIf="overview as ov">
+              <tr
+                *ngFor="
+                  let inst of objectKeys(
+                    ov.studentsPerInstitution[activeTab] || {}
+                  )
+                "
+                class="hover:bg-blue-50 transition-colors duration-200"
+              >
+                <td class="p-3 font-medium text-gray-900">{{ inst }}</td>
+                <td class="p-3 text-center">
+                  {{ getStudentCount(inst) }}
+                </td>
+              </tr>
+            </ng-container>
+
+            <!-- Fallback if no data -->
+            <ng-container *ngIf="overview.studentsPerInstitution && overview.studentsPerInstitution[activeTab] as current">
+              <tr
+                *ngFor="let inst of objectKeys(current)"
+                class="hover:bg-blue-50 transition-colors duration-200"
+              >
+                <td class="p-3 font-medium text-gray-900">{{ inst }}</td>
+                <td class="p-3 text-center">
+                  {{ getStudentCount(inst) }}
+                </td>
+              </tr>
+            </ng-container>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Institution Activity -->
+    <div
+      *ngIf="institutionStats?.length"
+      class="bg-white rounded-2xl shadow-md p-6"
+    >
+      <h3 class="text-xl font-semibold mb-4 text-gray-900">
+        Institution Activity
+      </h3>
+
+      <div class="space-y-5">
+        <div
+          *ngFor="let inst of institutionStats"
+          class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 p-3 rounded-lg hover:bg-gray-50 transition"
+        >
+          <!-- Institution name -->
+          <div class="w-full sm:w-40 font-medium text-gray-800 truncate">
+            {{ inst.institutionName }}
+          </div>
+
+          <!-- Progress bar -->
+          <div
+            class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden my-2 sm:my-0"
+          >
+            <div
+              class="h-full bg-gradient-to-r from-[#437bf5] to-[#9036eb] transition-all duration-500"
+              [style.width.%]="
+                ((inst.totalPosts + inst.totalResources) / getMaxActivity()) *
+                100
+              "
+            ></div>
+          </div>
+
+          <!-- Stats -->
+          <div
+            class="flex items-center justify-end space-x-3 text-xs sm:text-sm text-gray-600 w-full sm:w-auto mt-1 sm:mt-0"
+          >
+            <span class="font-semibold text-gray-900">
+              {{ inst.totalPosts | number }}
+            </span>
+            <span class="text-gray-500">posts</span>
+
+            <span class="font-semibold text-gray-900">
+              {{ inst.totalResources | number }}
+            </span>
+            <span class="text-gray-500">resources</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

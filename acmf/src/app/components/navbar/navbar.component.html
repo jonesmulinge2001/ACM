@@ -1,0 +1,85 @@
+<div
+  class="fixed top-0 left-0 right-0 z-55 bg-white shadow-sm px-4 py-3 h-16 flex items-center justify-between"
+>
+  <!-- Logo -->
+  <div class="flex items-center space-x-2">
+    <img
+      src="academeet.jpeg"
+      alt="academeet logo"
+      class="h-8 w-8 rounded-full object-cover"
+    />
+    <span class="text-xl font-bold text-blue-600 hidden sm:inline"
+      >Academeet</span
+    >
+  </div>
+
+  <!-- Search Bar (hidden on small screens) -->
+  <div
+    class="hidden sm:flex items-center flex-1 max-w-xl mx-6 bg-gray-100 px-4 py-2 rounded-full border border-gray-200"
+  >
+    <span class="material-icons text-gray-500 mr-2">search</span>
+    <input
+      type="search"
+      placeholder="Search students, posts, resources..."
+      class="flex-1 bg-transparent outline-none text-sm text-gray-700"
+    />
+  </div>
+
+  <!-- Engagement Icons -->
+  <div class="flex items-center space-x-4">
+    <!-- Search icon (only on small screens) -->
+    <span class="material-icons text-gray-500 text-2xl cursor-pointer sm:hidden"
+      >search</span
+    >
+
+    <!-- Notification with red dot -->
+    <!-- Notifications -->
+    <div class="relative">
+      <!-- Bell -->
+      <button
+        (click)="toggleNotifPanel()"
+        class="relative p-2 rounded-full hover:bg-gray-100"
+      >
+        <span class="material-icons text-gray-600 text-2xl">notifications</span>
+
+        <!-- Red badge -->
+        <span
+          *ngIf="unreadCount > 0"
+          class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
+        >
+          {{ unreadCount }}
+        </span>
+      </button>
+
+      <!-- Notification dropdown -->
+      <div *ngIf="notifPanelOpen" class="absolute right-0 mt-2 z-50">
+        <!-- Use NotificationCenterComponent -->
+        <app-notification-center
+          (markAllNAsRead)="onNotificationsRead()"
+        ></app-notification-center>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <span class="material-icons text-gray-500 text-2xl cursor-pointer"
+      >chat</span
+    >
+
+    <!-- User Profile -->
+    <ng-container *ngIf="isLoggedIn; else guestlinksMobile">
+      <div class="flex items-center space-x-2">
+        <img
+          [src]="userImage"
+          routerLink="/my-profile"
+          class="w-8 h-8 rounded-full cursor-pointer object-cover"
+          alt="user"
+        />
+        <span class="text-sm hidden sm:inline">{{ userName }}</span>
+      </div>
+    </ng-container>
+
+    <ng-template #guestlinksMobile>
+      <!-- Guest view, e.g., login link -->
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+### Like a Post
+POST http://localhost:3000/likes
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0MDExMzUsImV4cCI6MTc1MzQ4NzUzNX0.Snp_mWhI_0PucFIGgEiFaMdjeaGTy5jMv9Q07SzMPoc
+Content-Type: application/json
+
+{
+  "postId": "80cf419d-6db0-47a0-a214-441e23bda4c4",
+  "userId":"9be5bf48-3343-4ad3-8706-d25a939ca7ed"
+}
+
+###  Get Likes for a Post (with user + profile info)
+GET http://localhost:3000/likes/5e294129-9e7d-467d-9c10-19fcf5d83c96/likes
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDUwNTE3MSwiZXhwIjoxNzU0NTkxNTcxfQ.82eia1TNhafaRiQrTh2wlYoGsyuYSpCS6RsYft8o0XE
+Content-Type: application/json
+
+
+### unLike a Post
+POST http://localhost:3000/likes/unlike
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NjQ2OTA4My1mNTM0LTQxZDItODE3Ni1jMWIxMDdlYzNjNjMiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpMTZAZ21haWwuY29tIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3NTM0MDExMzUsImV4cCI6MTc1MzQ4NzUzNX0.Snp_mWhI_0PucFIGgEiFaMdjeaGTy5jMv9Q07SzMPoc
+Content-Type: application/json
+
+{
+  "postId": "80cf419d-6db0-47a0-a214-441e23bda4c4"
+}

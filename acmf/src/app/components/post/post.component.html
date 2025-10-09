@@ -1,0 +1,177 @@
+<!-- Modal Backdrop -->
+<div
+  *ngIf="showModal"
+  class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
+  (click)="closeModal()"
+>
+  <!--====>>> Prevent modal from closing when clicking inside the form -->
+  <div class="relative z-50" (click)="$event.stopPropagation()">
+    <!-- Modal Content -->
+    <form
+      [formGroup]="postForm"
+      (ngSubmit)="submitPost()"
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-screen overflow-y-auto p-6"
+    >
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold">Create Post</h2>
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="text-gray-400 hover:text-black text-xl font-bold"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- User Info -->
+      <div class="flex items-center space-x-4 mb-6" *ngIf="profile">
+        <img
+          [src]="profile.profileImage"
+          class="w-12 h-12 rounded-full"
+          alt="Profile"
+        />
+        <div>
+          <p class="font-semibold">{{ profile.name }}</p>
+          <p class="text-sm text-gray-500">{{ profile.institution }}</p>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <label class="block text-sm font-medium text-gray-700 mb-1"
+        >Category</label
+      >
+      <select
+        formControlName="category"
+        class="w-full border rounded-lg p-2 mb-4"
+      >
+        <option value="General">GENERAL</option>
+        <option value="Opportunity">OPPORTUNITY</option>
+        <option value="Academic">ACADEMIC</option>
+        <option value="Resource">RESOURCE</option>
+      </select>
+
+      <!-- Title -->
+      <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+      <input
+        formControlName="title"
+        type="text"
+        placeholder="What's your post about?"
+        class="w-full border rounded-lg p-2 mb-1"
+      />
+      <div class="text-red-500 text-sm mb-4" *ngIf="isInvalid('title')">
+        <span *ngIf="postForm.get('title')?.errors?.['required']"
+          >Title is required.</span
+        >
+        <span *ngIf="postForm.get('title')?.errors?.['minlength']"
+          >Minimum 3 characters required.</span
+        >
+      </div>
+
+      <!-- Content -->
+      <label class="block text-sm font-medium text-gray-700 mb-1"
+        >Content</label
+      >
+      <textarea
+        formControlName="content"
+        rows="4"
+        placeholder="Share your thoughts..."
+        class="w-full border rounded-lg p-2 mb-1"
+      ></textarea>
+      <div class="text-red-500 text-sm mb-4" *ngIf="isInvalid('content')">
+        <span *ngIf="postForm.get('content')?.errors?.['required']"
+          >Content is required.</span
+        >
+        <span *ngIf="postForm.get('content')?.errors?.['minlength']"
+          >Minimum 10 characters required.</span
+        >
+      </div>
+
+      <!-- Tags -->
+      <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1 gap-2"
+      >
+        <input
+          formControlName="tagInput"
+          placeholder="Add a tag"
+          class="flex-1 border rounded-lg p-2"
+        />
+        <button
+          type="button"
+          (click)="addTag()"
+          class="bg-gray-200 px-3 py-1 rounded w-full sm:w-auto"
+        >
+          Add
+        </button>
+      </div>
+      <div
+        class="text-red-500 text-sm mb-2"
+        *ngIf="isInvalid('tagInput') && postForm.get('tagInput')?.value"
+      >
+        <span *ngIf="postForm.get('tagInput')?.errors?.['minlength']"
+          >Tag must be at least 2 characters.</span
+        >
+      </div>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span
+          *ngFor="let tag of tags; index as i"
+          class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center"
+        >
+          {{ tag }}
+          <button class="ml-2 text-red-500" (click)="removeTag(i)">
+            &times;
+          </button>
+        </span>
+      </div>
+
+      <!-- File Upload -->
+      <div class="border-2 border-dashed rounded-lg p-4 text-center mb-4">
+        <p class="text-sm mb-2">
+          Upload images, documents, or resources to share with the community
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <label
+            class="cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded text-center"
+          >
+            Add Image
+            <input
+              type="file"
+              hidden
+              (change)="onFileSelected($event, 'image')"
+              accept="image/*"
+            />
+          </label>
+          <label
+            class="cursor-pointer bg-purple-100 text-purple-700 px-4 py-2 rounded text-center"
+          >
+            Attach File
+            <input
+              type="file"
+              hidden
+              (change)="onFileSelected($event, 'file')"
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end space-x-3">
+        <button
+          (click)="closeModal()"
+          class="bg-gray-100 px-4 py-2 rounded-full"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          [disabled]="postForm.invalid || isSubmitting"
+          type="submit"
+          class="bg-blue-600 text-white px-6 py-1 rounded-full hover:bg-blue-700 disabled:opacity-50"
+        >
+          {{ isSubmitting ? "Posting..." : "Post" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

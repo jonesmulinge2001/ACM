@@ -1,0 +1,54 @@
+### Create a comment
+POST http://localhost:3000/comments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5YmU1YmY0OC0zMzQzLTRhZDMtODcwNi1kMjVhOTM5Y2E3ZWQiLCJlbWFpbCI6ImoyNjUxNTc2MkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1Mzk4MDEyNCwiZXhwIjoxNzU0MDY2NTI0fQ.wQ7CDCJf0dLZwOuno75OIkBR9SpviEyMPW5_S2-Bsu8
+Content-Type: application/json
+
+{
+  "postId": "d0be5e5d-d469-4ce4-b71b-81d84146c984",
+  "content": "This is my comment on the post!"
+}
+
+### Get comments for a post
+GET http://localhost:3000/comments/40865a03-f06e-4f19-ac5e-9b55f354ea9e
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDMyNzQ0NiwiZXhwIjoxNzU0NDEzODQ2fQ.Xq_hf8roFctYK4TGe21UUACXfoVZxNJDu-IiBwqHYGk
+Content-Type: application/json
+
+
+### Edit a comment
+PATCH http://localhost:3000/comments/8401b2ac-b810-4c40-8efd-c66b0b8ba67b
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1MzQ4MjYwMywiZXhwIjoxNzUzNTY5MDAzfQ.CEn4XKF8-xANZRTdyZlmCCCSfBKSYv6NdwkKG-KLLH8
+Content-Type: application/json
+
+{
+  "content": "Updated content of the comment"
+}
+
+### Delete a comment
+DELETE http://localhost:3000/comments/clu4ktbfe0001f5b1t30r53a1
+Authorization: Bearer 
+
+### get total comments
+GET http://localhost:3000/comments/40865a03-f06e-4f19-ac5e-9b55f354ea9e/count
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDM0NzkyNSwiZXhwIjoxNzU0NDM0MzI1fQ.Qddr2r-ESJFVTcSzvGzwNz_zJ1EVjN6mfPnxz3dat1Y
+Content-Type: application/json
+
+### edit comment
+PATCH  http://localhost:3000/comments/5997a870-3f26-4336-80ec-1955dc8b9ba7
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDM0NzkyNSwiZXhwIjoxNzU0NDM0MzI1fQ.Qddr2r-ESJFVTcSzvGzwNz_zJ1EVjN6mfPnxz3dat1Y
+Content-Type: application/json
+
+{
+  "body": "I totally agree with you,,,"
+}
+
+
+### like a comment
+POST  http://localhost:3000/comments/5997a870-3f26-4336-80ec-1955dc8b9ba7/like
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDM0NzkyNSwiZXhwIjoxNzU0NDM0MzI1fQ.Qddr2r-ESJFVTcSzvGzwNz_zJ1EVjN6mfPnxz3dat1Y
+Content-Type: application/json
+
+
+### unlike a comment
+DELETE http://localhost:3000/comments/8401b2ac-b810-4c40-8efd-c66b0b8ba67b/unlike
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1NDM0NzkyNSwiZXhwIjoxNzU0NDM0MzI1fQ.Qddr2r-ESJFVTcSzvGzwNz_zJ1EVjN6mfPnxz3dat1Y
+Content-Type: application/json

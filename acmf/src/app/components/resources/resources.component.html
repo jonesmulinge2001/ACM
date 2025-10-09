@@ -1,0 +1,122 @@
+<!-- Search and Filters -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  <input
+    type="text"
+    [(ngModel)]="searchTerm"
+    (input)="onFilterChange()"
+    placeholder="🔍 Search academic resources..."
+    class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg"
+  />
+
+  <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+    <input
+      [(ngModel)]="selectedCourse"
+      (input)="onFilterChange()"
+      placeholder="Course"
+      class="p-2 border border-gray-300 rounded-lg w-full md:w-auto"
+    />
+    <input
+      [(ngModel)]="selectedInstitution"
+      (input)="onFilterChange()"
+      placeholder="Institution"
+      class="p-2 border border-gray-300 rounded-lg w-full md:w-auto"
+    />
+    <select
+      [(ngModel)]="selectedYear"
+      (change)="onFilterChange()"
+      class="p-2 border border-gray-300 rounded-lg w-full md:w-auto"
+    >
+      <option value="">Select Year</option>
+      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div
+    *ngFor="let resource of resources"
+    class="border rounded-2xl p-5 shadow-sm hover:shadow-lg transition bg-white space-y-3"
+  >
+    <!-- Title & icon -->
+    <div class="flex items-start justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-blue-600">description</span>
+        <h3 class="font-semibold text-base leading-tight">
+          {{ resource.title }}
+        </h3>
+      </div>
+      <span class="material-icons text-gray-400 cursor-pointer"
+        >cloud_download</span
+      >
+    </div>
+
+    <!-- Label + description -->
+    <span
+      class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full w-fit"
+      >NOTES</span
+    >
+    <p class="text-sm text-gray-700 line-clamp-2">{{ resource.description }}</p>
+
+    <!-- Meta Info -->
+    <div class="text-sm text-gray-600 space-y-1">
+      <div>
+        <span class="text-gray-500 font-medium">Subject:</span>
+        <span class="font-semibold text-black">{{ resource.course }}</span>
+      </div>
+      <div>
+        <span class="text-gray-500 font-medium">Institution:</span>
+        <span class="font-semibold text-black">{{ resource.institution }}</span>
+      </div>
+      <div>
+        <span class="text-gray-500 font-medium">Semester:</span>
+        <span class="font-semibold text-black"
+          >{{ resource.semester }}, {{ resource.year }}</span
+        >
+      </div>
+    </div>
+
+    <!-- Rating + downloads -->
+    <div class="flex items-center gap-1 text-sm text-gray-700">
+      <span class="text-yellow-500 material-icons text-base">star</span>
+      <span class="font-semibold">4.8</span>
+      <span class="text-gray-500"
+        >({{ resource.downloadCount || 0 }} downloads)</span
+      >
+    </div>
+
+    <!-- Uploader -->
+    <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg mt-2">
+      <img
+        [src]="resource.uploader.profileImage || 'https://placehold.co/40x40'"
+        class="w-8 h-8 rounded-full"
+        alt="Uploader"
+      />
+      <div>
+        <p class="font-semibold text-sm">{{ resource.uploader.name }}</p>
+        <p class="text-xs text-gray-500">
+          Uploaded {{ resource.createdAt | date : "shortDate" }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-between items-center mt-3">
+      <button
+  class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-blue-800 text-white px-4 py-1.5 rounded-full text-sm flex items-center gap-1 transition duration-200"
+  (click)="onDownload(resource)"
+>
+  <span class="material-icons text-sm">download</span>
+  Download
+</button>
+
+      <div class="flex gap-2">
+        <button class="text-gray-500 hover:text-black">
+          <span class="material-icons text-base">visibility</span>
+        </button>
+        <button class="text-gray-500 hover:text-black">
+          <span class="material-icons text-base">favorite_border</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

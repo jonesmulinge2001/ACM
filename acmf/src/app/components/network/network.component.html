@@ -1,0 +1,55 @@
+<div class="p-6 -ml-8 -mt-8">
+  <!-- Tabs -->
+  <div class="flex gap-4 border-b pb-2 mb-4 text-sm font-medium">
+    <button
+      (click)="selectedTab = 'all'"
+      [ngClass]="{
+        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'all'
+      }"
+    >
+      All Students
+    </button>
+
+    <button
+      (click)="selectedTab = 'following'"
+      [ngClass]="{
+        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'following'
+      }"
+    >
+      Following
+    </button>
+
+    <button
+      (click)="selectedTab = 'followers'"
+      [ngClass]="{
+        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'followers'
+      }"
+    >
+      Followers
+    </button>
+  </div>
+
+  <!-- Skeleton Loader -->
+  <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="p-4 border rounded-lg shadow animate-pulse">
+      <div class="w-16 h-16 rounded-full bg-gray-200 mb-4"></div>
+      <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+      <div class="h-6 bg-gray-200 rounded w-full mt-4"></div>
+    </div>
+  </div>
+
+  <!-- Profiles Grid -->
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    *ngIf="!loading"
+  >
+    <app-student-card
+      *ngFor="let profile of getDisplayedProfiles()"
+      [profile]="profile"
+      [isFollowing]="isUserFollowing(profile.userId)"
+      (follow)="followUser($event)"
+      (unfollow)="unfollowUser($event)"
+    ></app-student-card>
+  </div>
+</div>

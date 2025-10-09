@@ -1,0 +1,189 @@
+### Variables
+@baseUrl = http://localhost:3000
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc1OTQ3NTU1OSwiZXhwIjoxNzU5NTYxOTU5fQ.A0V7ICnGU5jMN_Hfm-C2Dz5amH6u_dk2wztFAlVBAsU
+@groupId = 501c3b00-7e5d-4716-90a5-a787c0cdb740
+@messageId = 
+
+@userId = 9be5bf48-3343-4ad3-8706-d25a939ca7ed
+
+@resourceId = f61769fd-c2ea-4654-bffc-a76d993bd940
+
+@commentId = 24d7dd02-7f31-49eb-ad80-fa92fbc4dfd3
+
+### Create Group
+POST {{baseUrl}}/groups
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "name": "Math- Gurus",
+  "description": "We focus on modern mathematics technologies.",
+  "coverImage": "https://cdn.academeet.com/groups/alpha.png",
+  "visibility": "PUBLIC"
+}
+
+### Update Group
+PATCH {{baseUrl}}/groups/{{groupId}}
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "name": "Math- Gurus",
+    "description": "We focus on modern mathematics technologies."
+}
+
+### Join Group
+POST {{baseUrl}}/groups/{{groupId}}/join
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "role": "MEMBER"
+}
+
+### Leave Group
+POST {{baseUrl}}/groups/{{groupId}}/leave
+Authorization: Bearer {{jwtToken}}
+
+### Share a Resource
+POST {{baseUrl}}/groups/{{groupId}}/resources
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "groupId": "{{groupId}}",
+  "content": "Operating Systems Notes",
+  "resourceUrl": "https://drive.google.com/file/d/abc123/view",
+  "description": "Full lecture slides and summaries"
+}
+
+### Get Group Details (with members + resources)
+GET {{baseUrl}}/groups/{{groupId}}
+Authorization: Bearer {{jwtToken}}
+
+### Send Message (REST version, Socket.IO preferred for real-time)
+POST {{baseUrl}}/groups/{{groupId}}/messages
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "groupId": "{{groupId}}",
+  "content": "Hey team!"
+}
+
+### Get Messages (latest 50)
+GET {{baseUrl}}/groups/{{groupId}}/messages?limit=50
+Authorization: Bearer {{jwtToken}}
+
+### Get Messages with Cursor Pagination
+GET {{baseUrl}}/groups/{{groupId}}/messages?limit=20&cursor={{messageId}}
+Authorization: Bearer {{jwtToken}}
+
+
+### Get All Groups
+GET {{baseUrl}}/groups
+Authorization: Bearer {{jwtToken}}
+
+
+### Add Member as Admin
+POST {{baseUrl}}/groups/{{groupId}}/members/76469083-f534-41d2-8176-c1b107ec3c63
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "role": "MEMBER"
+}
+
+### Remove Member as Admin
+DELETE {{baseUrl}}/groups/{{groupId}}/members/76469083-f534-41d2-8176-c1b107ec3c63
+Authorization: Bearer {{jwtToken}}
+
+### Bulk Add Members
+POST {{baseUrl}}/groups/{{groupId}}/members/bulk-add
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "userIds": ["user-1", "user-2", "user-3"],
+  "role": "MEMBER"
+}
+
+### Bulk Remove Members
+POST {{baseUrl}}/groups/{{groupId}}/members/bulk-remove
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "userIds": ["user-1", "user-3"]
+}
+
+### Bulk Restore Members
+POST {{baseUrl}}/groups/{{groupId}}/members/bulk-restore
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "userIds": ["user-1"]
+}
+
+### Bulk Update Roles
+POST {{baseUrl}}/groups/{{groupId}}/members/bulk-update-roles
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "userIds": ["user-2", "user-3"],
+  "role": "ADMIN"
+}
+
+### like group resource
+POST {{baseUrl}}/groups/resources/{{resourceId}}/like
+Authorization: Bearer {{jwtToken}}
+
+### unlike group resource
+DELETE {{baseUrl}}/groups/resources/{{resourceId}}/like
+Authorization: Bearer {{jwtToken}}
+
+### comment on a group resource
+POST {{baseUrl}}/groups/resources/{{resourceId}}/comment
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Helpful!"
+}
+
+
+### update comment (owner) only
+PATCH {{baseUrl}}/groups/resources/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Helful alot"
+}
+
+
+### delete a comment (owner only)
+DELETE {{baseUrl}}/groups/resources/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+
+
+### get group feed (with resources likes, comments)
+GET {{baseUrl}}/groups/{{groupId}}/feed
+Authorization: Bearer {{jwtToken}}
+
+
+### get group resources
+GET http://localhost:3000/groups/{{groupId}}/resources
+Authorization: Bearer {{jwtToken}}
+
+
+### Edit group resource (update text content only)
+PATCH {{baseUrl}}/groups/{{groupId}}/resources/{{resourceId}}
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "content": "Hello great team"
+}

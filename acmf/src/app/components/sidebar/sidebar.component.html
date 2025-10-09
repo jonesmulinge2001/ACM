@@ -1,0 +1,74 @@
+<!-- Desktop Sidebar -->
+<div
+  class="hidden lg:block fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] overflow-y-auto bg-white shadow-lg border-r border-gray-100 p-5"
+>
+  <ul class="space-y-1.5">
+    <li *ngFor="let item of navItems">
+      <a
+        [routerLink]="item.link"
+        [ngClass]="{
+          'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-inner':
+            isActiveRoute(item.link),
+          'hover:bg-gray-100 hover:text-blue-600': !isActiveRoute(item.link)
+        }"
+        class="group flex items-center p-2 gap-2 rounded-xl transition-all duration-200 ease-in-out cursor-pointer"
+      >
+        <span
+          class="material-icons text-xl transition-transform group-hover:scale-110 bg-clip-text text-transparent"
+          [ngClass]="getIconGradient(item.label)"
+        >
+          {{ item.icon }}
+        </span>
+
+        <span class="text-sm">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+  <!-- Your Impact Card -->
+  <div
+    class="mt-4 p-2 rounded-lg bg-gradient-to-br from-white to-[#eff6ff] border border-gray-200 shadow-sm"
+  >
+    <h3 class="text-sm font-semibold text-gray-800 mb-4">Your Impact</h3>
+    <div class="space-y-2 text-sm text-gray-600">
+      <div class="flex justify-between">
+        <span>Profile Views</span>
+        <span class="font-semibold text-gray-900">1,456</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Resources Shared</span>
+        <span class="font-semibold text-gray-900">12</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Connections</span>
+        <span class="font-semibold text-gray-900">234</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<div
+  class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-white border-t border-gray-200 py-2 px-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50"
+>
+  <a
+    *ngFor="let item of navItems"
+    [routerLink]="item.link"
+    [ngClass]="{
+      'text-blue-600 font-medium': isActiveRoute(item.link),
+      'text-gray-500 hover:text-blue-500': !isActiveRoute(item.link)
+    }"
+    class="flex flex-col items-center justify-center transition-all duration-200 ease-in-out"
+  >
+    <span
+      class="material-icons text-[1.7rem] mb-0.5 transition-transform bg-clip-text text-transparent"
+      [ngClass]="[
+        getIconGradient(item.label),
+        isActiveRoute(item.link) ? 'scale-110' : ''
+      ]"
+    >
+      {{ item.icon }}
+    </span>
+
+    <span class="text-[0.7rem] leading-tight">{{ item.label }}</span>
+  </a>
+</div>

@@ -1,0 +1,162 @@
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <ng-container *ngIf="group$ | async as group">
+    <!-- Cover + Header -->
+    <div class="relative">
+      <!-- Cover Image -->
+      <img
+        *ngIf="group.coverImage"
+        [src]="group.coverImage"
+        class="w-full h-48 object-cover"
+      />
+
+      <!-- Group Info Overlay -->
+      <div class="absolute bottom-0 left-0 p-4 flex items-center space-x-4">
+        <!-- Group Avatar -->
+        <img
+          *ngIf="group.coverImage"
+          [src]="group.coverImage"
+          class="w-20 h-20 rounded-lg border-4 border-white object-cover"
+        />
+
+        <!-- Title + description -->
+        <div>
+          <h1 class="text-2xl text-[#F0F8FF] font-semibold">
+            {{ group.name }}
+          </h1>
+          <p class="text-lg text-[#F0F8FF]">{{ group.description }}</p>
+          <div class="text-sm text-gray-500 flex space-x-2 mt-1">
+            <span>{{ group.members?.length || 0 }} members</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="absolute top-2 right-2 flex space-x-2">
+        <button
+          *ngIf="!joined"
+          (click)="join()"
+          class="px-3 py-1 bg-blue-600 text-white rounded-lg"
+        >
+          Join Group
+        </button>
+        <button
+          *ngIf="joined"
+          (click)="leave()"
+          class="px-3 py-1 bg-red-500 text-white rounded-lg"
+        >
+          Leave
+        </button>
+
+        <!-- Edit button (only for group admins/owners) -->
+        <ng-container *ngIf="auth.currentUser$ | async as user">
+          <button
+            *ngIf="isGroupAdminOrOwner(group, user?.userId)"
+            (click)="editing = true"
+            class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+          >
+            Edit
+          </button>
+        </ng-container>
+
+        <!-- Modal -->
+        <app-edit-group
+          *ngIf="editing && group"
+          [group]="group"
+          (updated)="onGroupUpdated($event)"
+          (cancel)="editing = false"
+        ></app-edit-group>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b flex space-x-6 px-6">
+      <button
+        (click)="activeTab = 'feed'"
+        [ngClass]="
+          activeTab === 'feed'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-500'
+        "
+        class="py-3 text-sm font-medium"
+      >
+        Feed
+      </button>
+      <button
+        (click)="activeTab = 'chat'"
+        [ngClass]="
+          activeTab === 'chat'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-500'
+        "
+        class="py-3 text-sm font-medium"
+      >
+        Chat
+      </button>
+      <button
+        (click)="activeTab = 'members'"
+        [ngClass]="
+          activeTab === 'members'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-500'
+        "
+        class="py-3 text-sm font-medium"
+      >
+        Members ({{ group.members?.length || 0 }})
+      </button>
+      <button
+        (click)="activeTab = 'resources'"
+        [ngClass]="
+          activeTab === 'resources'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-500'
+        "
+        class="py-3 text-sm font-medium"
+      >
+        Resources ({{ group.resources?.length || 0 }})
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-6">
+      <!-- FEED -->
+      <ng-container *ngIf="activeTab === 'feed'">
+        <!-- Composer & Feed -->
+        <div *ngIf="joined">
+          <app-group-feed [groupId]="group.id"></app-group-feed>
+        </div>
+        <div *ngIf="!joined" class="text-center text-gray-500 mt-6">
+          Join the group to view and post in the feed.
+        </div>
+      </ng-container>
+
+      <!-- CHAT -->
+      <ng-container *ngIf="activeTab === 'chat'">
+        <app-group-chat [groupId]="group.id" *ngIf="joined"></app-group-chat>
+        <div *ngIf="!joined" class="p-6 text-center text-gray-600">
+          Join to participate in chat & resources.
+        </div>
+      </ng-container>
+
+      <!-- MEMBERS -->
+      <ng-container *ngIf="activeTab === 'members'">
+        <app-group-members
+          [members]="(members$ | async) ?? []"
+          (message)="openDm($event)"
+        ></app-group-members>
+
+        <app-dm-chat *ngIf="dmUserId" [participantId]="dmUserId"></app-dm-chat>
+      </ng-container>
+
+      <!-- RESOURCES -->
+      <ng-container *ngIf="activeTab === 'resources'">
+        <ng-container *ngIf="group$ | async as group">
+          <app-group-resources [groupId]="group.id"></app-group-resources>
+        </ng-container>
+        
+
+      </ng-container>
+    </div>
+
+    <app-dm-popup-host #dmHost></app-dm-popup-host>
+  </ng-container>
+</div>
