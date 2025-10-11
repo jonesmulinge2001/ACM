@@ -90,13 +90,4 @@ export class DashboardOverviewComponent implements OnInit {
       ...this.institutionStats.map((i) => i.totalPosts + i.totalResources)
     );
   }
-
-  getStudentCount(inst: string): number {
-    const overview = this.overview;
-    if (!overview || !overview.studentsPerInstitution) return 0;
-
-    // ✅ Use non-null assertion to satisfy AOT + strict mode
-    const data = overview.studentsPerInstitution![this.activeTab];
-    return data?.[inst] ?? 0;
-  }
 }
