@@ -137,7 +137,7 @@
           <td class="px-4 py-4 flex items-center space-x-3">
             <div *ngIf="user.profile as profile; else noProfile" class="flex items-center space-x-3">
               <img
-                [src]="profile.profileImage || 'assets/default-avatar.png'"
+                [src]="user.profile.profileImage || 'assets/default-avatar.png'"
                 alt="{{ user.name }}"
                 class="rounded-full w-10 h-10 object-cover"
               />
@@ -148,7 +148,7 @@
                 </p>
                 <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
                 <p class="text-xs text-gray-400 truncate">
-                  {{ profile.institution?.name || "No Institution" }}
+                  {{ user.profile.institution?.name || "No Institution" }}
                 </p>
               </div>
             </div>

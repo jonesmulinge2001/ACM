@@ -12,7 +12,6 @@ import { TimeagoModule } from 'ngx-timeago';
 import { ResourceUploadModalComponent } from '../resource-upload-modal/resource-upload-modal.component';
 import { NumberShortPipe } from '../../pipes/number-short.pipe';
 import { EditPostComponent } from '../edit-post/edit-post.component';
-import { CountUpDirective } from '../../directives/count-up/count-up.component';
 import { LikeService } from '../../services/like.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { forkJoin, timer } from 'rxjs';
