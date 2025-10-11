@@ -45,12 +45,15 @@ export class GroupFeedComponent implements OnInit {
 
   menuOpen: { [id: string]: boolean } = {};
 
+  currentUserId: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private groupsService: GroupsService
   ) {}
 
   ngOnInit(): void {
+    this.currentUserId = localStorage.getItem('userId'); 
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
     if (!this.groupId) {
       this.errorMessage = 'Group ID missing';
@@ -313,7 +316,7 @@ confirmDeletePost(): void {
     if (['jpg', 'jpeg', 'png', 'gif'].includes(type)) return 'image';
     if (['mp4', 'mov', 'avi'].includes(type)) return 'movie';
     if (['pdf'].includes(type)) return 'picture_as_pdf';
-    if (['doc', 'docx'].includes(type)) return 'description'; // or 'article'
+    if (['doc', 'docx'].includes(type)) return 'description';
     if (['ppt', 'pptx'].includes(type)) return 'slideshow';
     if (['xls', 'xlsx'].includes(type)) return 'table_chart';
     if (['zip', 'rar'].includes(type)) return 'folder_zip';
