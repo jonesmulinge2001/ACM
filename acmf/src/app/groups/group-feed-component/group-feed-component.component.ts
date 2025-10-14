@@ -2,8 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { GroupResource, GroupResourceComment } from '../../interfaces';
+import { GroupResource, GroupResourceComment, Profile } from '../../interfaces';
 import { GroupsService } from '../../services/group.service';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-group-feed',
@@ -18,7 +19,6 @@ export class GroupFeedComponent implements OnInit {
   newComment: Record<string, string> = {};
   editingComment: { id: string; content: string } | null = null;
 
-  // 🆕 For editing posts
   editingPost: {
     id: string;
     content: string;
@@ -35,31 +35,50 @@ export class GroupFeedComponent implements OnInit {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   fileType: 'image' | 'video' | 'doc' | null = null;
+  fileIcon: string | null = null;
 
-  currentUser = { name: 'User', profileImage: null };
+   userProfile?: Profile;
 
   commentSectionOpen: { [key: string]: boolean } = {};
-
   postToDelete: GroupResource | null = null;
   isDeleteModalOpen = false;
 
   menuOpen: { [id: string]: boolean } = {};
-
   currentUserId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private groupsService: GroupsService
+    private groupsService: GroupsService,
+    private profileService: ProfileService
   ) {}
 
   ngOnInit(): void {
-    this.currentUserId = localStorage.getItem('userId'); 
+    this.currentUserId = localStorage.getItem('userId');
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
+  
     if (!this.groupId) {
       this.errorMessage = 'Group ID missing';
       return;
     }
+  
+    // ✅ Load logged-in user's profile first
+    this.profileService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.userProfile = profile;
+      },
+      error: () => {
+        console.error('Failed to load profile')
+      },
+    });
+  
+    // ✅ Load group feed next
     this.loadFeed();
+  }
+  
+
+  /** Optimize rendering: track by unique resource ID */
+  trackByResourceId(index: number, resource: GroupResource) {
+    return resource.id;
   }
 
   loadFeed(): void {
@@ -135,35 +154,32 @@ export class GroupFeedComponent implements OnInit {
     this.editingComment = null;
   }
 
-  // 🧭 Open the modal
-openDeleteModal(resource: GroupResource): void {
-  this.postToDelete = resource;
-  this.isDeleteModalOpen = true;
-}
+  openDeleteModal(resource: GroupResource): void {
+    this.postToDelete = resource;
+    this.isDeleteModalOpen = true;
+  }
 
-// ❌ Close modal
-closeDeleteModal(): void {
-  this.postToDelete = null;
-  this.isDeleteModalOpen = false;
-}
+  closeDeleteModal(): void {
+    this.postToDelete = null;
+    this.isDeleteModalOpen = false;
+  }
 
-// ✅ Confirm deletion
-confirmDeletePost(): void {
-  if (!this.postToDelete) return;
+  confirmDeletePost(): void {
+    if (!this.postToDelete) return;
 
-  this.groupsService
-    .deleteGroupResource(this.groupId, this.postToDelete.id)
-    .subscribe({
-      next: () => {
-        this.feed = this.feed.filter((r) => r.id !== this.postToDelete!.id);
-        this.closeDeleteModal();
-      },
-      error: () => {
-        this.errorMessage = 'Failed to delete post';
-        this.closeDeleteModal();
-      },
-    });
-}
+    this.groupsService
+      .deleteGroupResource(this.groupId, this.postToDelete.id)
+      .subscribe({
+        next: () => {
+          this.feed = this.feed.filter((r) => r.id !== this.postToDelete!.id);
+          this.closeDeleteModal();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to delete post';
+          this.closeDeleteModal();
+        },
+      });
+  }
 
   deleteComment(resource: GroupResource, commentId: string): void {
     this.groupsService
@@ -210,6 +226,7 @@ confirmDeletePost(): void {
     });
   }
 
+  /** 🆕 Cached icon + responsive preview fix */
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
@@ -218,6 +235,9 @@ confirmDeletePost(): void {
     const type = file.type.split('/')[0];
     this.fileType =
       type === 'image' ? 'image' : type === 'video' ? 'video' : 'doc';
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    this.fileIcon = this.getFileIcon(ext); // precompute once
 
     const reader = new FileReader();
     reader.onload = () => (this.previewUrl = reader.result as string);
@@ -244,6 +264,7 @@ confirmDeletePost(): void {
         this.selectedFile = null;
         this.previewUrl = null;
         this.fileType = null;
+        this.fileIcon = null;
         this.creatingPost = false;
       },
       error: (err) => {
@@ -253,7 +274,6 @@ confirmDeletePost(): void {
     });
   }
 
-  // 🆕 Start editing a post
   startEditPost(resource: GroupResource): void {
     this.editingPost = {
       id: resource.id,
@@ -308,7 +328,6 @@ confirmDeletePost(): void {
     this.editingPost = null;
   }
 
-  /** Return Material Icon name by fileType */
   getFileIcon(fileType?: string | null): string {
     if (!fileType) return 'folder';
     const type = fileType.toLowerCase();
@@ -326,5 +345,4 @@ confirmDeletePost(): void {
   toggleMenu(resourceId: string): void {
     this.menuOpen[resourceId] = !this.menuOpen[resourceId];
   }
-
 }

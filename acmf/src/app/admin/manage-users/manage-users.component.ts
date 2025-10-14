@@ -35,7 +35,6 @@ export class ManageUsersComponent implements OnInit {
     this.loadUsers();
   }
 
-  // manage-users.component.ts
   confirmAction: {
     show: boolean;
     message: string;
