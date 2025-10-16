@@ -25,8 +25,10 @@ import { AuthService } from '../../services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
+  
   @Input() groupId!: string;
-  @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('messagesContainer')
+  private messagesContainer!: ElementRef<HTMLDivElement>;
 
   messages: GroupMessage[] = [];
   subs = new Subscription();
@@ -34,6 +36,15 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   showNewMessageButton = false;
   currentUserId: string | null = null;
+
+  // Track which message is being edited
+  editingMessageId: string | null = null;
+  editControl = new FormControl('');
+
+  menuOpen: Record<string, boolean> = {};
+
+  showDeleteModal = false;
+  messageToDelete: GroupMessage | null = null;
 
   constructor(
     private socket: SocketService,
@@ -68,7 +79,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.messagesContainer.nativeElement.addEventListener('scroll', () => {
       if (this.isNearBottom()) {
         this.showNewMessageButton = false;
-        this.cdr.markForCheck(); // ✅ update when scroll changes state
+        this.cdr.markForCheck(); // update when scroll changes state
       }
     });
 
@@ -135,4 +146,102 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.socket.leave(this.groupId);
     this.subs.unsubscribe();
   }
+  // ✏️ Start editing
+  startEditing(message: GroupMessage) {
+    if (!this.isMyMessage(message)) return;
+    this.editingMessageId = message.id;
+    this.editControl.setValue(message.content);
+    this.cdr.markForCheck();
+  }
+
+  // 🚫 Cancel editing
+  cancelEditing() {
+    this.editingMessageId = null;
+    this.editControl.reset();
+    this.cdr.markForCheck();
+  }
+
+  // 💾 Save edited message
+  saveEdit(message: GroupMessage) {
+    const updated = this.editControl.value?.trim();
+    if (!updated || updated === message.content) {
+      this.cancelEditing();
+      return;
+    }
+
+    this.groups.editMessage(message.id, updated).subscribe({
+      next: (res) => {
+        const idx = this.messages.findIndex((m) => m.id === message.id);
+        if (idx > -1) this.messages[idx] = { ...res };
+        this.cancelEditing();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Edit failed', err);
+        this.cancelEditing();
+      },
+    });
+  }
+
+  // 🗑️ Delete message
+  deleteMessage(message: GroupMessage) {
+    if (!this.isMyMessage(message)) return;
+    if (!confirm('Delete this message?')) return;
+
+    this.groups.deleteMessage(message.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter((m) => m.id !== message.id);
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Delete failed', err),
+    });
+  }
+
+  toggleMenu(id: string) {
+    this.menuOpen[id] = !this.menuOpen[id];
+    this.cdr.markForCheck();
+  }
+
+  closeMenus() {
+    this.menuOpen = {};
+    this.cdr.markForCheck();
+  }
+
+  // 🗑️ Trigger modal
+  openDeleteModal(message: GroupMessage) {
+    if (!this.isMyMessage(message)) return;
+    this.messageToDelete = message;
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  // ❌ Cancel modal
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.messageToDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  // ✅ Confirm deletion
+  confirmDelete() {
+    if (!this.messageToDelete) return;
+
+    this.groups.deleteMessage(this.messageToDelete.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(
+          (m) => m.id !== this.messageToDelete?.id
+        );
+        this.showDeleteModal = false;
+        this.messageToDelete = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Delete failed', err);
+        this.cancelDelete();
+      },
+    });
+  
+
+    }
+
 }

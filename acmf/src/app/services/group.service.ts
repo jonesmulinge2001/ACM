@@ -297,4 +297,23 @@ export class GroupsService {
       { headers: this.getAuthHeaders() }
     );
   }
+
+    // Edit a message
+    editMessage(messageId: string, content: string): Observable<GroupMessage> {
+      return this.http.patch<GroupMessage>(
+        `${this.base}/messages/${messageId}`,
+        { content },
+        { headers: this.getAuthHeaders() }
+      );
+    }
+  
+    //  Delete a message
+    deleteMessage(messageId: string): Observable<{ message: string }> {
+      return this.http.delete<{ message: string }>(
+        `${this.base}/messages/${messageId}`,
+        { headers: this.getAuthHeaders() }
+      );
+    }
+  
+
 }
