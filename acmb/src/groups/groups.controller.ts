@@ -238,14 +238,22 @@ export class GroupsController {
     return this.groupService.bulkUpdateRoles(groupId, req.user.id, dto);
   }
 
-  @Post('resources/:id/like')
-  async like(@Req() req: RequestWithUser, @Param('id') id: string) {
-    return this.groupService.likeResource(req.user.id, id);
+  @Post(':groupId/feed/:postId/like')
+  async likeFeed(
+    @Req() req: RequestWithUser,
+    @Param('groupId') groupId: string,
+    @Param('postId') postId: string,
+  ) {
+    return this.groupService.likeResource(req.user.id, postId);
   }
 
-  @Delete('resources/:id/like')
-  async unlike(@Req() req: RequestWithUser, @Param('id') id: string) {
-    return this.groupService.unlikeResource(req.user.id, id);
+  @Delete(':groupId/feed/:postId/like')
+  async unlikeFeed(
+    @Req() req: RequestWithUser,
+    @Param('groupId') groupId: string,
+    @Param('postId') postId: string,
+  ) {
+    return this.groupService.unlikeResource(req.user.id, postId);
   }
 
   @Post('resources/:id/comment')
@@ -286,28 +294,42 @@ export class GroupsController {
     return this.groupService.deleteComment(req.user.id, commentId);
   }
 
+  @Post('comments/:commentId/like')
+  async likeComment(
+    @Req() req: RequestWithUser,
+    @Param('commentId') commentId: string,
+  ) {
+    return this.groupService.likeComment(req.user.id, commentId);
+  }
+
+  @Post('comments/:commentId/unlike')
+  async unlikeComment(
+    @Req() req: RequestWithUser,
+    @Param('commentId') commentId: string,
+  ) {
+    return this.groupService.unlikeComment(req.user.id, commentId);
+  }
+
   @Patch(':groupId/resources/:resourceId')
-@UseInterceptors(FileInterceptor('file'))
-async editResource(
-  @Param('groupId') groupId: string,
-  @Param('resourceId') resourceId: string,
-  @Req() req: RequestWithUser,
-  @Body() dto: { content?: string },
-  @UploadedFile() file?: Express.Multer.File,
-) {
-  const userId = req.user.id;
-  return await this.groupService.editResource(userId, resourceId, dto, file);
-}
+  @UseInterceptors(FileInterceptor('file'))
+  async editResource(
+    @Param('groupId') groupId: string,
+    @Param('resourceId') resourceId: string,
+    @Req() req: RequestWithUser,
+    @Body() dto: { content?: string },
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const userId = req.user.id;
+    return await this.groupService.editResource(userId, resourceId, dto, file);
+  }
 
-@Delete(':groupId/resources/:resourceId')
-async deleteResource(
-  @Param('groupId') groupId: string,
-  @Param('resourceId') resourceId: string,
-  @Req() req: RequestWithUser,
-) {
-  const userId = req.user.id;
-  return await this.groupService.deleteResource(userId, resourceId);
-}
-
-
+  @Delete(':groupId/resources/:resourceId')
+  async deleteResource(
+    @Param('groupId') groupId: string,
+    @Param('resourceId') resourceId: string,
+    @Req() req: RequestWithUser,
+  ) {
+    const userId = req.user.id;
+    return await this.groupService.deleteResource(userId, resourceId);
+  }
 }

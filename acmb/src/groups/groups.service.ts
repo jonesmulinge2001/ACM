@@ -217,7 +217,7 @@ export class GroupsService {
       fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
     }
 
-    // 3️⃣ Create resource
+    // Create resource
     const resource = await this.prisma.groupResource.create({
       data: {
         groupId,
@@ -243,7 +243,7 @@ export class GroupsService {
       },
     });
 
-    // 4️⃣ Return formatted response
+    // Return formatted response
     return {
       id: resource.id,
       content: resource.content,
@@ -287,6 +287,59 @@ export class GroupsService {
     return message;
   }
 
+  async editMessage(userId: string, messageId: string, newContent: string) {
+    // 1️⃣ Find the message
+    const message = await this.prisma.groupMessage.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // 2️⃣ Ensure the user is the sender
+    if (message.userId !== userId) {
+      throw new ForbiddenException('You can only edit your own message');
+    }
+
+    // 3️⃣ Optional: prevent editing deleted messages
+    if ((message as any).isDeleted) {
+      throw new BadRequestException('Cannot edit a deleted message');
+    }
+
+    // 4️⃣ Update message
+    return this.prisma.groupMessage.update({
+      where: { id: messageId },
+      data: {
+        content: newContent,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async deleteMessage(userId: string, messageId: string) {
+    const message = await this.prisma.groupMessage.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (message.userId !== userId) {
+      throw new ForbiddenException('You can only delete your own message');
+    }
+
+    return this.prisma.groupMessage.update({
+      where: { id: messageId },
+      data: {
+        isDeleted: true,
+        content: '[message deleted]',
+        updatedAt: new Date(),
+      },
+    });
+  }
+
   /** Useful retrieval helpers with pagination (cursor-based or offset as you like) */
   async getGroupMessages(groupId: string, limit = 50, cursor?: string) {
     const where = { groupId };
@@ -306,7 +359,7 @@ export class GroupsService {
       },
     });
 
-    // 🔥 Flatten the profileImage so frontend gets what it expects
+    // Flatten the profileImage so frontend gets what it expects
     return messages.map((m) => ({
       ...m,
       user: {
@@ -476,6 +529,7 @@ export class GroupsService {
   async likeResource(userId: string, resourceId: string) {
     const resource = await this.prisma.groupResource.findUnique({
       where: { id: resourceId },
+      include: { likes: true },
     });
     if (!resource) throw new NotFoundException('Resource not found');
 
@@ -485,7 +539,7 @@ export class GroupsService {
     if (!membership) throw new ForbiddenException('Not a group member');
 
     try {
-      return await this.prisma.groupResourceLike.create({
+      await this.prisma.groupResourceLike.create({
         data: { userId, resourceId },
       });
     } catch (err: any) {
@@ -494,12 +548,35 @@ export class GroupsService {
       }
       throw err;
     }
+
+    // Return updated like data
+    const updatedLikes = await this.prisma.groupResourceLike.count({
+      where: { resourceId },
+    });
+
+    return {
+      message: 'Resource liked successfully',
+      resourceId,
+      likesCount: updatedLikes,
+      isLiked: true,
+    };
   }
 
   async unlikeResource(userId: string, resourceId: string) {
-    return this.prisma.groupResourceLike.deleteMany({
+    const deleted = await this.prisma.groupResourceLike.deleteMany({
       where: { userId, resourceId },
     });
+
+    const updatedLikes = await this.prisma.groupResourceLike.count({
+      where: { resourceId },
+    });
+
+    return {
+      message: deleted.count > 0 ? 'Resource unliked' : 'Not previously liked',
+      resourceId,
+      likesCount: updatedLikes,
+      isLiked: false,
+    };
   }
 
   // Comment on Resource
@@ -546,6 +623,82 @@ export class GroupsService {
     });
   }
 
+  async deleteComment(userId: string, commentId: string) {
+    // Find the comment
+    const comment = await this.prisma.groupResourceComment.findUnique({
+      where: { id: commentId },
+    });
+
+    // Validate existence
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    // Check ownership
+    if (comment.userId !== userId) {
+      throw new ForbiddenException('You can only delete your own comment');
+    }
+
+    //  Delete comment
+    return this.prisma.groupResourceComment.delete({
+      where: { id: commentId },
+    });
+  }  
+
+  // Like a comment
+  async likeComment(userId: string, commentId: string) {
+    const comment = await this.prisma.groupResourceComment.findUnique({
+      where: { id: commentId },
+      include: { likes: true, resource: true },
+    });
+
+    if (!comment) throw new NotFoundException('Comment not found');
+
+    // Ensure user is a group member
+    const membership = await this.prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId: comment.resource.groupId, userId } },
+    });
+    if (!membership) throw new ForbiddenException('Not a group member');
+
+    try {
+      await this.prisma.groupResourceCommentLike.create({
+        data: { userId, commentId },
+      });
+    } catch (err: any) {
+      if (err.code === 'P2002') throw new BadRequestException('Already liked');
+      throw err;
+    }
+
+    const updatedLikes = await this.prisma.groupResourceCommentLike.count({
+      where: { commentId },
+    });
+
+    return {
+      message: 'Comment liked successfully',
+      commentId,
+      likesCount: updatedLikes,
+      isLiked: true,
+    };
+  }
+
+  // Unlike a comment
+  async unlikeComment(userId: string, commentId: string) {
+    const deleted = await this.prisma.groupResourceCommentLike.deleteMany({
+      where: { userId, commentId },
+    });
+
+    const updatedLikes = await this.prisma.groupResourceCommentLike.count({
+      where: { commentId },
+    });
+
+    return {
+      message: deleted.count > 0 ? 'Comment unliked' : 'Not previously liked',
+      commentId,
+      likesCount: updatedLikes,
+      isLiked: false,
+    };
+  }
+
   // Get Group Feed
   async getGroupFeed(groupId: string, userId: string, limit = 20) {
     await this.ensureGroupExists(groupId);
@@ -562,7 +715,9 @@ export class GroupsService {
             profile: { select: { profileImage: true } },
           },
         },
-        likes: true,
+        likes: {
+          select: { userId: true }, // only get userIds
+        },
         comments: {
           include: {
             user: {
@@ -578,10 +733,18 @@ export class GroupsService {
     });
 
     return resources.map((r) => ({
-      ...r,
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      groupId: r.groupId,
+      resourceUrl: r.resourceUrl,
+      originalName: r.originalName,
+      fileType: r.fileType,
+      sharedBy: r.sharedBy,
       likesCount: r.likes.length,
       commentsCount: r.comments.length,
-      isLiked: r.likes.some((l) => l.userId === userId),
+      isLiked: r.likes.some((like) => like.userId === userId),
+      comments: r.comments,
     }));
   }
 
@@ -628,27 +791,7 @@ export class GroupsService {
     }));
   }
 
-  async deleteComment(userId: string, commentId: string) {
-    // 1Find the comment
-    const comment = await this.prisma.groupResourceComment.findUnique({
-      where: { id: commentId },
-    });
 
-    // Validate existence
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-
-    // Check ownership
-    if (comment.userId !== userId) {
-      throw new ForbiddenException('You can only delete your own comment');
-    }
-
-    //  Delete comment
-    return this.prisma.groupResourceComment.delete({
-      where: { id: commentId },
-    });
-  }
 
   // edit post
   async editResource(
@@ -703,26 +846,25 @@ export class GroupsService {
     const resource = await this.prisma.groupResource.findUnique({
       where: { id: resourceId },
     });
-  
+
     if (!resource) {
       throw new NotFoundException('Resource not found');
     }
-  
+
     //  Ensure user owns the post
     if (resource.sharedById !== userId) {
       throw new ForbiddenException('You can only delete your own post');
     }
-  
+
     // Soft delete (mark as deleted)
     const updated = await this.prisma.groupResource.update({
       where: { id: resourceId },
       data: { isDeleted: true },
     });
-  
+
     return {
       message: 'Post deleted successfully (soft delete)',
       resource: updated,
     };
   }
-  
 }

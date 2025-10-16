@@ -444,6 +444,8 @@ model GroupMessage {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  isDeleted Boolean  @default(false)
 
   groupId String
   userId  String
@@ -451,6 +453,7 @@ model GroupMessage {
   group Group @relation(fields: [groupId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 }
+
 
 model GroupResource {
   id          String   @id @default(uuid())
