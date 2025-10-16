@@ -602,12 +602,12 @@ export class GroupsService {
 
   // edit comment
   async editComment(userId: string, commentId: string, newContent: string) {
-    // 1️⃣ Fetch comment
+    // Fetch comment
     const comment = await this.prisma.groupResourceComment.findUnique({
       where: { id: commentId },
     });
 
-    // 2️⃣ Validate
+    // Validate
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
@@ -616,7 +616,7 @@ export class GroupsService {
       throw new ForbiddenException('You can only edit your own comment');
     }
 
-    // 3️⃣ Update content
+    // Update content
     return this.prisma.groupResourceComment.update({
       where: { id: commentId },
       data: { content: newContent },

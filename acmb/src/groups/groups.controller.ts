@@ -45,6 +45,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
 import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
 import { UpdateGroupResourceCommentDto } from 'src/dto/update-group-resource-comment.dto';
+import { EditMessageDto } from 'src/dto/edit-message.dto';
 
 @Controller('groups')
 @UseGuards(JwtAuthGuard)
@@ -171,6 +172,29 @@ export class GroupsController {
     // ensure groupId matches param
     if (dto.groupId !== id) dto.groupId = id;
     return this.groupService.sendMessage(req.user.id, dto);
+  }
+
+  // Edit a group message
+  @Patch('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async editMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+    @Body() dto: EditMessageDto,
+  ) {
+    const userId = req.user.id;
+    return this.groupService.editMessage(userId, messageId, dto.content);
+  }
+
+  //  Delete a group message
+  @Delete('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async deleteMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+  ) {
+    const userId = req.user.id;
+    return this.groupService.deleteMessage(userId, messageId);
   }
 
   @Get()
