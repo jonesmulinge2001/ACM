@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
+ 
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -288,7 +288,7 @@ export class GroupsService {
   }
 
   async editMessage(userId: string, messageId: string, newContent: string) {
-    // 1️⃣ Find the message
+    //  Find the message
     const message = await this.prisma.groupMessage.findUnique({
       where: { id: messageId },
     });
@@ -342,7 +342,10 @@ export class GroupsService {
 
   /** Useful retrieval helpers with pagination (cursor-based or offset as you like) */
   async getGroupMessages(groupId: string, limit = 50, cursor?: string) {
-    const where = { groupId };
+    const where = {
+      groupId,
+      isDeleted: false,
+    };
     const messages = await this.prisma.groupMessage.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -643,7 +646,7 @@ export class GroupsService {
     return this.prisma.groupResourceComment.delete({
       where: { id: commentId },
     });
-  }  
+  }
 
   // Like a comment
   async likeComment(userId: string, commentId: string) {
@@ -791,8 +794,6 @@ export class GroupsService {
     }));
   }
 
-
-
   // edit post
   async editResource(
     userId: string,
@@ -866,5 +867,7 @@ export class GroupsService {
       message: 'Post deleted successfully (soft delete)',
       resource: updated,
     };
+  
   }
+
 }
