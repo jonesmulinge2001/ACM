@@ -216,61 +216,50 @@ export class GroupsService {
   addFeedComment(
     groupId: string,
     postId: string,
-    body: string
+    content: string
   ): Observable<GroupResourceComment> {
     return this.http.post<GroupResourceComment>(
-      `${this.base}/${groupId}/feed/${postId}/comments`,
-      { body },
+      `${this.base}/resources/${postId}/comment`,
+      { content },
       { headers: this.getAuthHeaders() }
     );
   }
 
   editFeedComment(
-    groupId: string,
-    postId: string,
     commentId: string,
-    body: string
+    content: string
   ): Observable<GroupResourceComment> {
     return this.http.patch<GroupResourceComment>(
-      `${this.base}/${groupId}/feed/${postId}/comments/${commentId}`,
-      { body },
+      `${this.base}/resources/comments/${commentId}`,
+      { content },
       { headers: this.getAuthHeaders() }
     );
   }
 
-  deleteFeedComment(
-    groupId: string,
-    postId: string,
-    commentId: string
-  ): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(
-      `${this.base}/${groupId}/feed/${postId}/comments/${commentId}`,
+  deleteFeedComment(commentId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/resources/comments/${commentId}`,
       { headers: this.getAuthHeaders() }
     );
   }
 
-  likeFeedComment(
-    groupId: string,
-    postId: string,
-    commentId: string
-  ): Observable<{ message: string }> {
+  likeFeedComment(commentId: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
-      `${this.base}/${groupId}/feed/${postId}/comments/${commentId}/like`,
+      `${this.base}/comments/${commentId}/like`,
       {},
       { headers: this.getAuthHeaders() }
     );
   }
-
-  unlikeFeedComment(
-    groupId: string,
-    postId: string,
-    commentId: string
-  ): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(
-      `${this.base}/${groupId}/feed/${postId}/comments/${commentId}/like`,
+  
+  unlikeFeedComment(commentId: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.base}/comments/${commentId}/unlike`,
+      {},
       { headers: this.getAuthHeaders() }
     );
   }
+  
+  
 
   getGroupResources(groupId: string, limit = 20) {
     const params = new HttpParams().set('limit', limit);

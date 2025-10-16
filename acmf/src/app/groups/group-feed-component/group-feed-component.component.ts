@@ -19,6 +19,10 @@ export class GroupFeedComponent implements OnInit {
   newComment: Record<string, string> = {};
   editingComment: { id: string; content: string } | null = null;
 
+  commentToDelete: { resource: GroupResource; commentId: string } | null = null;
+  isDeleteCommentModalOpen = false;
+
+
   editingPost: {
     id: string;
     content: string;
@@ -37,7 +41,7 @@ export class GroupFeedComponent implements OnInit {
   fileType: 'image' | 'video' | 'doc' | null = null;
   fileIcon: string | null = null;
 
-   userProfile?: Profile;
+  userProfile?: Profile;
 
   commentSectionOpen: { [key: string]: boolean } = {};
   postToDelete: GroupResource | null = null;
@@ -55,26 +59,25 @@ export class GroupFeedComponent implements OnInit {
   ngOnInit(): void {
     this.currentUserId = localStorage.getItem('userId');
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
-  
+
     if (!this.groupId) {
       this.errorMessage = 'Group ID missing';
       return;
     }
-  
+
     // ✅ Load logged-in user's profile first
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
       },
       error: () => {
-        console.error('Failed to load profile')
+        console.error('Failed to load profile');
       },
     });
-  
+
     // ✅ Load group feed next
     this.loadFeed();
   }
-  
 
   /** Optimize rendering: track by unique resource ID */
   trackByResourceId(index: number, resource: GroupResource) {
@@ -99,15 +102,26 @@ export class GroupFeedComponent implements OnInit {
   }
 
   toggleLike(resource: GroupResource): void {
-    const req = resource.isLikedByCurrentUser
-      ? this.groupsService.unlikeFeedPost(this.groupId, resource.id)
-      : this.groupsService.likeFeedPost(this.groupId, resource.id);
+    const isLiking = !resource.isLikedByCurrentUser;
+
+    // Optimistic UI update
+    resource.isLikedByCurrentUser = isLiking;
+    resource.likesCount = (resource.likesCount ?? 0) + (isLiking ? 1 : -1);
+
+    const req = isLiking
+      ? this.groupsService.likeFeedPost(this.groupId, resource.id)
+      : this.groupsService.unlikeFeedPost(this.groupId, resource.id);
 
     req.subscribe({
-      next: () => {
-        resource.isLikedByCurrentUser = !resource.isLikedByCurrentUser;
-        resource.likesCount =
-          (resource.likesCount ?? 0) + (resource.isLikedByCurrentUser ? 1 : -1);
+      next: (res: any) => {
+        // Backend confirmation sync (in case of delay or concurrent changes)
+        resource.isLikedByCurrentUser = res.isLiked;
+        resource.likesCount = res.likesCount;
+      },
+      error: () => {
+        // Roll back optimistic change if failed
+        resource.isLikedByCurrentUser = !isLiking;
+        resource.likesCount = (resource.likesCount ?? 0) + (isLiking ? -1 : 1);
       },
     });
   }
@@ -138,7 +152,7 @@ export class GroupFeedComponent implements OnInit {
     if (!content) return;
 
     this.groupsService
-      .editFeedComment(this.groupId, resource.id, this.editingComment.id, content)
+      .editFeedComment(this.editingComment.id, content)
       .subscribe({
         next: (updated: GroupResourceComment) => {
           const idx = resource.comments?.findIndex((c) => c.id === updated.id);
@@ -182,49 +196,40 @@ export class GroupFeedComponent implements OnInit {
   }
 
   deleteComment(resource: GroupResource, commentId: string): void {
-    this.groupsService
-      .deleteFeedComment(this.groupId, resource.id, commentId)
-      .subscribe({
-        next: () => {
-          resource.comments =
-            resource.comments?.filter((c) => c.id !== commentId) ?? [];
-          resource.commentsCount = Math.max(
-            (resource.commentsCount ?? 1) - 1,
-            0
-          );
-        },
-      });
+    this.groupsService.deleteFeedComment(commentId).subscribe({
+      next: () => {
+        // Remove the deleted comment from local list
+        resource.comments =
+          resource.comments?.filter((c) => c.id !== commentId) ?? [];
+
+        // Decrease the count safely
+        resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
+      },
+    });
   }
 
   toggleComments(resourceId: string) {
     this.commentSectionOpen[resourceId] = !this.commentSectionOpen[resourceId];
   }
 
-  toggleCommentLike(
-    resource: GroupResource,
-    comment: GroupResourceComment
-  ): void {
+  toggleCommentLike(comment: GroupResourceComment): void {
     const req = comment.isLikedByCurrentUser
-      ? this.groupsService.unlikeFeedComment(
-          this.groupId,
-          resource.id,
-          comment.id
-        )
-      : this.groupsService.likeFeedComment(
-          this.groupId,
-          resource.id,
-          comment.id
-        );
-
+      ? this.groupsService.unlikeFeedComment(comment.id)
+      : this.groupsService.likeFeedComment(comment.id);
+  
     req.subscribe({
       next: () => {
         comment.isLikedByCurrentUser = !comment.isLikedByCurrentUser;
         comment.likesCount =
-          (comment.likesCount ?? 0) +
-          (comment.isLikedByCurrentUser ? 1 : -1);
+          (comment.likesCount ?? 0) + (comment.isLikedByCurrentUser ? 1 : -1);
+      },
+      error: err => {
+        console.error('Failed to toggle comment like', err);
       },
     });
   }
+  
+  
 
   /** 🆕 Cached icon + responsive preview fix */
   onFileSelected(event: any): void {
@@ -281,11 +286,11 @@ export class GroupFeedComponent implements OnInit {
       file: null,
       previewUrl: resource.resourceUrl || null,
       fileType: resource.fileType
-        ? (['jpg', 'jpeg', 'png', 'gif'].includes(resource.fileType)
-            ? 'image'
-            : ['mp4', 'mov', 'avi'].includes(resource.fileType)
-            ? 'video'
-            : 'doc')
+        ? ['jpg', 'jpeg', 'png', 'gif'].includes(resource.fileType)
+          ? 'image'
+          : ['mp4', 'mov', 'avi'].includes(resource.fileType)
+          ? 'video'
+          : 'doc'
         : null,
     };
   }
@@ -301,7 +306,8 @@ export class GroupFeedComponent implements OnInit {
       type === 'image' ? 'image' : type === 'video' ? 'video' : 'doc';
 
     const reader = new FileReader();
-    reader.onload = () => (this.editingPost!.previewUrl = reader.result as string);
+    reader.onload = () =>
+      (this.editingPost!.previewUrl = reader.result as string);
     reader.readAsDataURL(file);
   }
 
@@ -327,6 +333,36 @@ export class GroupFeedComponent implements OnInit {
   cancelPostEdit(): void {
     this.editingPost = null;
   }
+
+  openDeleteCommentModal(resource: GroupResource, commentId: string): void {
+    this.commentToDelete = { resource, commentId };
+    this.isDeleteCommentModalOpen = true;
+  }
+  
+  closeDeleteCommentModal(): void {
+    this.commentToDelete = null;
+    this.isDeleteCommentModalOpen = false;
+  }
+  
+  confirmDeleteComment(): void {
+    if (!this.commentToDelete) return;
+  
+    const { resource, commentId } = this.commentToDelete;
+  
+    this.groupsService.deleteFeedComment(commentId).subscribe({
+      next: () => {
+        // remove deleted comment from local array
+        resource.comments = resource.comments?.filter((c) => c.id !== commentId) ?? [];
+        resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
+        this.closeDeleteCommentModal();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete comment';
+        this.closeDeleteCommentModal();
+      },
+    });
+  }
+  
 
   getFileIcon(fileType?: string | null): string {
     if (!fileType) return 'folder';
