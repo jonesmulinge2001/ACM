@@ -1,40 +1,25 @@
 @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
   @keyframes scaleIn {
-    from {
-      transform: scale(0.95);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
   
-  .animate-fadeIn {
-    animation: fadeIn 0.25s ease-out forwards;
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
   
-  .animate-scaleIn {
-    animation: scaleIn 0.25s ease-out forwards;
+  @keyframes bounceSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
   }
   
-  @keyframes pulse-slow {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-  }
-  .animate-pulse-slow {
-    animation: pulse-slow 1.5s infinite ease-in-out;
-  }
+  .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+  .animate-scaleIn { animation: scaleIn 0.25s ease-out; }
+  .animate-slideUp { animation: slideUp 0.35s ease-out; }
+  .animate-bounce-slow { animation: bounceSlow 1.8s infinite ease-in-out; }
   

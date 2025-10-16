@@ -314,8 +314,12 @@ export class GroupFeedComponent implements OnInit {
   savePostEdit(): void {
     if (!this.editingPost) return;
     const { id, content, file } = this.editingPost;
+  
+    // Safely handle null/undefined/empty content
+    const safeContent = content ? content.trim() : '';
+  
     this.groupsService
-      .updateGroupResource(this.groupId, id, content.trim(), file || undefined)
+      .updateGroupResource(this.groupId, id, safeContent, file || undefined)
       .subscribe({
         next: (updated: GroupResource) => {
           const index = this.feed.findIndex((f) => f.id === updated.id);
@@ -329,6 +333,7 @@ export class GroupFeedComponent implements OnInit {
         },
       });
   }
+  
 
   cancelPostEdit(): void {
     this.editingPost = null;

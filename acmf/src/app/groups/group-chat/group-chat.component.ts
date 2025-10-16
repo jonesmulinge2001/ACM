@@ -25,51 +25,47 @@ import { AuthService } from '../../services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
-  
   @Input() groupId!: string;
-  @ViewChild('messagesContainer')
-  private messagesContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
 
   messages: GroupMessage[] = [];
   subs = new Subscription();
   messageControl = new FormControl('');
-
   showNewMessageButton = false;
+
   currentUserId: string | null = null;
-
-  // Track which message is being edited
-  editingMessageId: string | null = null;
-  editControl = new FormControl('');
-
   menuOpen: Record<string, boolean> = {};
 
+  // 🗑️ Delete modal
   showDeleteModal = false;
   messageToDelete: GroupMessage | null = null;
+
+  // ✏️ Edit modal
+  showEditModal = false;
+  editedMessage = '';
+  editingMessageId: string | null = null;
 
   constructor(
     private socket: SocketService,
     private groups: GroupsService,
     private auth: AuthService,
-    private cdr: ChangeDetectorRef // ✅ inject ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {}
 
+  // ------------------ LIFECYCLE ------------------
   ngOnInit() {
     this.currentUserId = this.auth.getUserId();
     this.socket.connect();
     this.socket.join(this.groupId);
-
     this.loadMessages();
 
     this.subs.add(
       this.socket.onMessage().subscribe((m) => {
         if (m.groupId === this.groupId) {
           this.messages.push(m);
-          this.cdr.markForCheck(); // ✅ trigger UI refresh
-          if (this.isNearBottom()) {
-            this.scrollToBottom();
-          } else {
-            this.showNewMessageButton = true;
-          }
+          this.cdr.markForCheck();
+          if (this.isNearBottom()) this.scrollToBottom();
+          else this.showNewMessageButton = true;
         }
       })
     );
@@ -79,18 +75,24 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.messagesContainer.nativeElement.addEventListener('scroll', () => {
       if (this.isNearBottom()) {
         this.showNewMessageButton = false;
-        this.cdr.markForCheck(); // update when scroll changes state
+        this.cdr.markForCheck();
       }
     });
 
     setTimeout(() => this.scrollToBottom(), 100);
   }
 
+  ngOnDestroy() {
+    this.socket.leave(this.groupId);
+    this.subs.unsubscribe();
+  }
+
+  // ------------------ MESSAGES ------------------
   loadMessages() {
     this.groups.getMessages(this.groupId).subscribe((msgs) => {
       this.messages = msgs.reverse();
       this.scrollToBottom();
-      this.cdr.markForCheck(); // ✅ refresh after loading
+      this.cdr.markForCheck();
     });
   }
 
@@ -100,7 +102,6 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.socket.sendMessage(this.groupId, content);
 
-    // optimistic update
     const optimistic: GroupMessage = {
       id: 'temp-' + Date.now(),
       content,
@@ -113,18 +114,20 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
       },
     };
+
     this.messages.push(optimistic);
     this.messageControl.reset();
     this.scrollToBottom();
-    this.cdr.markForCheck(); // ✅ refresh after sending
+    this.cdr.markForCheck();
   }
 
+  // ------------------ SCROLL & UI ------------------
   private scrollToBottom() {
     setTimeout(() => {
-      this.messagesContainer.nativeElement.scrollTop =
-        this.messagesContainer.nativeElement.scrollHeight;
+      const el = this.messagesContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
       this.showNewMessageButton = false;
-      this.cdr.markForCheck(); // ✅ refresh after scrolling
+      this.cdr.markForCheck();
     }, 50);
   }
 
@@ -142,95 +145,74 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     return m.userId === this.currentUserId;
   }
 
-  ngOnDestroy() {
-    this.socket.leave(this.groupId);
-    this.subs.unsubscribe();
-  }
-  // ✏️ Start editing
-  startEditing(message: GroupMessage) {
-    if (!this.isMyMessage(message)) return;
-    this.editingMessageId = message.id;
-    this.editControl.setValue(message.content);
-    this.cdr.markForCheck();
-  }
-
-  // 🚫 Cancel editing
-  cancelEditing() {
-    this.editingMessageId = null;
-    this.editControl.reset();
-    this.cdr.markForCheck();
-  }
-
-  // 💾 Save edited message
-  saveEdit(message: GroupMessage) {
-    const updated = this.editControl.value?.trim();
-    if (!updated || updated === message.content) {
-      this.cancelEditing();
-      return;
-    }
-
-    this.groups.editMessage(message.id, updated).subscribe({
-      next: (res) => {
-        const idx = this.messages.findIndex((m) => m.id === message.id);
-        if (idx > -1) this.messages[idx] = { ...res };
-        this.cancelEditing();
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Edit failed', err);
-        this.cancelEditing();
-      },
-    });
-  }
-
-  // 🗑️ Delete message
-  deleteMessage(message: GroupMessage) {
-    if (!this.isMyMessage(message)) return;
-    if (!confirm('Delete this message?')) return;
-
-    this.groups.deleteMessage(message.id).subscribe({
-      next: () => {
-        this.messages = this.messages.filter((m) => m.id !== message.id);
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Delete failed', err),
-    });
-  }
-
+  // ------------------ MENU HANDLERS ------------------
   toggleMenu(id: string) {
     this.menuOpen[id] = !this.menuOpen[id];
     this.cdr.markForCheck();
   }
 
-  closeMenus() {
+  closeAllMenus() {
     this.menuOpen = {};
     this.cdr.markForCheck();
   }
 
-  // 🗑️ Trigger modal
+  // ------------------ EDIT MODAL ------------------
+  openEditModal(message: GroupMessage) {
+    if (!this.isMyMessage(message)) return;
+    this.closeAllMenus();
+    this.editedMessage = message.content;
+    this.editingMessageId = message.id;
+    this.showEditModal = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelEdit() {
+    this.showEditModal = false;
+    this.editedMessage = '';
+    this.editingMessageId = null;
+    this.cdr.markForCheck();
+  }
+
+  saveEdit() {
+    if (!this.editingMessageId || !this.editedMessage.trim()) return;
+
+    const updatedContent = this.editedMessage.trim();
+
+    this.groups.editMessage(this.editingMessageId, updatedContent).subscribe({
+      next: (res) => {
+        const idx = this.messages.findIndex((m) => m.id === this.editingMessageId);
+        if (idx > -1) this.messages[idx] = { ...res };
+        this.cancelEdit();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Edit failed', err);
+        this.cancelEdit();
+      },
+    });
+  }
+
+  // ------------------ DELETE MODAL ------------------
   openDeleteModal(message: GroupMessage) {
     if (!this.isMyMessage(message)) return;
+    this.closeAllMenus();
     this.messageToDelete = message;
     this.showDeleteModal = true;
     this.cdr.markForCheck();
   }
 
-  // ❌ Cancel modal
   cancelDelete() {
     this.showDeleteModal = false;
     this.messageToDelete = null;
     this.cdr.markForCheck();
   }
 
-  // ✅ Confirm deletion
   confirmDelete() {
     if (!this.messageToDelete) return;
 
     this.groups.deleteMessage(this.messageToDelete.id).subscribe({
       next: () => {
-        this.messages = this.messages.filter(
-          (m) => m.id !== this.messageToDelete?.id
-        );
+        this.messages = this.messages.filter((m) => m.id !== this.messageToDelete?.id);
         this.showDeleteModal = false;
         this.messageToDelete = null;
         this.cdr.markForCheck();
@@ -240,8 +222,5 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cancelDelete();
       },
     });
-  
-
-    }
-
+  }
 }
