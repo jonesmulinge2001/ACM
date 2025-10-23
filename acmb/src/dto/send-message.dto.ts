@@ -9,4 +9,5 @@ export class SendMessageDto {
   @IsNotEmpty()
   @MaxLength(2000)
   content: string;
+  replyToId?: string;
 }

@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
- 
- 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
+
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -15,7 +16,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { GroupRole, PrismaClient } from 'generated/prisma';
+import {
+  GroupMessage,
+  GroupRole,
+  PrismaClient,
+  Profile,
+  User,
+} from 'generated/prisma';
 import {
   BulkAddMembersDto,
   BulkRemoveMembersDto,
@@ -268,23 +275,94 @@ export class GroupsService {
     };
   }
 
-  /** Persist a group message and return saved message */
+  /** Persist a group message (supports replies) */
   async sendMessage(userId: string, dto: SendMessageDto) {
-    // ensure membership
+    //  Ensure sender is a member of the group
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: dto.groupId, userId } },
     });
     if (!membership) throw new ForbiddenException('Not a group member');
 
+    //  Validate reply target (if any)
+    let replyToMessage:
+      | (GroupMessage & {
+          user: Pick<User, 'id' | 'name'> & {
+            profile: Pick<Profile, 'profileImage'> | null;
+          };
+        })
+      | null = null;
+
+    if (dto.replyToId) {
+      replyToMessage = await this.prisma.groupMessage.findUnique({
+        where: { id: dto.replyToId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profile: { select: { profileImage: true } },
+            },
+          },
+        },
+      });
+
+      if (!replyToMessage) {
+        throw new NotFoundException(
+          'The message you are replying to was not found',
+        );
+      }
+    }
+
+    //  Create the new message
     const message = await this.prisma.groupMessage.create({
       data: {
         content: dto.content,
         groupId: dto.groupId,
         userId,
+        replyToId: dto.replyToId ?? null, // ✅ include reply
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profile: { select: { profileImage: true } },
+          },
+        },
+        replyTo: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: { select: { profileImage: true } },
+              },
+            },
+          },
+        },
       },
     });
 
-    return message;
+    //  Flatten response for frontend
+    return {
+      ...message,
+      user: {
+        id: message.user.id,
+        name: message.user.name,
+        profileImage: message.user.profile?.profileImage || null,
+      },
+      replyTo: message.replyTo
+        ? {
+            id: message.replyTo.id,
+            content: message.replyTo.content,
+            user: {
+              id: message.replyTo.user.id,
+              name: message.replyTo.user.name,
+              profileImage: message.replyTo.user.profile?.profileImage || null,
+            },
+          }
+        : null,
+    };
   }
 
   async editMessage(userId: string, messageId: string, newContent: string) {
@@ -341,14 +419,13 @@ export class GroupsService {
   }
 
   /** Useful retrieval helpers with pagination (cursor-based or offset as you like) */
+  /** Retrieve group messages (with reply data) */
   async getGroupMessages(groupId: string, limit = 50, cursor?: string) {
-    const where = {
-      groupId,
-      isDeleted: false,
-    };
+    const where = { groupId, isDeleted: false };
+
     const messages = await this.prisma.groupMessage.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
       take: limit,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
@@ -359,10 +436,20 @@ export class GroupsService {
             profile: { select: { profileImage: true } },
           },
         },
+        replyTo: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: { select: { profileImage: true } },
+              },
+            },
+          },
+        },
       },
     });
 
-    // Flatten the profileImage so frontend gets what it expects
     return messages.map((m) => ({
       ...m,
       user: {
@@ -370,6 +457,17 @@ export class GroupsService {
         name: m.user.name,
         profileImage: m.user.profile?.profileImage || null,
       },
+      replyTo: m.replyTo
+        ? {
+            id: m.replyTo.id,
+            content: m.replyTo.content,
+            user: {
+              id: m.replyTo.user.id,
+              name: m.replyTo.user.name,
+              profileImage: m.replyTo.user.profile?.profileImage || null,
+            },
+          }
+        : null,
     }));
   }
 
@@ -867,7 +965,5 @@ export class GroupsService {
       message: 'Post deleted successfully (soft delete)',
       resource: updated,
     };
-  
   }
-
 }

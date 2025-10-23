@@ -8,13 +8,24 @@
   >
     <div *ngFor="let m of messages" class="relative group">
       <!-- My message -->
-      <!-- Inside your *ngFor loop -->
       <div *ngIf="isMyMessage(m); else otherMsg" class="flex justify-end">
         <div
           class="relative max-w-xs bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl px-4 py-2 shadow-md transition transform hover:scale-[1.01]"
         >
+          <!-- Replied message bubble -->
+          <div
+            *ngIf="m.replyTo"
+            class="bg-blue-500/40 border-l-4 border-blue-300 rounded-md p-1 mb-1 text-xs text-blue-100 italic"
+          >
+            <span class="font-semibold text-white">{{ m.replyTo.user?.name }}:</span>
+            {{ m.replyTo.content | slice: 0:40
+            }}{{ m.replyTo.content.length > 40 ? "..." : "" }}
+          </div>
+
           <!-- Message text -->
           <div class="text-sm leading-snug break-words">{{ m.content }}</div>
+
+          <!-- Timestamp -->
           <div class="text-[10px] text-blue-200 text-right mt-1 select-none">
             {{ m.createdAt | date : "MMM d, h:mm a" }}
           </div>
@@ -34,21 +45,24 @@
               class="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-lg w-32 z-50 transition transform origin-top-right animate-fadeIn"
             >
               <button
+                (click)="replyToMessage(m)"
+                class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 transition text-blue-600"
+              >
+                <span class="material-icons text-[18px] mr-2 text-blue-600">reply</span>
+                Reply
+              </button>
+              <button
                 (click)="openEditModal(m)"
                 class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 transition"
               >
-                <span class="material-icons text-[18px] mr-2 text-blue-600"
-                  >edit</span
-                >
+                <span class="material-icons text-[18px] mr-2 text-blue-600">edit</span>
                 Edit
               </button>
               <button
                 (click)="openDeleteModal(m)"
                 class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 transition text-red-600"
               >
-                <span class="material-icons text-[18px] mr-2 text-red-600"
-                  >delete</span
-                >
+                <span class="material-icons text-[18px] mr-2 text-red-600">delete</span>
                 Delete
               </button>
             </div>
@@ -73,12 +87,30 @@
             <div class="text-xs font-semibold text-gray-700">
               {{ m.user?.name }}
             </div>
-            <div class="text-sm leading-snug break-words">
-              {{ m.content }}
+
+            <!-- Replied message bubble -->
+            <div
+              *ngIf="m.replyTo"
+              class="bg-gray-100 border-l-4 border-gray-300 rounded-md p-1 mb-1 text-xs text-gray-600 italic"
+            >
+              <span class="font-semibold text-gray-700">{{ m.replyTo.user?.name }}:</span>
+              {{ m.replyTo.content | slice: 0:40
+              }}{{ m.replyTo.content.length > 40 ? "..." : "" }}
             </div>
+
+            <div class="text-sm leading-snug break-words">{{ m.content }}</div>
             <div class="text-[10px] text-gray-400 mt-1 select-none">
               {{ m.createdAt | date : "MMM d, h:mm a" }}
             </div>
+
+            <!-- Reply button -->
+            <button
+            (click)="replyToMessage(m)"
+            class="mt-1 flex items-center gap-1 text-xs text-blue-500"
+          >
+            <span class="material-icons text-[16px]">reply</span>
+          </button>
+          
           </div>
         </div>
       </ng-template>
@@ -93,6 +125,24 @@
   >
     ⬇ New messages
   </button>
+
+  <!-- Replying To Preview -->
+  <div
+    *ngIf="replyingTo"
+    class="flex items-center justify-between bg-blue-50 border-l-4 border-blue-500 px-3 py-2 text-sm text-gray-700"
+  >
+    <div>
+      Replying to
+      <span class="font-semibold">{{ replyingTo.user?.name }}</span>:
+      <span class="italic text-gray-500">
+        “{{ replyingTo.content | slice: 0:50
+        }}{{ replyingTo.content.length > 50 ? "..." : "" }}”
+      </span>
+    </div>
+    <button (click)="cancelReply()" class="text-gray-500 hover:text-red-500 transition">
+      <span class="material-icons text-[18px]">close</span>
+    </button>
+  </div>
 
   <!-- Input -->
   <div
@@ -112,97 +162,91 @@
     </button>
 
     <!-- Delete Confirmation Modal -->
-  <!-- 🗑️ Delete Confirmation Modal -->
-<div
-*ngIf="showDeleteModal"
-class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] animate-fadeIn"
->
-<div
-  class="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-80 p-6 text-center relative transform transition-all duration-300 animate-slideUp md:animate-scaleIn"
->
-  <!-- Close Button -->
-  <button
-    (click)="cancelDelete()"
-    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-  >
-    <span class="material-icons text-[22px]">close</span>
-  </button>
-
-  <span class="material-icons text-red-500 text-6xl mb-3 animate-bounce-slow">
-    warning
-  </span>
-
-  <h3 class="text-lg font-semibold text-gray-800 mb-2">
-    Delete this message?
-  </h3>
-  <p class="text-sm text-gray-500 mb-6">
-    This action cannot be undone.
-  </p>
-
-  <div class="flex justify-center gap-3">
-    <button
-      (click)="confirmDelete()"
-      class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+    <div
+      *ngIf="showDeleteModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] animate-fadeIn"
     >
-      <span class="material-icons text-[18px]">delete_forever</span>
-      Delete
-    </button>
-    <button
-      (click)="cancelDelete()"
-      class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
-    >
-      <span class="material-icons text-[18px]">cancel</span>
-      Cancel
-    </button>
-  </div>
-</div>
-</div>
-
-
-    <!--  Edit Message Modal -->
-<!-- ✏️ Edit Message Modal -->
-<div
-  *ngIf="showEditModal"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center md:items-center z-[100] animate-fadeIn"
->
-  <div
-    class="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-96 p-6 text-center relative transform transition-all duration-300 animate-slideUp md:animate-scaleIn"
-  >
-    <!-- Close Button -->
-    <button
-      (click)="cancelEdit()"
-      class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-    >
-      <span class="material-icons text-[22px]">close</span>
-    </button>
-
-    <h3 class="text-lg font-semibold text-gray-800 mb-3">
-      Edit your message
-    </h3>
-    <textarea
-      [(ngModel)]="editedMessage"
-      rows="3"
-      class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    ></textarea>
-
-    <div class="flex justify-end gap-3 mt-5">
-      <button
-        (click)="cancelEdit()"
-        class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+      <div
+        class="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-80 p-6 text-center relative transform transition-all duration-300 animate-slideUp md:animate-scaleIn"
       >
-        <span class="material-icons text-[18px]">cancel</span>
-        Cancel
-      </button>
-      <button
-        (click)="saveEdit()"
-        class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
-      >
-        <span class="material-icons text-[18px]">save</span>
-        Save
-      </button>
+        <button
+          (click)="cancelDelete()"
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
+        >
+          <span class="material-icons text-[22px]">close</span>
+        </button>
+
+        <span
+          class="material-icons text-red-500 text-6xl mb-3 animate-bounce-slow"
+        >
+          warning
+        </span>
+
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+          Delete this message?
+        </h3>
+        <p class="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+
+        <div class="flex justify-center gap-3">
+          <button
+            (click)="confirmDelete()"
+            class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+          >
+            <span class="material-icons text-[18px]">delete_forever</span>
+            Delete
+          </button>
+          <button
+            (click)="cancelDelete()"
+            class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+          >
+            <span class="material-icons text-[18px]">cancel</span>
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
+    <!-- Edit Message Modal -->
+    <div
+      *ngIf="showEditModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center md:items-center z-[100] animate-fadeIn"
+    >
+      <div
+        class="bg-white rounded-t-3xl md:rounded-2xl shadow-2xl w-full md:w-96 p-6 text-center relative transform transition-all duration-300 animate-slideUp md:animate-scaleIn"
+      >
+        <button
+          (click)="cancelEdit()"
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
+        >
+          <span class="material-icons text-[22px]">close</span>
+        </button>
+
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">
+          Edit your message
+        </h3>
+        <textarea
+          [(ngModel)]="editedMessage"
+          rows="3"
+          class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        ></textarea>
+
+        <div class="flex justify-end gap-3 mt-5">
+          <button
+            (click)="cancelEdit()"
+            class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+          >
+            <span class="material-icons text-[18px]">cancel</span>
+            Cancel
+          </button>
+          <button
+            (click)="saveEdit()"
+            class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1"
+          >
+            <span class="material-icons text-[18px]">save</span>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -96,13 +96,11 @@ export class GroupsService {
     });
   }
 
-  sendMessage(groupId: string, dto: { groupId: string; content: string }) {
+  sendMessage(groupId: string, dto: { groupId: string; content: string; replyToId?: string }) {
     return this.http.post<GroupMessage>(
       `${this.base}/${groupId}/messages`,
       dto,
-      {
-        headers: this.getAuthHeaders(),
-      }
+      { headers: this.getAuthHeaders() }
     );
   }
 

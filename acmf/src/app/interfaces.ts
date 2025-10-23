@@ -433,6 +433,7 @@ export interface GroupMessage {
   userId: string;
   createdAt: string;
   user?: { id: string; name: string; profileImage?: string | null };
+  replyTo?: GroupMessage;
 }
 
 

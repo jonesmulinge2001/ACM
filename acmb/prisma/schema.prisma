@@ -441,23 +441,29 @@ model GroupMember {
 }
 
 model GroupMessage {
-  id        String   @id @default(uuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
-  isDeleted Boolean  @default(false)
+  id          String   @id @default(uuid())
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
 
-  groupId String
-  userId  String
+  // ✅ Reply support
+  replyToId   String?
+  replyTo     GroupMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies     GroupMessage[] @relation("MessageReplies")
 
-    // New fields for attachments
-  attachmentUrls   Json?      // ✅ Array of uploaded file URLs
-  attachmentNames  Json?      // ✅ Array of original filenames
-  attachmentTypes  Json?      // ✅ Array of file extensions or MIME types
+  // ✅ Group and user relations
+  groupId     String
+  userId      String
+  group       Group @relation(fields: [groupId], references: [id])
+  user        User  @relation(fields: [userId], references: [id])
 
-  group Group @relation(fields: [groupId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
+  // ✅ Attachments
+  attachmentUrls   Json?
+  attachmentNames  Json?
+  attachmentTypes  Json?
 }
+
 
 
 model GroupResource {

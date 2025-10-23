@@ -50,8 +50,8 @@ export class SocketService implements OnDestroy {
     this.socket?.emit('leave', { groupId });
   }
 
-  sendMessage(groupId: string, content: string) {
-    this.socket?.emit('message', { groupId, content });
+  sendMessage(groupId: string, content: string, replyToId?: string | null): void {
+    this.socket?.emit('message', { groupId, content, replyToId });
   }
 
   onMessage(): Observable<GroupMessage> {

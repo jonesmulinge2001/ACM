@@ -45,6 +45,9 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   editedMessage = '';
   editingMessageId: string | null = null;
 
+  // 💬 Reply
+  replyingTo: GroupMessage | null = null;
+
   constructor(
     private socket: SocketService,
     private groups: GroupsService,
@@ -59,13 +62,17 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.socket.join(this.groupId);
     this.loadMessages();
 
+    // Real-time message listener
     this.subs.add(
       this.socket.onMessage().subscribe((m) => {
         if (m.groupId === this.groupId) {
-          this.messages.push(m);
-          this.cdr.markForCheck();
-          if (this.isNearBottom()) this.scrollToBottom();
-          else this.showNewMessageButton = true;
+          // avoid duplicates
+          if (!this.messages.some((msg) => msg.id === m.id)) {
+            this.messages.push(m);
+            this.cdr.markForCheck();
+            if (this.isNearBottom()) this.scrollToBottom();
+            else this.showNewMessageButton = true;
+          }
         }
       })
     );
@@ -100,8 +107,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const content = this.messageControl.value?.trim();
     if (!content) return;
 
-    this.socket.sendMessage(this.groupId, content);
-
+    // optimistic message
     const optimistic: GroupMessage = {
       id: 'temp-' + Date.now(),
       content,
@@ -113,12 +119,43 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         name: 'Me',
         profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
       },
+      replyTo: this.replyingTo || undefined,
     };
 
     this.messages.push(optimistic);
-    this.messageControl.reset();
     this.scrollToBottom();
+    this.messageControl.reset();
     this.cdr.markForCheck();
+
+    // 🔹 Persist to backend (database)
+    this.groups
+      .sendMessage(this.groupId, {
+        groupId: this.groupId,
+        content,
+        ...(this.replyingTo ? { replyToId: this.replyingTo.id } : {}),
+      })
+      .subscribe({
+        next: (saved) => {
+          const idx = this.messages.findIndex((m) => m.id === optimistic.id);
+          if (idx > -1) this.messages[idx] = saved;
+          this.scrollToBottom();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Send failed:', err);
+          this.messages = this.messages.filter((m) => m.id !== optimistic.id);
+          this.cdr.markForCheck();
+        },
+      });
+
+    // 🔹 Real-time socket emit
+    this.socket.sendMessage(
+      this.groupId,
+      content,
+      this.replyingTo ? this.replyingTo.id : null
+    );
+
+    this.replyingTo = null;
   }
 
   // ------------------ SCROLL & UI ------------------
@@ -175,7 +212,6 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   saveEdit() {
     if (!this.editingMessageId || !this.editedMessage.trim()) return;
-
     const updatedContent = this.editedMessage.trim();
 
     this.groups.editMessage(this.editingMessageId, updatedContent).subscribe({
@@ -222,5 +258,14 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cancelDelete();
       },
     });
+  }
+
+  // ------------------ REPLY ------------------
+  replyToMessage(message: GroupMessage) {
+    this.replyingTo = message;
+  }
+
+  cancelReply() {
+    this.replyingTo = null;
   }
 }
