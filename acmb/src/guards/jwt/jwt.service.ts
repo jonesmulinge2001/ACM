@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable prettier/prettier */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -25,7 +24,7 @@ export class JwtService {
   }
 
   generateToken(payload: JwtPayload): string {
-    return jwt.sign(payload, this.secret, { expiresIn: this.expiresIn });
+    return jwt.sign(payload, this.secret, { expiresIn: this.expiresIn } as any);
   }
 
   verifyToken(token: string): JwtPayload {
@@ -37,16 +36,16 @@ export class JwtService {
   }
 
   decodeToken(token: string): JwtPayload | null {
-    try{
-        return jwt.decode(token) as unknown as JwtPayload;
+    try {
+      return jwt.decode(token) as unknown as JwtPayload;
     } catch {
-        return null;
+      return null;
     }
   }
 
   extractTokenFromHeader(authHeader: string): string {
-    if(!authHeader || !authHeader.startsWith('Bearer')) {
-        throw new UnauthorizedException('Missing or Invalid token');
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+      throw new UnauthorizedException('Missing or Invalid token');
     }
     return authHeader.substring(7);
   }
