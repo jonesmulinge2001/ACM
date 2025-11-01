@@ -65,18 +65,63 @@
       >chat</span
     >
 
-    <!-- User Profile -->
+    <!-- User Profile Dropdown -->
     <ng-container *ngIf="isLoggedIn; else guestlinksMobile">
-      <div class="flex items-center space-x-2">
-        <img
-          [src]="userImage"
-          routerLink="/my-profile"
-          class="w-8 h-8 rounded-full cursor-pointer object-cover"
-          alt="user"
-        />
-        <span class="text-sm hidden sm:inline">{{ userName }}</span>
+      <div class="relative select-none" (click)="toggleMenu()">
+        <!-- Profile Trigger -->
+        <div class="flex items-center space-x-2 cursor-pointer group">
+          <img
+            [src]="userImage"
+            class="w-8 h-8 rounded-full object-cover border border-gray-200 group-hover:border-blue-500 transition"
+            alt="user"
+          />
+          <span
+            class="text-sm font-medium hidden sm:inline text-gray-700 group-hover:text-blue-600"
+          >
+            {{ userName }}
+          </span>
+          <span
+            class="material-icons text-gray-600 text-sm sm:inline hidden group-hover:text-blue-600"
+          >
+            expand_more
+          </span>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div
+          *ngIf="menuOpen"
+          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 transform transition-all duration-200 ease-out origin-top opacity-100 scale-100 animate-fadeIn"
+        >
+          <!-- View Profile -->
+          <button
+            (click)="viewProfile()"
+            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
+          >
+            <span class="material-icons text-blue-500 text-lg mr-2"
+              >person</span
+            >
+            View Profile
+          </button>
+
+          <!-- Logout -->
+          <button
+            (click)="logOut()"
+            class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+          >
+            <span class="material-icons text-red-500 text-lg mr-2">logout</span>
+            Logout
+          </button>
+        </div>
       </div>
     </ng-container>
+
+    <ng-template #guestlinksMobile>
+      <!-- Guest view (login/signup buttons) -->
+    </ng-template>
+
+    <ng-template #guestlinksMobile>
+      <!-- Guest view, e.g., login link -->
+    </ng-template>
 
     <ng-template #guestlinksMobile>
       <!-- Guest view, e.g., login link -->

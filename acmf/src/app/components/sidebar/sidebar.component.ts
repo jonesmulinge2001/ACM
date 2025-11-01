@@ -16,10 +16,10 @@ export class SidebarComponent implements OnInit {
     { label: 'Feed', link: '/home', icon: 'dynamic_feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
-    { label: 'Resources', link: '/resources', icon: 'work' },
-    // { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
+    // { label: 'Resources', link: '/resources', icon: 'work' },
+    { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
     { label: 'Groups', link: '/groups', icon: 'handshake' },
-    { label: 'Logout', link: '/login', icon: 'logout' },
+    // { label: 'Logout', link: '/login', icon: 'logout' },
   ];
 
   getIconGradient(label: string): string {
@@ -27,7 +27,7 @@ export class SidebarComponent implements OnInit {
       Feed: 'from-pink-500 to-red-500',
       Network: 'from-indigo-500 to-purple-500',
       Create: 'from-green-500 to-emerald-500',
-      Resources: 'from-blue-500 to-cyan-500',
+      // Resources: 'from-blue-500 to-cyan-500',
       Opportunities: 'from-yellow-500 to-orange-500',
       UniTok: 'from-rose-500 to-pink-500',
     };

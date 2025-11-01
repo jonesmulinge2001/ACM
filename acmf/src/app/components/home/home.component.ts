@@ -17,6 +17,8 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { forkJoin, timer } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FlagPostModalComponent } from "../flag-modal-component/flag-modal-component.component";
+import { ElementRef, HostListener } from '@angular/core';
+
 
 @Component({
   standalone: true,
@@ -79,7 +81,8 @@ export class HomeComponent implements OnInit {
     private profileService: ProfileService,
     private followService: FollowService,
     private commentService: CommentService,
-    private likeService: LikeService
+    private likeService: LikeService,
+    private eRef: ElementRef 
   ) {}
 
   ngOnInit(): void {
@@ -365,27 +368,65 @@ export class HomeComponent implements OnInit {
           this.toastr.error('Failed to update post');
         },
       });
-  }
-
-  confirmDeletePost(post: Post) {
-    if (post.author.id !== this.loggedInUserId) {
-      this.toastr.warning('You are not allowed to delete this post');
-      return;
+  
     }
-    if (!confirm('Delete this post? This action cannot be undone.')) return;
 
-    this.postService.deletePost(post.id).subscribe({
-      next: () => {
-        this.posts = this.posts.filter((p) => p.id !== post.id);
-        this.trendingPosts = this.trendingPosts.filter((p) => p.id !== post.id);
-        this.recommendedPosts = this.recommendedPosts.filter(
-          (p) => p.id !== post.id
-        );
-        this.toastr.success('Post deleted');
-      },
-      error: () => this.toastr.error('Failed to delete post'),
-    });
+    // ✅ Toggles dropdown and closes others
+toggleActionMenu(event: MouseEvent, postId: string): void {
+  event.stopPropagation();
+  Object.keys(this.actionMenuOpen).forEach(
+    (key) => (this.actionMenuOpen[key] = false)
+  );
+  this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
+}
+
+
+  // ✅ Detects outside click to close all menus
+@HostListener('document:click', ['$event'])
+handleClickOutside(event: MouseEvent): void {
+  if (!this.eRef.nativeElement.contains(event.target)) {
+    this.actionMenuOpen = {};
   }
+}
+
+// ✅ Delete modal controls
+showDeleteModal = false;
+postToDelete?: Post | null;
+
+  // Open delete modal
+openDeleteModal(post: Post): void {
+  if (post.author.id !== this.loggedInUserId) {
+    this.toastr.warning('You are not allowed to delete this post');
+    return;
+  }
+  this.showDeleteModal = true;
+  this.postToDelete = post;
+  this.actionMenuOpen = {};
+}
+
+// Confirm delete
+confirmDelete(): void {
+  if (!this.postToDelete) return;
+
+  this.postService.deletePost(this.postToDelete.id).subscribe({
+    next: () => {
+      this.posts = this.posts.filter((p) => p.id !== this.postToDelete?.id);
+      this.trendingPosts = this.trendingPosts.filter(
+        (p) => p.id !== this.postToDelete?.id
+      );
+      this.recommendedPosts = this.recommendedPosts.filter(
+        (p) => p.id !== this.postToDelete?.id
+      );
+      this.toastr.success('Post deleted');
+      this.showDeleteModal = false;
+      this.postToDelete = null;
+    },
+    error: () => {
+      this.toastr.error('Failed to delete post');
+      this.showDeleteModal = false;
+    },
+  });
+}
 
   private injectLikesCount(posts: Post[] | Post) {
     if (!posts) return;

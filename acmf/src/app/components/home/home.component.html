@@ -2,88 +2,91 @@
 <div
   class="rounded-lg px-6 py-6 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 shadow-sm"
 >
-  <!-- LinkedIn-style Post Box -->
-  <div
-    class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 md:p-6 mx-auto"
-  >
-    <!-- Post Input -->
-    <div class="flex items-center space-x-3 mb-3">
-      <img
-        [src]="userProfile?.profileImage"
-        alt="User avatar"
-        class="w-10 h-10 rounded-full object-cover"
-      />
-      <input
-        type="text"
-        placeholder="Share something with the student community"
-        class="flex-1 bg-gray-100 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
-      />
-    </div>
-
-    <!-- Post Options -->
+  <!-- LinkedIn-style Post Box (Hidden on small screens) -->
+  <div class="hidden md:block">
     <div
-      class="flex w-full justify-between text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2"
+      class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 md:p-6 mx-auto"
     >
-      <button
-        class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
-      >
-        <span class="material-icons-outlined text-green-600 text-base"
-          >videocam</span
-        >
-        <span>Video</span>
-      </button>
+      <!-- Post Input -->
+      <div class="flex items-center space-x-3 mb-3">
+        <img
+          [src]="userProfile?.profileImage"
+          alt="User avatar"
+          class="w-10 h-10 rounded-full object-cover"
+        />
+        <input
+          type="text"
+          placeholder="Share something with the student community"
+          class="flex-1 bg-gray-100 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
+        />
+      </div>
 
-      <button
-        class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
+      <!-- Post Options -->
+      <div
+        class="flex w-full justify-between text-sm text-gray-600 mt-2 border-t border-gray-200 pt-2"
       >
-        <span class="material-icons-outlined text-blue-500 text-base"
-          >photo_camera</span
+        <button
+          class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
         >
-        <span>Photo</span>
-      </button>
+          <span class="material-icons-outlined text-green-600 text-base">
+            videocam
+          </span>
+          <span>Video</span>
+        </button>
 
-      <button
-        class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
-      >
-        <span class="material-icons-outlined text-orange-500 text-base"
-          >article</span
+        <button
+          class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
         >
-        <span>Write article</span>
-      </button>
+          <span class="material-icons-outlined text-blue-500 text-base">
+            photo_camera
+          </span>
+          <span>Photo</span>
+        </button>
+
+        <button
+          class="flex flex-1 justify-center items-center space-x-1 py-2 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition"
+        >
+          <span class="material-icons-outlined text-orange-500 text-base">
+            article
+          </span>
+          <span>Write article</span>
+        </button>
+      </div>
+
+      <!-- Welcome Message -->
+      <div class="border-t border-gray-200 mt-4 pt-4 text-center">
+        <h1 class="text-lg md:text-xl font-semibold text-gray-900 mb-1">
+          Welcome to <span class="text-blue-600">Academeet!</span>
+        </h1>
+        <p class="text-sm md:text-base text-gray-600 leading-relaxed">
+          Connect with fellow students, share resources, and discover
+          opportunities to grow your academic journey.
+        </p>
+      </div>
     </div>
 
-    <!-- Welcome Message -->
-    <div class="border-t border-gray-200 mt-4 pt-4 text-center">
-      <h1 class="text-lg md:text-xl font-semibold text-gray-900 mb-1">
-        Welcome to <span class="text-blue-600">Academeet!</span>
-      </h1>
-      <p class="text-sm md:text-base text-gray-600 leading-relaxed">
-        Connect with fellow students, share resources, and discover
-        opportunities to grow your academic journey.
-      </p>
-    </div>
-  </div>
+    <!-- CTA Buttons -->
+    <div class="flex flex-wrap gap-3 mt-5 justify-center">
+      <div class="flex flex-wrap gap-3">
+        <button
+          routerLink="/create"
+          class="flex items-center gap-2 bg-blue-600 text-white font-medium px-5 py-1.5 rounded-full hover:bg-blue-700 transition"
+        >
+          <span class="material-icons-outlined text-white text-base">edit</span>
+          <span>Share Your Post</span>
+        </button>
 
-  <!-- CTA Buttons -->
-  <div class="flex flex-wrap gap-3 mt-5 justify-center">
-    <div class="flex flex-wrap gap-3">
-      <button
-        routerLink="/create"
-        class="flex items-center gap-2 bg-blue-600 text-white font-medium px-5 py-1.5 rounded-full hover:bg-blue-700 transition"
-      >
-        <span class="material-icons-outlined text-white text-base">edit</span>
-        <span>Share Your Post</span>
-      </button>
-    
-      <button
-        (click)="showUpload = true"
-        class="flex items-center gap-2 bg-white text-gray-700 font-medium px-5 py-1.5 rounded-full hover:bg-gray-50 transition border border-gray-300 shadow-sm"
-      >
-        <span class="material-icons-outlined text-gray-600 text-base">cloud_upload</span>
-        <span>Upload Resource</span>
-      </button>
+        <button
+          (click)="showUpload = true"
+          class="flex items-center gap-2 bg-white text-gray-700 font-medium px-5 py-1.5 rounded-full hover:bg-gray-50 transition border border-gray-300 shadow-sm"
+        >
+          <span class="material-icons-outlined text-gray-600 text-base">
+            cloud_upload
+          </span>
+          <span>Upload Resource</span>
+        </button>
+      </div>
     </div>
-    
   </div>
 </div>
 
@@ -165,13 +168,14 @@
         </div>
 
         <!-- Action Menu -->
+
         <div class="ml-auto relative">
           <!-- More button -->
           <button
-            (click)="openActionMenu(post.id, $event)"
             class="p-2 rounded-full hover:bg-gray-100 transition"
+            (click)="toggleActionMenu($event, post.id)"
           >
-            <span class="material-icons text-gray-600">more_horiz</span>
+            <span class="material-icons text-gray-600">more_vert</span>
           </button>
 
           <!-- Dropdown -->
@@ -193,7 +197,7 @@
             <button
               *ngIf="post.author.id === loggedInUserId"
               class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
-              (click)="confirmDeletePost(post)"
+              (click)="openDeleteModal(post)"
             >
               <span class="material-icons text-red-500 text-base">delete</span>
               <span>Delete post</span>
@@ -462,3 +466,51 @@
   (submitFlag)="onSubmitFlag($event)"
   (closeModal)="onCloseFlagModal()"
 ></app-flag-post-modal>
+
+<!-- Delete Confirmation Modal -->
+<!-- Delete Confirmation Modal -->
+<div
+  *ngIf="showDeleteModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fadeIn"
+>
+  <div
+    class="
+      bg-white rounded-t-2xl md:rounded-2xl shadow-lg w-full md:w-11/12 md:max-w-md 
+      p-6 text-center animate-scaleIn
+      fixed bottom-0 md:relative
+      md:translate-y-0
+      animate-slideUp md:animate-scaleIn
+    "
+  >
+    <span class="material-icons text-red-500 text-4xl mb-3 animate-bounce-slow">
+      warning
+    </span>
+
+    <h2 class="text-lg font-semibold text-gray-800 mb-2">
+      Delete this post?
+    </h2>
+
+    <p class="text-sm text-gray-600 mb-5">
+      This action cannot be undone. Are you sure you want to permanently delete
+      this post?
+    </p>
+
+    <div class="flex justify-center gap-3">
+      <button
+        (click)="confirmDelete()"
+        class="bg-red-600 text-white px-5 py-2 rounded-full hover:bg-red-700 transition flex items-center gap-1"
+      >
+        <span class="material-icons text-sm">delete_forever</span>
+        Delete
+      </button>
+
+      <button
+        (click)="showDeleteModal = false"
+        class="bg-gray-100 text-gray-700 px-5 py-2 rounded-full hover:bg-gray-200 transition flex items-center gap-1"
+      >
+        <span class="material-icons text-sm">close</span>
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

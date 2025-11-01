@@ -37,6 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
+    document.addEventListener('click', this.closeMenuOnOutsideClick.bind(this))
 
     if (this.isLoggedIn) {
       this.profileService.getMyProfile().subscribe({
@@ -78,6 +79,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
   onNotificationsRead() {
     this.unreadCount = 0;
   }
+
+  viewProfile(): void {
+    this.menuOpen = false;
+    this.router.navigate(['/my-profile']);
+  }
+  
+  
+closeMenuOnOutsideClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement;
+  const isInside = target.closest('.relative'); // The profile dropdown wrapper
+  if (!isInside) {
+    this.menuOpen = false;
+  }
+}
 
   logOut(): void {
     localStorage.removeItem('token');
