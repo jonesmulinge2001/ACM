@@ -17,11 +17,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  GroupMessage,
   GroupRole,
   PrismaClient,
-  Profile,
-  User,
 } from 'generated/prisma';
 import {
   BulkAddMembersDto,
@@ -229,6 +226,7 @@ export class GroupsService {
       data: {
         groupId,
         sharedById: userId,
+        title: dto.title || 'Untitled Resource', // Add required title field
         content: dto.content,
         resourceUrl,
         originalName,
@@ -253,6 +251,7 @@ export class GroupsService {
     // Return formatted response
     return {
       id: resource.id,
+      title: resource.title,
       content: resource.content,
       resourceUrl: resource.resourceUrl,
       originalName: resource.originalName,
@@ -283,27 +282,10 @@ export class GroupsService {
     });
     if (!membership) throw new ForbiddenException('Not a group member');
 
-    //  Validate reply target (if any)
-    let replyToMessage:
-      | (GroupMessage & {
-          user: Pick<User, 'id' | 'name'> & {
-            profile: Pick<Profile, 'profileImage'> | null;
-          };
-        })
-      | null = null;
-
+    //  Validate reply target (if any) - but note: GroupMessage doesn't have replyToId in schema
     if (dto.replyToId) {
-      replyToMessage = await this.prisma.groupMessage.findUnique({
+      const replyToMessage = await this.prisma.groupMessage.findUnique({
         where: { id: dto.replyToId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profile: { select: { profileImage: true } },
-            },
-          },
-        },
       });
 
       if (!replyToMessage) {
@@ -313,55 +295,34 @@ export class GroupsService {
       }
     }
 
-    //  Create the new message
+    //  Create the new message (without replyToId since it's not in schema)
     const message = await this.prisma.groupMessage.create({
       data: {
         content: dto.content,
         groupId: dto.groupId,
         userId,
-        replyToId: dto.replyToId ?? null, // ✅ include reply
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profile: { select: { profileImage: true } },
-          },
-        },
-        replyTo: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { profileImage: true } },
-              },
-            },
-          },
-        },
       },
     });
 
-    //  Flatten response for frontend
+    // Get user info for response
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        profile: { select: { profileImage: true } },
+      },
+    });
+
+    //  Return formatted response
     return {
       ...message,
       user: {
-        id: message.user.id,
-        name: message.user.name,
-        profileImage: message.user.profile?.profileImage || null,
+        id: user?.id || userId,
+        name: user?.name || 'Unknown User',
+        profileImage: user?.profile?.profileImage || null,
       },
-      replyTo: message.replyTo
-        ? {
-            id: message.replyTo.id,
-            content: message.replyTo.content,
-            user: {
-              id: message.replyTo.user.id,
-              name: message.replyTo.user.name,
-              profileImage: message.replyTo.user.profile?.profileImage || null,
-            },
-          }
-        : null,
+      replyTo: null, // Replies not supported in current schema
     };
   }
 
@@ -375,22 +336,16 @@ export class GroupsService {
       throw new NotFoundException('Message not found');
     }
 
-    // 2️⃣ Ensure the user is the sender
+    // Ensure the user is the sender
     if (message.userId !== userId) {
       throw new ForbiddenException('You can only edit your own message');
     }
 
-    // 3️⃣ Optional: prevent editing deleted messages
-    if ((message as any).isDeleted) {
-      throw new BadRequestException('Cannot edit a deleted message');
-    }
-
-    // 4️⃣ Update message
+    // Update message (no updatedAt field in schema, so just update content)
     return this.prisma.groupMessage.update({
       where: { id: messageId },
       data: {
         content: newContent,
-        updatedAt: new Date(),
       },
     });
   }
@@ -408,67 +363,49 @@ export class GroupsService {
       throw new ForbiddenException('You can only delete your own message');
     }
 
-    return this.prisma.groupMessage.update({
+    // Since there's no soft delete in the schema, we'll hard delete
+    return this.prisma.groupMessage.delete({
       where: { id: messageId },
-      data: {
-        isDeleted: true,
-        content: '[message deleted]',
-        updatedAt: new Date(),
-      },
     });
   }
 
   /** Useful retrieval helpers with pagination (cursor-based or offset as you like) */
-  /** Retrieve group messages (with reply data) */
+  /** Retrieve group messages */
   async getGroupMessages(groupId: string, limit = 50, cursor?: string) {
-    const where = { groupId, isDeleted: false };
+    const where = { groupId };
 
     const messages = await this.prisma.groupMessage.findMany({
       where,
       orderBy: { createdAt: 'asc' },
       take: limit,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      include: {
-        user: {
+    });
+
+    // Get user info for each message
+    const messagesWithUser = await Promise.all(
+      messages.map(async (m) => {
+        const user = await this.prisma.user.findUnique({
+          where: { id: m.userId },
           select: {
             id: true,
             name: true,
             profile: { select: { profileImage: true } },
           },
-        },
-        replyTo: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { profileImage: true } },
-              },
-            },
-          },
-        },
-      },
-    });
+        });
 
-    return messages.map((m) => ({
-      ...m,
-      user: {
-        id: m.user.id,
-        name: m.user.name,
-        profileImage: m.user.profile?.profileImage || null,
-      },
-      replyTo: m.replyTo
-        ? {
-            id: m.replyTo.id,
-            content: m.replyTo.content,
-            user: {
-              id: m.replyTo.user.id,
-              name: m.replyTo.user.name,
-              profileImage: m.replyTo.user.profile?.profileImage || null,
-            },
-          }
-        : null,
-    }));
+        return {
+          ...m,
+          user: {
+            id: user?.id || m.userId,
+            name: user?.name || 'Unknown User',
+            profileImage: user?.profile?.profileImage || null,
+          },
+          replyTo: null, // Replies not supported in current schema
+        };
+      }),
+    );
+
+    return messagesWithUser;
   }
 
   async getGroupById(groupId: string) {
@@ -805,7 +742,7 @@ export class GroupsService {
     await this.ensureGroupExists(groupId);
 
     const resources = await this.prisma.groupResource.findMany({
-      where: { groupId, isDeleted: false },
+      where: { groupId },
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
@@ -816,37 +753,54 @@ export class GroupsService {
             profile: { select: { profileImage: true } },
           },
         },
-        likes: {
-          select: { userId: true }, // only get userIds
-        },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { profileImage: true } },
-              },
-            },
-          },
-        },
       },
     });
 
-    return resources.map((r) => ({
-      id: r.id,
-      content: r.content,
-      createdAt: r.createdAt,
-      groupId: r.groupId,
-      resourceUrl: r.resourceUrl,
-      originalName: r.originalName,
-      fileType: r.fileType,
-      sharedBy: r.sharedBy,
-      likesCount: r.likes.length,
-      commentsCount: r.comments.length,
-      isLiked: r.likes.some((like) => like.userId === userId),
-      comments: r.comments,
-    }));
+    // Get likes and comments separately since they're not included by default
+    const resourcesWithCounts = await Promise.all(
+      resources.map(async (r) => {
+        const [likes, comments, likesCount, commentsCount] = await Promise.all([
+          this.prisma.groupResourceLike.findMany({
+            where: { resourceId: r.id },
+            select: { userId: true },
+          }),
+          this.prisma.groupResourceComment.findMany({
+            where: { resourceId: r.id },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { profileImage: true } },
+                },
+              },
+            },
+          }),
+          this.prisma.groupResourceLike.count({ where: { resourceId: r.id } }),
+          this.prisma.groupResourceComment.count({ where: { resourceId: r.id } }),
+        ]);
+
+        const isLiked = likes.some((like) => like.userId === userId);
+
+        return {
+          id: r.id,
+          title: r.title,
+          content: r.content,
+          createdAt: r.createdAt,
+          groupId: r.groupId,
+          resourceUrl: r.resourceUrl,
+          originalName: r.originalName,
+          fileType: r.fileType,
+          sharedBy: r.sharedBy,
+          likesCount,
+          commentsCount,
+          isLiked,
+          comments,
+        };
+      }),
+    );
+
+    return resourcesWithCounts;
   }
 
   //  Fetch only posts with files (resources)
@@ -857,7 +811,6 @@ export class GroupsService {
       where: {
         groupId,
         resourceUrl: { not: null }, // Only file posts
-        isDeleted: false,
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
@@ -869,34 +822,43 @@ export class GroupsService {
             profile: { select: { profileImage: true } },
           },
         },
-        likes: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { profileImage: true } },
-              },
-            },
-          },
-        },
       },
     });
 
-    return resources.map((r) => ({
-      ...r,
-      likesCount: r.likes.length,
-      commentsCount: r.comments.length,
-      isLiked: r.likes.some((l) => l.userId === userId),
-    }));
+    // Get likes and comments separately since they're not included by default
+    const resourcesWithCounts = await Promise.all(
+      resources.map(async (r) => {
+        const [likesCount, commentsCount] = await Promise.all([
+          this.prisma.groupResourceLike.count({ where: { resourceId: r.id } }),
+          this.prisma.groupResourceComment.count({ where: { resourceId: r.id } }),
+        ]);
+
+        const isLiked = await this.prisma.groupResourceLike.findUnique({
+          where: {
+            userId_resourceId: {
+              userId,
+              resourceId: r.id,
+            },
+          },
+        });
+
+        return {
+          ...r,
+          likesCount,
+          commentsCount,
+          isLiked: !!isLiked,
+        };
+      }),
+    );
+
+    return resourcesWithCounts;
   }
 
   // edit post
   async editResource(
     userId: string,
     resourceId: string,
-    dto: { content?: string },
+    dto: { title?: string; content?: string },
     file?: Express.Multer.File,
   ) {
     // 1️⃣ Find the existing resource
@@ -932,6 +894,7 @@ export class GroupsService {
     return this.prisma.groupResource.update({
       where: { id: resourceId },
       data: {
+        title: dto.title ?? resource.title, // Add title field
         content: dto.content ?? resource.content, // fallback if not provided
         resourceUrl,
         originalName,

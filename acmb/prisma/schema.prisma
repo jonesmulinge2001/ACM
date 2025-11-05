@@ -38,6 +38,9 @@ model User {
   groupMemberships         GroupMember[]
   groupMessages            GroupMessage[]
   groupResources           GroupResource[]
+  groupResourceLikes       GroupResourceLike[]
+  groupResourceComments    GroupResourceComment[]
+  groupResourceCommentLikes GroupResourceCommentLike[]
   createdInstitutionAdmins InstitutionAdmin[]        @relation("CreatedInstitutionAdmins")
   institutionAdmins        InstitutionAdmin[]
   announcements            InstitutionAnnouncement[]
@@ -397,14 +400,70 @@ model GroupMessage {
 }
 
 model GroupResource {
-  id          String   @id @default(uuid())
-  title       String
-  resourceUrl String
-  createdAt   DateTime @default(now())
-  groupId     String
-  sharedById  String
-  group       Group    @relation(fields: [groupId], references: [id])
-  sharedBy    User     @relation(fields: [sharedById], references: [id])
+  id            String   @id @default(uuid())
+  title         String
+  resourceUrl   String?
+  content       String?
+  originalName  String?
+  fileType      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  groupId       String
+  sharedById    String
+  isDeleted     Boolean  @default(false)
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  group         Group    @relation(fields: [groupId], references: [id])
+  sharedBy      User     @relation(fields: [sharedById], references: [id])
+  likes         GroupResourceLike[]
+  comments      GroupResourceComment[]
+
+  @@index([groupId])
+  @@index([sharedById])
+  @@index([isDeleted, createdAt])
+}
+
+model GroupResourceLike {
+  id         String   @id @default(uuid())
+  userId     String
+  resourceId String
+  createdAt  DateTime @default(now())
+  resource   GroupResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@index([resourceId])
+  @@index([userId])
+}
+
+model GroupResourceComment {
+  id         String   @id @default(uuid())
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  resourceId String
+  isDeleted  Boolean  @default(false)
+  resource   GroupResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes      GroupResourceCommentLike[]
+
+  @@index([resourceId])
+  @@index([userId])
+  @@index([isDeleted, createdAt])
+}
+
+model GroupResourceCommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  comment   GroupResourceComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@index([userId])
 }
 
 model Conversation {
