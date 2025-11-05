@@ -42,7 +42,10 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: [
+      'http://localhost:4200',
+      'https://acm-ldq1.vercel.app',
+    ],
     credentials: true,
   });
   

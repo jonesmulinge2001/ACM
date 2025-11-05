@@ -152,24 +152,24 @@ export class AuthService {
     if (!user.isVerified) {
       throw new Error('Please verify your email before logging in.');
     }
-  
+
     const isValidPasword = await bcrypt.compare(data.password, user.password);
     if (!isValidPasword) {
       throw new Error('Invalid password');
     }
-  
+
     // Update lastLogin timestamp here
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
     });
-  
+
     const token = this.jwtService.sign({
       sub: user.id,
       email: user.email,
       role: user.role,
     });
-  
+
     return {
       token,
       user: {
@@ -180,7 +180,6 @@ export class AuthService {
       },
     };
   }
-  
 
   // forgot password
   async forgotPassword(email: string) {
