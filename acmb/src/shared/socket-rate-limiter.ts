@@ -59,9 +59,9 @@ async function redisConsume(userId: string): Promise<boolean> {
   const key = `limiter:socket:${userId}`;
   // increment count this window
   const count = await redisClient.incr(key);
-  if (count === 1) {
+  if (Number(count) === 1) {
     // first message in window -> set TTL
     await redisClient.expire(key, 60);
   }
-  return count <= PER_MINUTE;
+  return Number(count) <= PER_MINUTE;
 }

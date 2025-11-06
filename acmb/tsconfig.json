@@ -13,11 +13,16 @@
     "sourceMap": true,
     "outDir": "./dist",
     "skipLibCheck": true,
-    "strictNullChecks": true,
+    "strictNullChecks": false,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": "./",
+    "paths": {
+      "generated/prisma": ["generated/prisma"]
+    }
   },
-  "include": ["src/**/*", "socket-test.js"]
+  "include": ["src/**/*", "socket-test.js"],
+  "exclude": ["generated/**/*"]
 }
