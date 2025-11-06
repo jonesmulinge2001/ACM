@@ -1,16 +1,15 @@
-// src/app/services/academic-resource.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { AcademicResource, CreateAcademicResourceRequest } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AcademicResourceService {
-  private readonly baseUrl = 'http://localhost:3000/academic-resources';
+  private readonly baseUrl = `${environment.apiBase}/academic-resources`;
 
   constructor(private http: HttpClient) {}
 

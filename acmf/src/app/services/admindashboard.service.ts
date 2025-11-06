@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { DashboardOverview, InstitutionStats } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdmindashboardService {
-  private baseUrl =  'http://localhost:3000/dashboard-overview';
+  private baseUrl = `${environment.apiBase}/dashboard-overview`;
 
   constructor(
     private http: HttpClient

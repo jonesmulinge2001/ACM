@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { ProfileService } from './profile.service';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
@@ -12,7 +13,7 @@ import { ProfileService } from './profile.service';
 })
 export class AuthService {
 
-  private readonly baseUrl = 'http://localhost:3000/auth';
+  private readonly baseUrl = `${environment.apiBase}/auth`;
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 

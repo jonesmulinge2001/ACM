@@ -2,12 +2,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { FlagPostResponse, Post } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PostService {
-  private baseUrl = 'http://localhost:3000/post';
+  private baseUrl = `${environment.apiBase}/post`;
 
   constructor(private http: HttpClient) {}
   private getAuthHeaders(): HttpHeaders {
@@ -67,7 +68,7 @@ export class PostService {
   }
 
   getRecommendedPostsForUser(): Observable<Post[]> {
-    return this.http.get<Post[]>(`http://localhost:3000/recommendations/user`, {
+    return this.http.get<Post[]>(`${environment.apiBase}/recommendations/user`, {
       headers: this.getAuthHeaders(),
     });
   }
@@ -75,7 +76,7 @@ export class PostService {
   getSimilarPosts(postId: string): Observable<Post[]> {
     return this.http
       .get<{ success: boolean; message: string; data: Post[] }>(
-        `http://localhost:3000/recommendations/post/${postId}`,
+        `${environment.apiBase}/recommendations/post/${postId}`,
         { headers: this.getAuthHeaders() }
       )
       .pipe(map((response) => response.data));

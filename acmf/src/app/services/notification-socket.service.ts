@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { StudentNotification } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,7 @@ export class NotificationSocketService {
 
   constructor() {
     // connect to your NestJS WebSocket server
-    this.socket = io('http://localhost:3000', {
+    this.socket = io(environment.apiBase, {
       transports: ['websocket'],
     });
   }

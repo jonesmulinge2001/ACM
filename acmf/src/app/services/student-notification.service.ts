@@ -1,14 +1,14 @@
-// src/app/services/student-notification.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { StudentNotification, AnnouncementSummary } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StudentNotificationService {
-  private readonly base = 'http://localhost:3000/student-notifications';
+  private readonly base = `${environment.apiBase}/student-notifications`;
 
   constructor(private http: HttpClient) {}
 

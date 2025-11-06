@@ -2,12 +2,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Follow, ProfileView } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FollowService {
-  private followurl = 'http://localhost:3000/follow';
+  private followurl = `${environment.apiBase}/follow`;
 
   constructor(
     private http: HttpClient
@@ -45,14 +46,14 @@ export class FollowService {
   }
 
   getProfileViewers(userId: string): Observable<ProfileView[]> {
-    return this.http.get<ProfileView[]>(`http://localhost:3000/profile-views/${userId}/recent`, {
+    return this.http.get<ProfileView[]>(`${environment.apiBase}/profile-views/${userId}/recent`, {
       headers: this.getAuthHeaders()
     });
   }
   
   getFollowStats(userId: string): Observable<{ followers: number; following: number}> {
     return this.http.get<{ followers: number; following: number}>(
-      `http://localhost:3000/follow/${userId}/stats`, {
+      `${environment.apiBase}/follow/${userId}/stats`, {
         headers: this.getAuthHeaders(),
       }
     );

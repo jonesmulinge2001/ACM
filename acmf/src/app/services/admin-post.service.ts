@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -11,10 +9,11 @@ import {
 } from '../interfaces';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AdminPostService {
-  private baseUrl = 'http://localhost:3000/post-management';
+  private baseUrl = `${environment.apiBase}/post-management`;
 
   constructor(private http: HttpClient) {}
 

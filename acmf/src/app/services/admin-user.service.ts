@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AdminUser, GenericResponse, BulkActionResponse } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminUserService {
-  private baseUrl = 'http://localhost:3000/admin/users';
+  private baseUrl = `${environment.apiBase}/admin/users`;
 
   constructor(private http: HttpClient) { }
 
