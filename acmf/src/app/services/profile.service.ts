@@ -3,13 +3,15 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Follow, Profile, ProfileView } from '../interfaces';
 import { delay } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
-  private baseUrl = 'http://localhost:3000/profiles';
-  private followurl = 'http://localhost:3000/follow';
+
+  private readonly baseUrl = `${environment.apiBase}/profiles`;
+  private readonly followurl = `${environment.apiBase}/follow`;
 
   constructor(private http: HttpClient) {}
 

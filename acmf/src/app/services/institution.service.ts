@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Announcement } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InstitutionService {
-  private readonly baseUrl = 'http://localhost:3000/institutions';
+  private readonly baseUrl = `${environment.apiBase}/institutions`;
 
   constructor(private http: HttpClient) {}
 

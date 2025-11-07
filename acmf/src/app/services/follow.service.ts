@@ -2,12 +2,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Follow, ProfileView } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FollowService {
-  private followurl = 'http://localhost:3000/follow';
+  private followurl = `${environment.apiBase}/follow`;
 
   constructor(
     private http: HttpClient

@@ -11,10 +11,11 @@ import {
 } from '../interfaces';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AdminPostService {
-  private baseUrl = 'http://localhost:3000/post-management';
+  private readonly baseUrl = `${environment.apiBase}/post-management`;
 
   constructor(private http: HttpClient) {}
 

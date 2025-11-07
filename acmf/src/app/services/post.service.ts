@@ -2,14 +2,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { FlagPostResponse, Post } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PostService {
-  private baseUrl = 'http://localhost:3000/post';
+  private readonly baseUrl = `${environment.apiBase}/post`;
+  private readonly recommendationsUrl = `${environment.apiBase}/recommendations`;
 
   constructor(private http: HttpClient) {}
+
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
@@ -24,11 +27,8 @@ export class PostService {
   }
 
   updatePostWithFile(postId: string, formData: FormData): Observable<Post> {
-    const token = localStorage.getItem('token');
     return this.http.patch<Post>(`${this.baseUrl}/${postId}`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: this.getAuthHeaders(),
     });
   }
 
@@ -54,12 +54,11 @@ export class PostService {
     return this.http
       .get<{ success: boolean; message: string; data: Post[] }>(
         `${this.baseUrl}/${type}`,
-        {
-          headers: this.getAuthHeaders(),
-        }
+        { headers: this.getAuthHeaders() }
       )
       .pipe(map((response) => response.data));
   }
+
   getTrendingPosts(): Observable<Post[]> {
     return this.http.get<Post[]>(`${this.baseUrl}/trending`, {
       headers: this.getAuthHeaders(),
@@ -67,7 +66,7 @@ export class PostService {
   }
 
   getRecommendedPostsForUser(): Observable<Post[]> {
-    return this.http.get<Post[]>(`http://localhost:3000/recommendations/user`, {
+    return this.http.get<Post[]>(`${this.recommendationsUrl}/user`, {
       headers: this.getAuthHeaders(),
     });
   }
@@ -75,7 +74,7 @@ export class PostService {
   getSimilarPosts(postId: string): Observable<Post[]> {
     return this.http
       .get<{ success: boolean; message: string; data: Post[] }>(
-        `http://localhost:3000/recommendations/post/${postId}`,
+        `${this.recommendationsUrl}/post/${postId}`,
         { headers: this.getAuthHeaders() }
       )
       .pipe(map((response) => response.data));
@@ -100,11 +99,6 @@ export class PostService {
     );
   }
 
-  /**
-   * Flag a post as inappropriate
-   * @param postId The ID of the post to flag
-   * @param reason Optional reason for flagging
-   */
   flagPost(postId: string, reason?: string): Observable<FlagPostResponse> {
     return this.http.post<FlagPostResponse>(
       `${this.baseUrl}/${postId}/flag`,
