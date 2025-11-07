@@ -43,11 +43,13 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://localhost:4200',
       'https://acm-ldq1.vercel.app',
+      'http://localhost:4200',
     ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+  ;
   
   await app.listen(process.env.PORT ?? 3000);
 }
