@@ -32,17 +32,13 @@
       >search</span
     >
 
-    <!-- Notification with red dot -->
     <!-- Notifications -->
     <div class="relative">
-      <!-- Bell -->
       <button
         (click)="toggleNotifPanel()"
         class="relative p-2 rounded-full hover:bg-gray-100"
       >
         <span class="material-icons text-gray-600 text-2xl">notifications</span>
-
-        <!-- Red badge -->
         <span
           *ngIf="unreadCount > 0"
           class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
@@ -51,9 +47,7 @@
         </span>
       </button>
 
-      <!-- Notification dropdown -->
       <div *ngIf="notifPanelOpen" class="absolute right-0 mt-2 z-50">
-        <!-- Use NotificationCenterComponent -->
         <app-notification-center
           (markAllNAsRead)="onNotificationsRead()"
         ></app-notification-center>
@@ -66,7 +60,7 @@
     >
 
     <!-- User Profile Dropdown -->
-    <ng-container *ngIf="isLoggedIn; else guestlinksMobile">
+    <ng-container *ngIf="isLoggedIn">
       <div class="relative select-none" (click)="toggleMenu()">
         <!-- Profile Trigger -->
         <div class="flex items-center space-x-2 cursor-pointer group">
@@ -90,7 +84,7 @@
         <!-- Dropdown Menu -->
         <div
           *ngIf="menuOpen"
-          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 transform transition-all duration-200 ease-out origin-top opacity-100 scale-100 animate-fadeIn"
+          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 transform transition-all duration-200 ease-out origin-top opacity-100 scale-100"
         >
           <!-- View Profile -->
           <button
@@ -105,7 +99,7 @@
 
           <!-- Logout -->
           <button
-            (click)="logOut()"
+            (click)="openLogoutModal()"
             class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
           >
             <span class="material-icons text-red-500 text-lg mr-2">logout</span>
@@ -114,17 +108,33 @@
         </div>
       </div>
     </ng-container>
+  </div>
+</div>
 
-    <ng-template #guestlinksMobile>
-      <!-- Guest view (login/signup buttons) -->
-    </ng-template>
+  <!-- Logout Confirmation Modal -->
 
-    <ng-template #guestlinksMobile>
-      <!-- Guest view, e.g., login link -->
-    </ng-template>
-
-    <ng-template #guestlinksMobile>
-      <!-- Guest view, e.g., login link -->
-    </ng-template>
+<div
+  *ngIf="logoutModalOpen"
+  class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 animate-fadeIn"
+>
+  <div
+    class="bg-white rounded-xl shadow-lg p-6 w-80 relative animate-scaleIn modal-shadow"
+  >
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirm Logout</h3>
+    <p class="text-gray-600 mb-6">Are you sure you want to log out?</p>
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="logoutModalOpen = false"
+        class="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="logOut()"
+        class="px-4 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+      >
+        Logout
+      </button>
+    </div>
   </div>
 </div>

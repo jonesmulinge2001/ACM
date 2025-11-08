@@ -54,4 +54,6 @@ export class RegisterComponent implements OnInit {
     const control = this.registerForm.get(field);
     return !!control?.invalid && control?.touched;
   }
+
+  
 }

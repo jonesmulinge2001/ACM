@@ -24,6 +24,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   menuOpen = false;
   unreadCount = 0;
   notifPanelOpen = false;
+  logoutModalOpen = false; 
   private socketSub?: Subscription;
 
   constructor(
@@ -76,9 +77,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.notifPanelOpen = !this.notifPanelOpen;
   }
 
-  onNotificationsRead() {
-    this.unreadCount = 0;
-  }
+
 
   viewProfile(): void {
     this.menuOpen = false;
@@ -94,10 +93,22 @@ closeMenuOnOutsideClick(event: MouseEvent): void {
   }
 }
 
-  logOut(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userid');
-    localStorage.removeItem('role');
-    this.router.navigate(['/login']);
-  }
+openLogoutModal(): void {
+  this.menuOpen = false; // close dropdown
+  this.logoutModalOpen = true;
 }
+
+// UPDATED: Log out directly from component
+logOut(): void {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userid');
+  localStorage.removeItem('role');
+  this.logoutModalOpen = false; // close modal
+  this.router.navigate(['/login']);
+}
+
+onNotificationsRead() {
+  this.unreadCount = 0;
+}
+}
+

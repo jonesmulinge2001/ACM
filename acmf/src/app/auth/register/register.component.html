@@ -1,104 +1,123 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-    <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-md">
-      <div class="flex flex-col items-center mb-6">
-        <div class="bg-green-500 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl font-bold">+</div>
-        <h2 class="text-2xl font-bold mt-4">Sign Up For Free</h2>
-        <p class="text-sm text-gray-500">Sign up in 1 minute for free!</p>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4 relative overflow-hidden">
+  <!-- Floating Icons -->
+  <span class="material-icons absolute top-10 left-10 text-blue-400 opacity-60 animate-float-slow">school</span>
+  <span class="material-icons absolute top-20 right-16 text-green-400 opacity-50 animate-float-medium">people</span>
+  <span class="material-icons absolute bottom-20 left-20 text-purple-400 opacity-50 animate-float-slow">lightbulb</span>
+  <span class="material-icons absolute bottom-10 right-10 text-pink-400 opacity-60 animate-float-fast">emoji_events</span>
+  <span class="material-icons absolute top-40 left-1/2 text-yellow-400 opacity-55 animate-float-medium">stars</span>
+  <span class="material-icons absolute top-60 right-1/3 text-red-400 opacity-50 animate-float-slow">groups</span>
+  <span class="material-icons absolute bottom-32 left-3/4 text-teal-400 opacity-55 animate-float-medium">lightbulb</span>
+
+  <div class="w-full max-w-md backdrop-blur-md bg-white/30 p-10 rounded-3xl shadow-2xl border border-white/20 relative z-10">
+    <!-- Header -->
+    <div class="flex flex-col items-center mb-6">
+      <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-full w-14 h-14 flex items-center justify-center text-white text-3xl font-bold animate-bounce">
+        <span class="material-icons">add</span>
       </div>
-  
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <!-- Name -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-1">Full Name</label>
-          <input
-            type="text"
-            formControlName="name"
-            placeholder="Enter your name..."
-            class="w-full px-4 py-2 border rounded-full focus:outline-none"
-            [ngClass]="{ 'border-red-500': isInvalid('name'), 'border-gray-300': !isInvalid('name') }"
-          />
-        </div>
-        <div *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid"
-        class="text-red-500 text-sm mt-1"
-        >
-        Please provide your name
-      </div>
-  
-        <!-- Email -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-1">Email Address</label>
-          <input
-            type="email"
-            formControlName="email"
-            placeholder="Enter your email..."
-            class="w-full px-4 py-2 border rounded-full focus:outline-none"
-            [ngClass]="{ 'border-red-500': isInvalid('email'), 'border-gray-300': !isInvalid('email') }"
-          />
-        </div>
-        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
-        class="text-red-500 text-sm mt-1"
-        >
-        Enter a valid email
-      </div>
-  
-        <!-- Phone -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-1">Phone Number</label>
-          <input
-            type="text"
-            formControlName="phone"
-            placeholder="+254..."
-            class="w-full px-4 py-2 border rounded-full focus:outline-none"
-            [ngClass]="{ 'border-red-500': isInvalid('phone'), 'border-gray-300': !isInvalid('phone') }"
-          />
-        </div>
-        <div *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid"
-        class="text-red-500 text-sm mt-1">
-     <ng-container *ngIf="registerForm.get('phone')?.errors?.['required']">
-       Phone number is required.
-     </ng-container>
-     <ng-container *ngIf="registerForm.get('phone')?.errors?.['pattern']">
-       Please enter a valid Kenyan phone number (e.g. 0712345678 or +254712345678).
-     </ng-container>
-   </div>
-   
-  
-        <!-- Password -->
-        <div class="mb-4 relative">
-          <label class="block text-sm font-medium mb-1">Password</label>
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="Enter your password"
-            class="w-full px-4 py-2 border rounded-full focus:outline-none"
-            [ngClass]="{ 'border-red-500': isInvalid('password'), 'border-gray-300': !isInvalid('password') }"
-          />
-          <span
-            class="absolute right-4 top-10 cursor-pointer text-gray-500"
-            (click)="toggleVisibility()"
-          >
-            👁️
-          </span>
-        </div>
-        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
-        class="text-red-500 text-sm mt-1"
-        >
-        Enter a correct password
-      </div>
-  
-        <!-- Submit -->
-        <button
-          type="submit"
-          class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full transition"
-        >
-          Sign Up →
-        </button>
-      </form>
-  
-      <p class="text-sm text-center mt-4">
-        Already have an account?
-        <a routerLink="/login" class="text-green-600 font-semibold cursor-pointer">Sign In</a>
-      </p>
+      <h2 class="text-3xl font-bold mt-4 text-gray-800 text-center">Sign Up For Free</h2>
+      <p class="text-sm text-gray-600 text-center mt-2">Sign up in 1 minute for free!</p>
+    </div>
+
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <!-- Full Name -->
+  <div class="mb-4 relative">
+    <label class="block text-sm font-medium mb-1">Full Name</label>
+    <span class="material-icons absolute left-3 top-8 text-gray-400">person</span>
+    <input
+      type="text"
+      formControlName="name"
+      placeholder="Enter your name..."
+      class="w-full pl-10 px-4 py-3 rounded-full border border-white/30 bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder-gray-500"
+      [ngClass]="{ 'border-red-500': isInvalid('name'), 'border-white/30': !isInvalid('name') }"
+    />
+    <div *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid" class="text-red-500 text-sm mt-1">
+      Please provide your name
     </div>
   </div>
-  
+
+  <!-- Email -->
+  <div class="mb-4 relative">
+    <label class="block text-sm font-medium mb-1">Email Address</label>
+    <span class="material-icons absolute left-3 top-8 text-gray-400">email</span>
+    <input
+      type="email"
+      formControlName="email"
+      placeholder="Enter your email..."
+      class="w-full pl-10 px-4 py-3 rounded-full border border-white/30 bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder-gray-500"
+      [ngClass]="{ 'border-red-500': isInvalid('email'), 'border-white/30': !isInvalid('email') }"
+    />
+    <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" class="text-red-500 text-sm mt-1">
+      Enter a valid email
+    </div>
+  </div>
+
+  <!-- Phone Number -->
+  <div class="mb-4 relative">
+    <label class="block text-sm font-medium mb-1">Phone Number</label>
+    <span class="material-icons absolute left-3 top-8 text-gray-400">phone</span>
+    <input
+      type="text"
+      formControlName="phone"
+      placeholder="+254..."
+      class="w-full pl-10 px-4 py-3 rounded-full border border-white/30 bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder-gray-500"
+      [ngClass]="{ 'border-red-500': isInvalid('phone'), 'border-white/30': !isInvalid('phone') }"
+    />
+    <div *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid" class="text-red-500 text-sm mt-1">
+      <ng-container *ngIf="registerForm.get('phone')?.errors?.['required']">
+        Phone number is required.
+      </ng-container>
+      <ng-container *ngIf="registerForm.get('phone')?.errors?.['pattern']">
+        Please enter a valid Kenyan phone number (e.g. 0712345678 or +254712345678).
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Password -->
+  <div class="mb-4 relative">
+    <label class="block text-sm font-medium mb-1">Password</label>
+    <span class="material-icons absolute left-3 top-8 text-gray-400">lock</span>
+    <input
+      [type]="showPassword ? 'text' : 'password'"
+      formControlName="password"
+      placeholder="Enter your password"
+      class="w-full pl-10 px-4 py-3 rounded-full border border-white/30 bg-white/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition placeholder-gray-500"
+      [ngClass]="{ 'border-red-500': isInvalid('password'), 'border-white/30': !isInvalid('password') }"
+    />
+    <span class="absolute right-4 top-3 cursor-pointer text-gray-500" (click)="toggleVisibility()">
+      <span class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+    </span>
+    <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid" class="text-red-500 text-sm mt-1">
+      Enter a correct password
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  <button type="submit" class="w-full bg-gradient-to-r from-green-400 to-blue-500 hover:from-blue-500 hover:to-green-400 text-white py-3 rounded-full font-semibold shadow-lg transition transform hover:scale-105 flex items-center justify-center space-x-2">
+    <span>Sign Up</span>
+    <span class="material-icons">arrow_forward</span>
+  </button>
+</form>
+
+<p class="text-sm text-center mt-4 text-gray-700">
+  Already have an account?
+  <a routerLink="/login" class="text-green-500 font-semibold cursor-pointer hover:underline">Sign In</a>
+</p>
+
+  </div>
+</div>
+
+<!-- Tailwind Custom Animations -->
+
+<style>
+  @keyframes bounce-slow { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+  .animate-bounce-slow { animation: bounce-slow 4s infinite; }
+
+  @keyframes float-slow { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-20px);} }
+  .animate-float-slow { animation: float-slow 8s infinite ease-in-out; }
+
+  @keyframes float-medium { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-30px);} }
+  .animate-float-medium { animation: float-medium 6s infinite ease-in-out; }
+
+  @keyframes float-fast { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-40px);} }
+  .animate-float-fast { animation: float-fast 4s infinite ease-in-out; }
+</style>
