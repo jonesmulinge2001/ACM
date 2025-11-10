@@ -1,56 +1,43 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // create redis clients and attach adapter (only when REDIS_URL provided)
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl) {
-    const pubClient = createClient({ url: redisUrl });
+
+  // Only initialize Redis adapter if REDIS_URL exists
+  if (process.env.REDIS_URL) {
+    const pubClient = createClient({ url: process.env.REDIS_URL });
     const subClient = pubClient.duplicate();
 
     await Promise.all([pubClient.connect(), subClient.connect()]);
 
-    // @ts-ignore set adapter on underlying io server after listening
-    const server = app.getHttpServer();
-    // Adapter needs the server instance later, so use IoAdapter
     const ioAdapter = new IoAdapter(app);
-    // attach adapter factory to adapter
-    (ioAdapter as any).createIOServer = (port: number, options?: any) => {
-      const io = require('socket.io')(port, options);
+    (ioAdapter as any).createIOServer = (server: any, options?: any) => {
+      const io = require('socket.io')(server, options); // attach to HTTP server
       io.adapter(createAdapter(pubClient, subClient));
       return io;
     };
-
     app.useWebSocketAdapter(ioAdapter);
     console.log('Redis adapter configured for Socket.IO');
   }
 
   app.enableCors({
-    origin: [
-      'https://acm-ldq1.vercel.app',
-      'http://localhost:4200',
-    ],
+    origin: ['https://acm-ldq1.vercel.app', 'http://localhost:4200'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-  ;
-  
-  await app.listen(process.env.PORT ?? 3000);
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`Application is running on port ${port}`);
 }
-bootstrap();
+
+bootstrap().catch(err => {
+  console.error('Error starting application:', err);
+  process.exit(1);
+});
+
