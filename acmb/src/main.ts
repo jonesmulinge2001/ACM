@@ -1,4 +1,8 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
@@ -16,8 +20,11 @@ async function bootstrap() {
     await Promise.all([pubClient.connect(), subClient.connect()]);
 
     const ioAdapter = new IoAdapter(app);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (ioAdapter as any).createIOServer = (server: any, options?: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const io = require('socket.io')(server, options); // attach to HTTP server
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       io.adapter(createAdapter(pubClient, subClient));
       return io;
     };
