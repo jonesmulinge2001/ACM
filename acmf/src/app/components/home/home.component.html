@@ -468,27 +468,18 @@
 ></app-flag-post-modal>
 
 <!-- Delete Confirmation Modal -->
-<!-- Delete Confirmation Modal -->
 <div
   *ngIf="showDeleteModal"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fadeIn"
 >
   <div
-    class="
-      bg-white rounded-t-2xl md:rounded-2xl shadow-lg w-full md:w-11/12 md:max-w-md 
-      p-6 text-center animate-scaleIn
-      fixed bottom-0 md:relative
-      md:translate-y-0
-      animate-slideUp md:animate-scaleIn
-    "
+    class="bg-white rounded-t-2xl md:rounded-2xl shadow-lg w-full md:w-11/12 md:max-w-md p-6 text-center animate-scaleIn fixed bottom-0 md:relative md:translate-y-0 animate-slideUp md:animate-scaleIn"
   >
     <span class="material-icons text-red-500 text-4xl mb-3 animate-bounce-slow">
       warning
     </span>
 
-    <h2 class="text-lg font-semibold text-gray-800 mb-2">
-      Delete this post?
-    </h2>
+    <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete this post?</h2>
 
     <p class="text-sm text-gray-600 mb-5">
       This action cannot be undone. Are you sure you want to permanently delete

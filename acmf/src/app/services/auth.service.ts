@@ -99,9 +99,9 @@ export class AuthService {
       }
     });
   }
-
   handleLogin(data: LoginRequest): void {
     this.loadingSubject.next(true);
+  
     this.login(data).subscribe({
       next: (response) => {
         if (!response.success || !response.data) {
@@ -109,33 +109,53 @@ export class AuthService {
           this.loadingSubject.next(false);
           return;
         }
-
+  
         const { token, user } = response.data;
+  
+        // Store session details
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userId', user.id);
+  
         this.toastr.success('Login successful', 'Welcome back');
-
+  
+        // Fetch user profile immediately after login
         this.profileService.getMyProfile().subscribe({
           next: (profile) => {
-            this.setCurrentUser(profile);
+            if (!profile) {
+              // ❌ No profile found → go to profile creation page
+              this.toastr.info('Please complete your profile to continue');
+              this.router.navigate(['/create-profile']);
+            } else {
+              // ✅ Profile exists → set and redirect by role
+              this.setCurrentUser(profile);
+  
+              if (user.role === 'ADMIN') {
+                this.router.navigate(['/admin/dashboard']);
+              } else if (user.role === 'INSTITUTION_ADMIN') {
+                this.router.navigate(['/institution-admin/dashboard-overview']);
+              } else {
+                this.router.navigate(['/home']);
+              }
+            }
+  
+            this.loadingSubject.next(false);
+          },
+          error: () => {
+            // Error fetching profile (means user likely has none)
+            this.toastr.info('Please create your profile to continue');
+            this.router.navigate(['/create-profile']);
+            this.loadingSubject.next(false);
           }
         });
-
-        if (user.role === 'ADMIN') {
-          this.router.navigate(['/admin/dashboard']);
-        } 
-        else if (user.role === 'INSTITUTION_ADMIN') {
-          this.router.navigate(['/institution-admin/dashbaord-overview']);
-        } 
-        else {
-          this.router.navigate(['/home']);
-        }
-        
-        this.loadingSubject.next(false);
       },
+      error: (err) => {
+        this.toastr.error(err.error?.message || 'Login failed');
+        this.loadingSubject.next(false);
+      }
     });
   }
+  
 
   handleVeridyEmail(data: VerifyEmailRequest): void {
     this.loadingSubject.next(true);
