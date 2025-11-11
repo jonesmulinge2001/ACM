@@ -1,5 +1,8 @@
 <!-- Search and Filters -->
-<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-white rounded-2xl shadow-sm border border-gray-200">
+<div
+  class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 bg-white rounded-2xl shadow-md border border-gray-200
+         transform transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
+>
   
   <!-- Search Input -->
   <input
@@ -7,7 +10,9 @@
     [(ngModel)]="searchTerm"
     (input)="onFilterChange()"
     placeholder="Search by title..."
-    class="w-full md:w-1/3 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+    class="w-full md:w-1/3 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 
+           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300
+           hover:scale-[1.02] hover:border-blue-400"
   />
 
   <!-- Filters -->
@@ -17,20 +22,26 @@
       [(ngModel)]="selectedCourse"
       (input)="onFilterChange()"
       placeholder="Course / Program"
-      class="w-full md:w-60 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      class="w-full md:w-60 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 
+             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300
+             hover:scale-[1.02] hover:border-blue-400"
     />
 
     <input
       [(ngModel)]="selectedInstitution"
       (input)="onFilterChange()"
       placeholder="Institution / University"
-      class="w-full md:w-60 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      class="w-full md:w-60 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm placeholder-gray-400 
+             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300
+             hover:scale-[1.02] hover:border-blue-400"
     />
 
     <select
       [(ngModel)]="selectedYear"
       (change)="onFilterChange()"
-      class="w-full md:w-40 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      class="w-full md:w-40 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 text-sm 
+             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300
+             hover:scale-[1.02] hover:border-blue-400"
     >
       <option value="">Select Year</option>
       <option *ngFor="let year of years" [value]="year">{{ year }}</option>
@@ -38,6 +49,7 @@
 
   </div>
 </div>
+
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
   <div
@@ -60,7 +72,7 @@
     <!-- Label + description -->
     <span
       class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full w-fit"
-      >NOTES</span
+      >Academic Resource</span
     >
     <p class="text-sm text-gray-700 line-clamp-2">{{ resource.description }}</p>
 
@@ -126,4 +138,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Upload Button -->
+<a
+routerLink="/upload-academic-resource"
+class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 
+       hover:from-blue-600 hover:to-blue-800 text-white rounded-full p-4 shadow-lg 
+       flex items-center justify-center gap-2 transition transform hover:scale-105"
+title="Upload Study Resource"
+>
+<span class="material-icons text-lg">add</span>
+<span class="hidden sm:inline font-medium text-sm">Upload</span>
+</a>
+
 </div>
