@@ -93,7 +93,7 @@ export const routes: Routes = [
       { path: 'announcements', component: AdminAnnouncementFeedComponent },
       { path: 'announcements/create-announcement', component: CreateAnnouncementComponent },
       { path: 'analytics', component: AnalyticsComponent },
-      { path: 'dashbaord-overview', component: InstitutionDashboardComponent },
+      { path: 'dashboard-overview', component: InstitutionDashboardComponent },
     ]
   },
 ];

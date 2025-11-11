@@ -16,10 +16,9 @@ export class SidebarComponent implements OnInit {
     { label: 'Feed', link: '/home', icon: 'dynamic_feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
-    // { label: 'Resources', link: '/resources', icon: 'work' },
+    { label: 'Resources', link: '/resources', icon: 'work' },
     { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
     { label: 'Groups', link: '/groups', icon: 'handshake' },
-    // { label: 'Logout', link: '/login', icon: 'logout' },
   ];
 
   getIconGradient(label: string): string {

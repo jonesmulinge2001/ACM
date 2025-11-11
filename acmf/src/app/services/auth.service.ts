@@ -1,4 +1,13 @@
-import { GenericResponse, LoginRequest, LoginResponse, Profile, RegisterRequest, RegisterResponse, ResetPasswordRequest, VerifyEmailRequest } from './../interfaces';
+import {
+  GenericResponse,
+  LoginRequest,
+  LoginResponse,
+  Profile,
+  RegisterRequest,
+  RegisterResponse,
+  ResetPasswordRequest,
+  VerifyEmailRequest,
+} from './../interfaces';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
@@ -7,12 +16,10 @@ import { ToastrService } from 'ngx-toastr';
 import { ProfileService } from './profile.service';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-
   private readonly baseUrl = `${environment.apiBase}/auth`;
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
@@ -36,11 +43,11 @@ export class AuthService {
         error: () => {
           // Token invalid? clear everything
           this.logout();
-        }
+        },
       });
     }
   }
-  
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -48,7 +55,6 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
-  
 
   // api callls
   register(data: RegisterRequest): Observable<RegisterResponse> {
@@ -56,7 +62,10 @@ export class AuthService {
   }
 
   verifyEmail(data: VerifyEmailRequest): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.baseUrl}/verify-email`, data);
+    return this.http.post<GenericResponse>(
+      `${this.baseUrl}/verify-email`,
+      data
+    );
   }
 
   login(data: LoginRequest): Observable<LoginResponse> {
@@ -64,8 +73,11 @@ export class AuthService {
   }
 
   requestVerificationCode(email: string): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.baseUrl}/request-verification-code`, { email});
-  };
+    return this.http.post<GenericResponse>(
+      `${this.baseUrl}/request-verification-code`,
+      { email }
+    );
+  }
 
   forgotPassword(email: string): Observable<GenericResponse> {
     return this.http.post<GenericResponse>(`${this.baseUrl}/forgot-password`, {
@@ -74,13 +86,19 @@ export class AuthService {
   }
 
   resetPassword(data: ResetPasswordRequest): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.baseUrl}/reset-password`, data);
+    return this.http.post<GenericResponse>(
+      `${this.baseUrl}/reset-password`,
+      data
+    );
   }
 
   resendRequestCode(email: string): Observable<GenericResponse> {
-    return this.http.post<GenericResponse>(`${this.baseUrl}/resend-reset-code`, {
-      email
-    });
+    return this.http.post<GenericResponse>(
+      `${this.baseUrl}/resend-reset-code`,
+      {
+        email,
+      }
+    );
   }
 
   // handler Methods
@@ -96,12 +114,12 @@ export class AuthService {
       error: (error) => {
         this.toastr.error('Registration failed');
         this.loadingSubject.next(false);
-      }
+      },
     });
   }
   handleLogin(data: LoginRequest): void {
     this.loadingSubject.next(true);
-  
+
     this.login(data).subscribe({
       next: (response) => {
         if (!response.success || !response.data) {
@@ -109,27 +127,27 @@ export class AuthService {
           this.loadingSubject.next(false);
           return;
         }
-  
+
         const { token, user } = response.data;
-  
+
         // Store session details
         localStorage.setItem('token', token);
         localStorage.setItem('role', user.role);
         localStorage.setItem('userId', user.id);
-  
+
         this.toastr.success('Login successful', 'Welcome back');
-  
+
         // Fetch user profile immediately after login
         this.profileService.getMyProfile().subscribe({
           next: (profile) => {
             if (!profile) {
-              // ❌ No profile found → go to profile creation page
+              //  No profile found → go to profile creation page
               this.toastr.info('Please complete your profile to continue');
               this.router.navigate(['/create-profile']);
             } else {
-              // ✅ Profile exists → set and redirect by role
+              //  Profile exists → set and redirect by role
               this.setCurrentUser(profile);
-  
+
               if (user.role === 'ADMIN') {
                 this.router.navigate(['/admin/dashboard']);
               } else if (user.role === 'INSTITUTION_ADMIN') {
@@ -138,7 +156,7 @@ export class AuthService {
                 this.router.navigate(['/home']);
               }
             }
-  
+
             this.loadingSubject.next(false);
           },
           error: () => {
@@ -146,16 +164,15 @@ export class AuthService {
             this.toastr.info('Please create your profile to continue');
             this.router.navigate(['/create-profile']);
             this.loadingSubject.next(false);
-          }
+          },
         });
       },
       error: (err) => {
         this.toastr.error(err.error?.message || 'Login failed');
         this.loadingSubject.next(false);
-      }
+      },
     });
   }
-  
 
   handleVeridyEmail(data: VerifyEmailRequest): void {
     this.loadingSubject.next(true);
