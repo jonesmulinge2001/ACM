@@ -4,9 +4,10 @@ import { AcademicResourceService } from '../../services/academic-resource.servic
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { ResourceUploadModalComponent } from "../resource-upload-modal/resource-upload-modal.component";
 
 @Component({
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, ResourceUploadModalComponent],
   selector: 'app-resources',
   templateUrl: './resources.component.html',
 })
@@ -20,6 +21,7 @@ export class ResourcesComponent implements OnInit {
 
   loading = false;
 
+  showUploadModal = false; 
   constructor(private resourceService: AcademicResourceService) {}
 
   ngOnInit(): void {
@@ -45,5 +47,13 @@ export class ResourcesComponent implements OnInit {
 
   onFilterChange(): void {
     this.fetchResources();
+  }
+
+  openUploadModal(): void {
+    this.showUploadModal = true;
+  }
+
+  closeUploadModal(): void {
+    this.showUploadModal = false;
   }
 }

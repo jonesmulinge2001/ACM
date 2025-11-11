@@ -139,16 +139,28 @@
     </div>
   </div>
 
-  <!-- Floating Upload Button -->
+<!-- Floating Upload Button -->
 <a
-routerLink="/upload-academic-resource"
-class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 
-       hover:from-blue-600 hover:to-blue-800 text-white rounded-full p-4 shadow-lg 
-       flex items-center justify-center gap-2 transition transform hover:scale-105"
-title="Upload Study Resource"
+  (click)="openUploadModal()"
+  class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 
+         hover:from-blue-600 hover:to-blue-800 text-white rounded-full p-4 shadow-lg 
+         flex items-center justify-center cursor-pointer gap-2 transition transform hover:scale-105 animate-float"
+  title="Upload Study Resource"
 >
-<span class="material-icons text-lg">add</span>
-<span class="hidden sm:inline font-medium text-sm">Upload</span>
+  <span class="material-icons text-lg">upload</span>
+  <span class="hidden sm:inline font-medium text-sm">Upload</span>
 </a>
+
+<!-- Upload Modal -->
+<app-resource-upload-modal
+  *ngIf="showUploadModal"
+  (closeModal)="closeUploadModal()"
+></app-resource-upload-modal>
+
+<!-- Existing resources grid goes here -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- resource cards -->
+</div>
+
 
 </div>
