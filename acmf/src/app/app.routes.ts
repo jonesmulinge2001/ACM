@@ -35,6 +35,7 @@ import { InstitutionDashboardComponent } from './InstitutionAdmin/institution-da
 import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
 import { AnnouncementDetailComponent } from './components/announcement-detail/announcement-detail.component';
 import { AuthGuard } from './auth.guard';
+import { CreateGroupComponent } from './groups/grou-formation/grou-formation.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -62,6 +63,7 @@ export const routes: Routes = [
       { path: 'create', component: PostComponent },
       { path: 'upload-academic-resource', component: ResourceUploadModalComponent },
       { path: 'opportunities', component: OpportunitiesComponent },
+      { path: 'groups/create', component: CreateGroupComponent }, 
       { path: 'groups', component: GroupListComponent },
       { path: 'groups/:id', component: GroupDetailComponent },
 

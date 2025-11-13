@@ -1,56 +1,58 @@
-<div class="p-6 bg-gray-50 min-h-screen">
-  <h2 class="text-3xl font-extrabold mb-8 text-gray-900">Explore Study Groups</h2>
+<div class="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
+  <!-- Header: Title + Create Group Button -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <h2 class="text-3xl font-extrabold text-gray-900">Explore Study Groups</h2>
+    <a
+      routerLink="/groups/create"
+      class="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+    >
+      <span class="material-icons">add</span>
+      Create Group
+    </a>
+  </div>
 
-  <!-- Responsive grid: 1 col on small screens, 2 on medium, keep 3 on large+ -->
+  <!-- Groups Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <ng-container *ngIf="groups$ | async as groups">
       <div
         *ngFor="let g of groups"
-        class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-transform duration-500 transform hover:-translate-y-2 p-6 cursor-pointer"
+        class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-transform duration-500 transform hover:-translate-y-1 cursor-pointer"
       >
         <!-- Cover Image -->
-        <div class="relative overflow-hidden rounded-2xl mb-5 h-32 sm:h-28 md:h-36">
+        <div class="relative overflow-hidden rounded-t-2xl h-36">
           <img
             *ngIf="g.coverImage"
             [src]="g.coverImage"
             alt="Group Cover"
-            class="w-full h-full object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div
-            class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           ></div>
         </div>
 
-        <!-- Group Name -->
-        <h3
-          class="font-bold text-xl sm:text-lg md:text-xl text-gray-900 group-hover:text-blue-600 transition-colors duration-300 truncate"
-        >
-          {{ g.name }}
-        </h3>
+        <!-- Group Info -->
+        <div class="p-6 space-y-3">
+          <h3 class="text-xl font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-300">
+            {{ g.name }}
+          </h3>
+          <p class="text-sm text-gray-600 line-clamp-2">{{ g.description }}</p>
 
-        <!-- Description -->
-        <p class="text-sm sm:text-xs md:text-sm text-gray-600 line-clamp-2 mt-2">
-          {{ g.description }}
-        </p>
+          <!-- Footer: Members + Open Button -->
+          <div class="flex justify-between items-center mt-4 flex-wrap gap-2">
+            <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+              <span class="material-icons text-[14px]">group</span>
+              <span>{{ g._count?.members ?? g.members?.length }} members</span>
+            </div>
 
-        <!-- Footer: Members + Open Button -->
-        <div class="mt-6 flex justify-between items-center flex-wrap gap-2">
-          <!-- Members Badge -->
-          <div
-            class="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
-          >
-            <span class="material-icons text-[14px]">group</span>
-            <span class="truncate">{{ g._count?.members ?? g.members?.length }} members</span>
+            <a
+              [routerLink]="['/groups', g.id]"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium text-sm shadow hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+            >
+              Open
+              <span class="material-icons text-[18px]">arrow_forward</span>
+            </a>
           </div>
-
-          <!-- Open Button -->
-          <a
-            [routerLink]="['/groups', g.id]"
-            class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium text-sm shadow hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-          >
-            Open
-            <span class="material-icons text-[18px]">arrow_forward</span>
-          </a>
         </div>
       </div>
     </ng-container>
