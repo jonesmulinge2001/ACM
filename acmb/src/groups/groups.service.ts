@@ -425,7 +425,7 @@ export class GroupsService {
 
     const messages = await this.prisma.groupMessage.findMany({
       where,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       take: limit,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
