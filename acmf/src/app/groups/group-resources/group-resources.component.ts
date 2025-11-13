@@ -4,9 +4,14 @@ import { GroupsService } from '../../services/group.service';
 import { GroupResource } from '../../interfaces';
 import { catchError, of } from 'rxjs';
 import * as pdfjsLib from 'pdfjs-dist';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 // Configure PDF.js worker
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${(pdfjsLib as any).version}/pdf.worker.min.js`;
+(
+  pdfjsLib as any
+).GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${
+  (pdfjsLib as any).version
+}/pdf.worker.min.js`;
 
 @Component({
   selector: 'app-group-resources',
@@ -19,7 +24,10 @@ export class GroupResourcesComponent implements OnInit {
   resources: GroupResource[] = [];
   loading = true;
 
-  constructor(private groupsService: GroupsService) {}
+  constructor(
+    private groupsService: GroupsService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit() {
     if (this.groupId) {
@@ -38,6 +46,10 @@ export class GroupResourcesComponent implements OnInit {
           this.generatePreviews();
         });
     }
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   /** Generate PDF previews for all PDF files */
@@ -119,5 +131,12 @@ export class GroupResourcesComponent implements OnInit {
       default:
         return 'insert_drive_file';
     }
+  }
+
+  /** Check if a file is a video */
+  isVideo(res: GroupResource): boolean {
+    const videoTypes = ['mp4', 'mov', 'webm', 'avi', 'mkv'];
+    const ext = this.getFileExtension(res.resourceUrl);
+    return videoTypes.includes(ext);
   }
 }

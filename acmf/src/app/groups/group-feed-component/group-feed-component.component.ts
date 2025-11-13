@@ -5,6 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { GroupResource, GroupResourceComment, Profile } from '../../interfaces';
 import { GroupsService } from '../../services/group.service';
 import { ProfileService } from '../../services/profile.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
 
 @Component({
   selector: 'app-group-feed',
@@ -53,7 +55,8 @@ export class GroupFeedComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private groupsService: GroupsService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private sanitizer: DomSanitizer 
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +81,11 @@ export class GroupFeedComponent implements OnInit {
     // ✅ Load group feed next
     this.loadFeed();
   }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+  
 
   /** Optimize rendering: track by unique resource ID */
   trackByResourceId(index: number, resource: GroupResource) {

@@ -1,7 +1,9 @@
 <div
   class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md"
 >
-  <h3 class="text-lg font-semibold mb-4 text-gray-800 flex items-center space-x-2">
+  <h3
+    class="text-lg font-semibold mb-4 text-gray-800 flex items-center space-x-2"
+  >
     <span class="material-icons text-blue-500 text-xl">folder_shared</span>
     <span>Shared Resources</span>
   </h3>
@@ -23,7 +25,12 @@
       >
         <!-- ✅ Image Files -->
         <ng-container
-          *ngIf="['jpg','jpeg','png','gif','svg','bmp','webp'].includes((res.fileType || '').toLowerCase()); else nonImageBlock"
+          *ngIf="
+            ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(
+              (res.fileType || '').toLowerCase()
+            );
+            else nonMediaBlock
+          "
         >
           <div class="w-full bg-gray-50 flex items-center justify-center">
             <img
@@ -34,16 +41,32 @@
           </div>
         </ng-container>
 
-        <!-- ✅ Non-Image (PDF, DOCX, ZIP, etc.) -->
-        <ng-template #nonImageBlock>
-          <div
-            class="flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
-          >
-            <!-- ✅ PDF Preview -->
-            <ng-container
-              *ngIf="getFileExtension(res.resourceUrl) === 'pdf' && res.previewImage; else iconPreview"
+        <!-- ✅ Non-Image / Non-PDF Block -->
+        <ng-template #nonMediaBlock>
+          <!-- Video Preview -->
+          <ng-container *ngIf="isVideo(res); else pdfOrIconBlock">
+            <div
+              class="w-full bg-black flex items-center justify-center rounded-t-xl overflow-hidden"
             >
-              <div class="relative w-full h-40 bg-gray-50 overflow-hidden flex justify-center items-center">
+              <video
+                [src]="getSafeUrl(res.resourceUrl)"
+                controls
+                class="w-full max-h-56 object-contain"
+              ></video>
+            </div>
+          </ng-container>
+
+          <!-- PDF Preview or Fallback Icon -->
+          <ng-template #pdfOrIconBlock>
+            <ng-container
+              *ngIf="
+                getFileExtension(res.resourceUrl) === 'pdf' && res.previewImage;
+                else iconPreview
+              "
+            >
+              <div
+                class="relative w-full h-40 bg-gray-50 overflow-hidden flex justify-center items-center"
+              >
                 <img
                   [src]="res.previewImage"
                   alt="PDF Preview"
@@ -57,14 +80,18 @@
               </div>
             </ng-container>
 
-            <!-- ✅ Fallback Icon -->
+            <!-- Fallback Icon -->
             <ng-template #iconPreview>
               <div class="flex items-center gap-4 p-4 bg-gray-50">
                 <div
                   class="p-3 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"
                 >
                   <span class="material-icons text-3xl">
-                    {{ getFileIcon(res.fileType || getFileExtension(res.resourceUrl || "")) }}
+                    {{
+                      getFileIcon(
+                        res.fileType || getFileExtension(res.resourceUrl || "")
+                      )
+                    }}
                   </span>
                 </div>
                 <div class="flex flex-col">
@@ -75,12 +102,13 @@
                     {{ res.originalName || getFileName(res.resourceUrl) }}
                   </p>
                   <p class="text-xs text-gray-500">
-                    {{ getFileExtension(res.resourceUrl).toUpperCase() }} • Shared File
+                    {{ getFileExtension(res.resourceUrl).toUpperCase() }} •
+                    Shared File
                   </p>
                 </div>
               </div>
             </ng-template>
-          </div>
+          </ng-template>
         </ng-template>
 
         <!-- ✅ Footer -->
@@ -96,11 +124,11 @@
                 class="w-6 h-6 rounded-full object-cover"
               />
               <span class="text-xs text-gray-700 font-medium">{{
-                res.sharedBy?.name || 'Unknown'
+                res.sharedBy?.name || "Unknown"
               }}</span>
             </div>
             <span class="text-xs text-gray-400">{{
-              res.createdAt | date: 'short'
+              res.createdAt | date : "short"
             }}</span>
           </div>
 

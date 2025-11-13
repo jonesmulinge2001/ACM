@@ -207,7 +207,7 @@
         </div>
       </div>
 
-      <!-- ✏️ Edit Post Modal -->
+      <!-- Edit Post Modal -->
       <div
         *ngIf="editingPost && editingPost.id === resource.id"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] animate-fadeIn px-3"
@@ -234,7 +234,7 @@
             placeholder="Edit your post..."
           ></textarea>
 
-          <!-- 📎 Edit File -->
+          <!--  Edit File -->
           <div class="mb-4">
             <label
               for="editFile"
@@ -330,6 +330,22 @@
             alt="Post Image"
             class="object-contain w-full h-auto max-h-[70vh] sm:max-h-[80vh] rounded-xl"
           />
+        </div>
+
+        <!-- VIDEO PREVIEW IN FEED -->
+        <div
+          *ngIf="
+            ['mp4', 'mov', 'webm'].includes(
+              (resource.fileType || '').toLowerCase()
+            )
+          "
+          class="flex justify-center bg-black rounded-xl overflow-hidden mb-3 shadow-sm"
+        >
+          <video
+            [src]="resource.resourceUrl"
+            controls
+            class="object-contain w-full h-auto max-h-[60vh] sm:max-h-[70vh] rounded-xl"
+          ></video>
         </div>
 
         <!-- File / Doc -->
