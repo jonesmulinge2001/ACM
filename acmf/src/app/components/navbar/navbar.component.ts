@@ -24,7 +24,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   menuOpen = false;
   unreadCount = 0;
   notifPanelOpen = false;
-  logoutModalOpen = false; 
+  logoutModalOpen = false;
   private socketSub?: Subscription;
 
   constructor(
@@ -38,13 +38,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-    document.addEventListener('click', this.closeMenuOnOutsideClick.bind(this))
+    document.addEventListener('click', this.closeMenuOnOutsideClick.bind(this));
 
     if (this.isLoggedIn) {
       this.profileService.getMyProfile().subscribe({
         next: (profile: Profile) => {
           this.userName = profile.name;
-          this.userImage = profile.profileImage || 'https://via.placeholder.com/40';
+          this.userImage =
+            profile.profileImage || 'https://via.placeholder.com/40';
         },
         error: () => this.toastr.error('Error loading profile'),
       });
@@ -57,11 +58,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       });
 
       // Real-time updates
-      this.socketSub = this.notifSocket.onNewNotification().subscribe((notif) => {
-        if (notif.status === 'UNREAD') {
-          this.unreadCount++;
-        }
-      });
+      this.socketSub = this.notifSocket
+        .onNewNotification()
+        .subscribe((notif) => {
+          if (notif.status === 'UNREAD') {
+            this.unreadCount++;
+          }
+        });
     }
   }
 
@@ -77,38 +80,34 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.notifPanelOpen = !this.notifPanelOpen;
   }
 
-
-
   viewProfile(): void {
     this.menuOpen = false;
     this.router.navigate(['/my-profile']);
   }
-  
-  
-closeMenuOnOutsideClick(event: MouseEvent): void {
-  const target = event.target as HTMLElement;
-  const isInside = target.closest('.relative'); // The profile dropdown wrapper
-  if (!isInside) {
-    this.menuOpen = false;
+
+  closeMenuOnOutsideClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const isInside = target.closest('.relative'); // The profile dropdown wrapper
+    if (!isInside) {
+      this.menuOpen = false;
+    }
+  }
+
+  openLogoutModal(): void {
+    this.menuOpen = false; // close dropdown
+    this.logoutModalOpen = true;
+  }
+
+  // UPDATED: Log out directly from component
+  logOut(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userid');
+    localStorage.removeItem('role');
+    this.logoutModalOpen = false; // close modal
+    this.router.navigate(['/login']);
+  }
+
+  onNotificationsRead() {
+    this.unreadCount = 0;
   }
 }
-
-openLogoutModal(): void {
-  this.menuOpen = false; // close dropdown
-  this.logoutModalOpen = true;
-}
-
-// UPDATED: Log out directly from component
-logOut(): void {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userid');
-  localStorage.removeItem('role');
-  this.logoutModalOpen = false; // close modal
-  this.router.navigate(['/login']);
-}
-
-onNotificationsRead() {
-  this.unreadCount = 0;
-}
-}
-

@@ -1,12 +1,14 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+ 
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
+ 
 /* eslint-disable prettier/prettier */
 // src/db/seed-institutions.ts
 
-import { PrismaClient } from '@prisma/client'; // or your chosen ORM
+import { PrismaClient } from '../../generated/prisma';
+
+
 const prisma = new PrismaClient();
 
 async function seedInstitutions() {

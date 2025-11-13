@@ -26,7 +26,7 @@
     "ngx-infinite-scroll": "^19.0.0",
     "ngx-skeleton-loader": "^11.2.1",
     "ngx-timeago": "^3.0.0",
-    "ngx-toastr": "^19.0.0",
+    "ngx-toastr": "^19.1.0",
     "pdfjs-dist": "^5.4.296",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.1",

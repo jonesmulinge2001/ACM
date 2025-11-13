@@ -91,10 +91,22 @@
             (click)="viewProfile()"
             class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
           >
-            <span class="material-icons text-blue-500 text-lg mr-2"
-              >person</span
-            >
-            View Profile
+            <!-- User Image with hover effect -->
+            <img
+              *ngIf="userImage; else defaultIcon"
+              [src]="userImage"
+              alt="User"
+              class="w-6 h-6 rounded-full mr-2 object-cover border border-gray-300 transition-transform duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+            />
+
+            <!-- Fallback icon -->
+            <ng-template #defaultIcon>
+              <span class="material-icons text-blue-500 text-lg mr-2"
+                >person</span
+              >
+            </ng-template>
+
+            My Profile
           </button>
 
           <!-- Logout -->

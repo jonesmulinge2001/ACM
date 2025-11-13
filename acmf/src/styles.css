@@ -5,42 +5,112 @@
 /* You can add global styles to this file, and also import other style files */
 
 @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-  
-  .animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  @keyframes scaleIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+  to {
+    opacity: 1;
   }
-  
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
   }
-  
-  @keyframes bounceSlow {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
-  
-  .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
-  .animate-scaleIn { animation: scaleIn 0.25s ease-out; }
-  .animate-slideUp { animation: slideUp 0.35s ease-out; }
-  .animate-bounce-slow { animation: bounceSlow 1.8s infinite ease-in-out; }
-  
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceSlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+.animate-scaleIn {
+  animation: scaleIn 0.25s ease-out;
+}
+.animate-slideUp {
+  animation: slideUp 0.35s ease-out;
+}
+.animate-bounce-slow {
+  animation: bounceSlow 1.8s infinite ease-in-out;
+}
+
+/* Toast override for ngx-toastr */
+.toast-top-right {
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.toast {
+  border-radius: 1rem !important;
+  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.75) !important; /* Tailwind's slate-900/75 */
+  color: #f1f5f9 !important; /* text-slate-100 */
+  font-family: "Inter", sans-serif;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.toast-success {
+  background-color: #0ea5e9 !important; /* Change to your color */
+  color: #fff !important;
+  border-left: 6px solid #0284c7 !important; /* accent edge */
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3) !important;
+}
+
+.toast-success .toast-title {
+  font-weight: 700 !important;
+}
+
+.toast-success .toast-message {
+  font-size: 0.95rem !important;
+}
+
+.toast-error {
+  border-left: 6px solid #ef4444 !important; /* Tailwind red-500 */
+}
+
+.toast-info {
+  border-left: 6px solid #3b82f6 !important; /* Tailwind blue-500 */
+}
+
+.toast-warning {
+  border-left: 6px solid #facc15 !important; /* Tailwind yellow-400 */
+}
