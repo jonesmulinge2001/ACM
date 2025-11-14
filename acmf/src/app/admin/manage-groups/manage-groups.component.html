@@ -51,18 +51,21 @@
       <!-- Description -->
       <p class="text-gray-500 text-sm mb-6 min-h-[3rem]">
         <ng-container *ngIf="group.description; else noDesc">
-          {{ isExpanded(group.id) ? group.description : truncateDescription(group.description, 20) }}
+          {{
+            isExpanded(group.id)
+              ? group.description
+              : truncateDescription(group.description, 20)
+          }}
           <button
             *ngIf="group.description.split(' ').length > 20"
             (click)="toggleDescription(group.id)"
             class="ml-1 text-indigo-600 hover:underline text-sm"
           >
-            {{ isExpanded(group.id) ? 'Read Less' : 'Read More' }}
+            {{ isExpanded(group.id) ? "Read Less" : "Read More" }}
           </button>
         </ng-container>
         <ng-template #noDesc>No description available</ng-template>
       </p>
-      
 
       <!-- Footer -->
       <div

@@ -1,8 +1,6 @@
-
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
-
 
 export interface MenuItem {
   id: string;
@@ -10,19 +8,17 @@ export interface MenuItem {
   icon: string;
   route: string;
 }
+
 @Component({
   selector: 'app-sidebar',
   imports: [CommonModule],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+  styleUrls: ['./sidebar.component.css']
 })
-
-
 export class SidebarComponent {
 
-  constructor(
-    private router: Router
-  ){}
+  constructor(private router: Router) {}
+
   @Input() activeSection: string = 'dashboard';
   @Input() isCollapsed: boolean = false;
   @Input() isDarkMode: boolean = false;
@@ -40,11 +36,32 @@ export class SidebarComponent {
     { id: 'Logout', label: 'Logout', icon: 'logout', route: '/login' },
   ];
 
+  // --- Modal state ---
+  showLogoutModal: boolean = false;
+  logoutItem!: MenuItem;
+
+  // --- Section selection ---
   onSectionSelect(item: MenuItem) {
+    if (item.id === 'Logout') {
+      this.logoutItem = item;
+      this.showLogoutModal = true; // open modal
+      return;
+    }
     this.activeSection = item.id;        
     this.router.navigate([item.route]);  
   }
-  
 
+  // --- Modal actions ---
+  confirmLogout() {
+    if (this.logoutItem) {
+      this.activeSection = this.logoutItem.id;
+      this.router.navigate([this.logoutItem.route]);
+      this.showLogoutModal = false;
+    }
+  }
+
+  cancelLogout() {
+    this.showLogoutModal = false;
+  }
 
 }
