@@ -415,6 +415,8 @@ model Group {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  isDeleted   Boolean         @default(false)
+  deletedAt   DateTime?
   // Relations
   creatorId String
   creator   User            @relation("GroupCreator", fields: [creatorId], references: [id])

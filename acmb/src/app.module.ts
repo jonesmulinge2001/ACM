@@ -33,6 +33,7 @@ import { ConversationsModule } from './conversations/conversations.module';
 import { InstitutionModule } from './institution/institution.module';
 import { InstitutionService } from './institution/institution.service';
 import { StudentNotificationsModule } from './student-notifications/student-notifications.module';
+import { ManageGroupsModule } from './admin/manage-groups/manage-groups.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { StudentNotificationsModule } from './student-notifications/student-noti
     ConversationsModule,
     InstitutionModule,
     StudentNotificationsModule,
+    ManageGroupsModule,
   ],
   controllers: [
     AppController,
