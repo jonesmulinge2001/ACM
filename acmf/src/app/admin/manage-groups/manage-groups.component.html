@@ -1,0 +1,185 @@
+<div
+  class="max-w-[1400px] mx-auto p-8 min-h-screen bg-gradient-to-br from-gray-100 to-gray-200"
+  @fadeIn
+>
+  <!-- Header -->
+  <header class="text-center mb-12">
+    <h1
+      class="text-4xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent mb-2"
+    >
+      Manage Groups
+    </h1>
+    <p class="text-gray-500 text-lg">
+      View and manage all student-created groups
+    </p>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="loadingGroups" class="text-center py-6 text-gray-500">
+    Loading groups...
+  </div>
+
+  <!-- Empty State -->
+  <div
+    *ngIf="!loadingGroups && groups.length === 0"
+    class="text-center py-6 text-gray-500"
+  >
+    No groups found.
+  </div>
+
+  <!-- Groups Grid -->
+  <div
+    class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
+    *ngIf="!loadingGroups"
+    @listAnimation
+  >
+    <div
+      *ngFor="let group of groups"
+      (click)="viewGroupMembers(group)"
+      class="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+    >
+      <!-- Members Badge -->
+      <span
+        class="absolute top-4 right-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-semibold"
+      >
+        {{ group._count?.members }} members
+      </span>
+
+      <!-- Card Header -->
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ group.name }}</h3>
+
+      <!-- Description -->
+      <p class="text-gray-500 text-sm mb-6 min-h-[3rem]">
+        <ng-container *ngIf="group.description; else noDesc">
+          {{ isExpanded(group.id) ? group.description : truncateDescription(group.description, 20) }}
+          <button
+            *ngIf="group.description.split(' ').length > 20"
+            (click)="toggleDescription(group.id)"
+            class="ml-1 text-indigo-600 hover:underline text-sm"
+          >
+            {{ isExpanded(group.id) ? 'Read Less' : 'Read More' }}
+          </button>
+        </ng-container>
+        <ng-template #noDesc>No description available</ng-template>
+      </p>
+      
+
+      <!-- Footer -->
+      <div
+        class="flex justify-between items-center text-sm text-gray-500 border-t border-gray-200 pt-4"
+      >
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-4 h-4 text-gray-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Created by {{ group.creator?.name }}</span>
+        </div>
+        <span class="text-gray-400">{{ formatDate(group.createdAt) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div
+    *ngIf="showMemberPanel"
+    (click)="closePanel()"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+    @fadeIn
+  ></div>
+
+  <!-- Side Panel -->
+  <div
+    *ngIf="showMemberPanel"
+    class="fixed top-0 right-0 w-[480px] max-w-full h-full bg-white shadow-xl flex flex-col z-50"
+    @slideIn
+  >
+    <div
+      class="flex justify-between items-start p-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+    >
+      <div>
+        <h2 class="text-xl font-semibold mb-1">{{ selectedGroup?.name }}</h2>
+        <p class="text-sm opacity-90">
+          {{ selectedGroup?._count?.members }} members
+        </p>
+      </div>
+      <button
+        (click)="closePanel()"
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 transition-transform duration-300"
+      >
+        <svg
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-4">
+      <!-- Loading Members -->
+      <div *ngIf="loadingMembers" class="text-gray-500">Loading members...</div>
+
+      <!-- Member List -->
+      <div
+        *ngFor="let member of selectedGroupMembers"
+        class="flex items-center gap-4 p-4 bg-gray-100 rounded-xl hover:bg-gray-200 hover:-translate-x-1 hover:shadow-md transition-all duration-300"
+      >
+        <!-- Avatar -->
+        <div
+          class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0 overflow-hidden"
+        >
+          <img
+            *ngIf="member.user?.profile?.profileImage"
+            [src]="member.user?.profile?.profileImage"
+            class="w-full h-full object-cover"
+          />
+
+          <span *ngIf="!member.user?.profile?.profileImage">
+            {{ (member.user?.name || "?")[0] | uppercase }}
+          </span>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-gray-900 text-sm">
+              {{ member.user?.name }}
+            </span>
+
+            <span
+              [ngClass]="{
+                'bg-gradient-to-r from-indigo-500 to-purple-600 text-white':
+                  member.role === 'OWNER',
+                'bg-gray-200 text-gray-500': member.role !== 'OWNER'
+              }"
+              class="text-xs font-semibold px-2 py-0.5 rounded-full uppercase"
+            >
+              {{ member.role }}
+            </span>
+          </div>
+
+          <span class="block text-gray-500 text-xs truncate">
+            {{
+              member.user?.profile?.institution?.name || "Unknown Institution"
+            }}
+          </span>
+
+          <span class="block text-gray-400 text-xs">
+            Joined {{ formatDate(member.joinedAt) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -35,7 +35,7 @@ export class SidebarComponent {
     { id: 'content', label: 'Posts & Content', icon: 'article', route: '/admin/manage-posts' },
     { id: 'messaging', label: 'Messaging/Feedback', icon: 'chat', route: '/admin/manage-messaging' },
     { id: 'analytics', label: 'Analytics & Growth', icon: 'bar_chart', route: '/admin/manage-analytics' },
-    { id: 'groups', label: 'Groups Management', icon: 'group', route: '/admin/manage-analytics' },
+    { id: 'manage-groups', label: 'Groups Management', icon: 'groups', route: '/admin/manage-groups' }, 
     { id: 'Institution-Management', label: 'Institution Management', icon: 'account_balance', route: '/admin/institution-management' },
     { id: 'Logout', label: 'Logout', icon: 'logout', route: '/login' },
   ];

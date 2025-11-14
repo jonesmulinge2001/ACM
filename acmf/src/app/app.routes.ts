@@ -36,6 +36,7 @@ import { NotificationCenterComponent } from './components/notification-center/no
 import { AnnouncementDetailComponent } from './components/announcement-detail/announcement-detail.component';
 import { AuthGuard } from './auth.guard';
 import { CreateGroupComponent } from './groups/grou-formation/grou-formation.component';
+import { ManageGroupsComponent } from './admin/manage-groups/manage-groups.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -82,7 +83,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardOverviewComponent },
       { path: 'manage-users', component: ManageUsersComponent },
       { path: 'manage-posts', component: AdminPostsComponent },
-      { path: 'posts/:id', component: PostDetailComponent }
+      { path: 'posts/:id', component: PostDetailComponent },
+      { path: 'manage-groups', component: ManageGroupsComponent } 
     ]
   },
 

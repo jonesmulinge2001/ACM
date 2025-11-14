@@ -377,6 +377,7 @@ export interface GroupMember {
 }
 
 
+
 export interface GroupResourceComment {
   id: string;
   content: string;
@@ -436,7 +437,11 @@ export interface GroupMessage {
   replyTo?: GroupMessage;
 }
 
-
+export interface GroupCreator {
+  id: string;
+  name: string;
+  email: string;
+}
 
 export interface Group {
   id: string;
@@ -445,6 +450,7 @@ export interface Group {
   coverImage?: string | null;
   visibility: GroupVisibility;
   creatorId: string;
+  creator?: GroupCreator;
   createdAt: string;
   updatedAt?: string;
   members?: GroupMember[];
@@ -453,6 +459,7 @@ export interface Group {
     members?: number; 
     resources?: number 
   };
+  isDeleted?: boolean;
 }
 
 
