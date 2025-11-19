@@ -22,7 +22,7 @@ export async function createNestServer() {
 }
 
 // ---- LOCAL MODE: runs only when not in serverless ----
-if (!process.env.VERCEL) {
+if (!process.env.NODE_ENV) {
   createNestServer().then(app => {
     const port = process.env.PORT ?? 3000;
     app.listen(port);
