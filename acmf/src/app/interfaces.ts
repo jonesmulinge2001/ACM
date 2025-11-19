@@ -435,6 +435,8 @@ export interface GroupMessage {
   createdAt: string;
   user?: { id: string; name: string; profileImage?: string | null };
   replyTo?: GroupMessage;
+  mediaUrl?: string; 
+  mediaType?: 'image' | 'video' | 'file';
 }
 
 export interface GroupCreator {

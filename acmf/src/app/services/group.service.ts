@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams, HttpHeaders, HttpEvent, HttpEventType } from '@angular/common/http';
+import { filter, map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   Group,
@@ -87,7 +87,8 @@ export class GroupsService {
   }
 
   // Messages
-  getMessages(groupId: string, limit = 50, cursor?: string) {
+  // ------------------ FETCH MESSAGES ------------------
+  getMessages(groupId: string, limit = 50, cursor?: string): Observable<GroupMessage[]> {
     let params = new HttpParams().set('limit', String(limit));
     if (cursor) params = params.set('cursor', cursor);
     return this.http.get<GroupMessage[]>(`${this.base}/${groupId}/messages`, {
@@ -96,13 +97,54 @@ export class GroupsService {
     });
   }
 
-  sendMessage(groupId: string, dto: { groupId: string; content: string; replyToId?: string }) {
+  // ------------------ TEXT MESSAGES ------------------
+// ------------------ SEND MESSAGE (TEXT OR FILE) ------------------
+sendMessage(
+  groupId: string,
+  content?: string,
+  file?: File,
+  fileType?: 'FILE' | 'IMAGE' |'VIDEO',
+  replyToId?: string,
+  progressCb?: (progress: number) => void
+): Observable<GroupMessage> {
+  if (file) {
+    // Send as FormData if a file is provided
+    const formData = new FormData();
+    if (content) formData.append('content', content);
+    formData.append('file', file);
+    if (fileType) formData.append('fileType', fileType);
+    if (replyToId) formData.append('replyToId', replyToId);
+
+    return this.http
+      .post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
+        headers: this.getAuthHeaders(),
+        reportProgress: true,
+        observe: 'events',
+      })
+      .pipe(
+        map((event: HttpEvent<any>) => {
+          if (event.type === HttpEventType.UploadProgress && progressCb) {
+            const percentDone = Math.round((100 * (event.loaded ?? 0)) / (event.total ?? 1));
+            progressCb(percentDone);
+          }
+          if (event.type === HttpEventType.Response) {
+            return event.body as GroupMessage;
+          }
+          return null;
+        }),
+        filter((res): res is GroupMessage => res !== null)
+      );
+  } else {
+    // Send plain text message
+    const dto = { content, replyToId };
     return this.http.post<GroupMessage>(
       `${this.base}/${groupId}/messages`,
       dto,
       { headers: this.getAuthHeaders() }
     );
   }
+}
+
 
   // Bulk admin actions
   bulkAddMembers(groupId: string, dto: BulkAddMembersDto) {

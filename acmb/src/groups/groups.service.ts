@@ -276,22 +276,17 @@ export class GroupsService {
   }
 
   /** Persist a group message (supports replies) */
-  async sendMessage(userId: string, dto: SendMessageDto) {
-    //  Ensure sender is a member of the group
+  async sendMessage(userId: string, dto: SendMessageDto, file?: Express.Multer.File) {
+    // 1. Ensure sender is a group member
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: dto.groupId, userId } },
     });
     if (!membership) throw new ForbiddenException('Not a group member');
-
-    //  Validate reply target (if any)
-    let replyToMessage:
-      | (GroupMessage & {
-          user: Pick<User, 'id' | 'name'> & {
-            profile: Pick<Profile, 'profileImage'> | null;
-          };
-        })
-      | null = null;
-
+  
+    // 2. Validate reply target
+    let replyToMessage: Awaited<
+  ReturnType<typeof this.prisma.groupMessage.findUnique>
+> | null = null;
     if (dto.replyToId) {
       replyToMessage = await this.prisma.groupMessage.findUnique({
         where: { id: dto.replyToId },
@@ -305,21 +300,37 @@ export class GroupsService {
           },
         },
       });
-
+  
       if (!replyToMessage) {
-        throw new NotFoundException(
-          'The message you are replying to was not found',
-        );
+        throw new NotFoundException('The message you are replying to was not found');
       }
     }
-
-    //  Create the new message
+  
+    // 3. Handle file upload (if provided)
+    let mediaUrl: string | null = null;
+    let mediaType: string | null = null;
+  
+    if (file) {
+      if (dto.fileType === 'IMAGE') {
+        const upload = await this.cloudinary.uploadMedia(file, AcademeetUploadType.POST_IMAGE);
+        mediaUrl = upload.secure_url;
+        mediaType = 'IMAGE';
+      } else if (dto.fileType === 'FILE') {
+        const upload = await this.cloudinary.uploadRaw(file, AcademeetUploadType.RESOURCE_FILE);
+        mediaUrl = upload.secure_url;
+        mediaType = 'FILE';
+      }
+    }
+  
+    // 4. Create the message
     const message = await this.prisma.groupMessage.create({
       data: {
-        content: dto.content,
+        content: dto.content ?? null,
         groupId: dto.groupId,
         userId,
-        replyToId: dto.replyToId ?? null, // ✅ include reply
+        replyToId: dto.replyToId ?? null,
+        mediaUrl,
+        mediaType,
       },
       include: {
         user: {
@@ -342,8 +353,8 @@ export class GroupsService {
         },
       },
     });
-
-    //  Flatten response for frontend
+  
+    // 5. Flatten response for frontend
     return {
       ...message,
       user: {
@@ -364,6 +375,7 @@ export class GroupsService {
         : null,
     };
   }
+  
 
   async editMessage(userId: string, messageId: string, newContent: string) {
     //  Find the message

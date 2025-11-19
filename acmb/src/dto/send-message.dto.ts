@@ -10,4 +10,7 @@ export class SendMessageDto {
   @MaxLength(2000)
   content: string;
   replyToId?: string;
+
+  file?: Express.Multer.File;
+  fileType?: 'IMAGE' | 'FILE'; 
 }
