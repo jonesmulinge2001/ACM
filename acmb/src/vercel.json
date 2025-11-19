@@ -2,7 +2,7 @@
   "version": 3,
   "builds": [
     {
-      "src": "dist/main.js",
+      "src": "package.json",
       "use": "@vercel/node"
     }
   ],
@@ -11,9 +11,5 @@
       "src": "/(.*)",
       "dest": "dist/main.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "VERCEL": "1"
-  }
+  ]
 }
