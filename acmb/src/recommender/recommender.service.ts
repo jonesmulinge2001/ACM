@@ -43,7 +43,7 @@ export class RecommenderService {
       .slice(0, 10)
       .map((entry) => entry.profile);
 
-    //>>> Build tag-based filter from skills and interests
+    // Build tag-based filter from skills and interests
     const tags = [...student.skills, ...student.interests];
 
     const postFilter = {
