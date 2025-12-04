@@ -18,7 +18,8 @@ import {
 } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 import { CreateAnnouncementDto } from 'src/dto/createAnnouncement.dto';
 import { NotificationsGateway } from 'src/student-notifications/notifications.gateway';
-import { StudentNotificationDto } from 'src/dto/student-notification';
+// import { StudentNotificationDto } from 'src/dto/student-notification';
+import { CreateInstitutionRequestDto } from 'src/dto/create-institution-request.dto';
 
 function addHours(date: Date, hours: number): Date {
   const newDate = new Date(date);
@@ -35,49 +36,85 @@ export class InstitutionService {
   ) {}
 
   /** Create a new institution with optional logo upload */
-  async createInstitution(
-    dto: { name: string; description?: string },
-    file?: Express.Multer.File,
-  ) {
-    let logoUrl: string | undefined = undefined;
+/** Public registration request */
+async registerInstitution(dto: CreateInstitutionRequestDto, file?: Express.Multer.File) {
+  let logoUrl: string | undefined = undefined;
 
-    if (file) {
-      const uploadResult = await this.cloudinary.uploadMedia(
-        file,
-        AcademeetUploadType.COURSE_BANNER,
-      );
-      logoUrl = uploadResult.secure_url;
+  if (file) {
+    const uploadResult = await this.cloudinary.uploadMedia(file, AcademeetUploadType.COURSE_BANNER);
+    logoUrl = uploadResult.secure_url;
+  }
+
+  // Create institution with PENDING_REVIEW status
+  const institution = await this.prisma.institution.create({
+    data: {
+      name: dto.name,
+      description: dto.description,
+      logoUrl,
+      status: 'PENDING_REVIEW', // new column for status
+      officialEmail: dto.officialEmail,
+      websiteUrl: dto.websiteUrl,
+    },
+  });
+
+  return institution;
+}
+
+/** Super admin approves or rejects institution */
+async updateInstitutionStatus(institutionId: string, dto: { status: 'APPROVED' | 'REJECTED'; reviewedById: string }) {
+  const institution = await this.prisma.institution.findUnique({ where: { id: institutionId } });
+  if (!institution) throw new NotFoundException('Institution not found');
+
+  const updated = await this.prisma.institution.update({
+    where: { id: institutionId },
+    data: {
+      status: dto.status,
+    },
+  });
+
+  // Automatic first admin creation upon approval
+  if (dto.status === 'APPROVED') {
+    if (!institution.officialEmail) {
+      throw new BadRequestException('Cannot create admin: institution has no official email');
     }
-
-    return this.prisma.institution.create({
-      data: {
-        name: dto.name,
-        description: dto.description,
-        logoUrl,
-      },
+  
+    const firstAdmin = await this.prisma.user.findUnique({
+      where: { email: institution.officialEmail },
     });
+  
+    if (firstAdmin) {
+      await this.prisma.user.update({
+        where: { id: firstAdmin.id },
+        data: { role: 'INSTITUTION_ADMIN' },
+      });
+  
+      await this.prisma.institutionAdmin.upsert({
+        where: { userId_institutionId: { userId: firstAdmin.id, institutionId } },
+        create: { userId: firstAdmin.id, institutionId, createdById: dto.reviewedById },
+        update: { isActive: true },
+      });
+    }
   }
+  
 
-  /** Create a new announcement */
-async createAnnouncement(
-  institutionId: string,
-  dto: CreateAnnouncementDto & { files?: Express.Multer.File[] },
-  userId: string,
-) {
+  return updated;
+}
+
+/** Only approved institutions can create announcements */
+async createAnnouncement(institutionId: string, dto: CreateAnnouncementDto, userId: string) {
+  const institution = await this.prisma.institution.findUnique({ where: { id: institutionId } });
+  if (!institution) throw new ForbiddenException('Institution not found');
+  if (institution.status !== 'APPROVED') throw new ForbiddenException('Institution not approved yet');
+
   let fileUrls: string[] = [];
-
-  // Upload files if provided
-  if (dto.files && dto.files.length > 0) {
-    const uploads = await Promise.all(
-      dto.files.map((file) =>
-        this.cloudinary.uploadMedia(file, AcademeetUploadType.POST_IMAGE),
-      ),
-    );
-    fileUrls = uploads.map((u) => u.secure_url);
+  if (dto.files?.length) {
+    const uploads = await Promise.all(dto.files.map(file =>
+      this.cloudinary.uploadMedia(file, AcademeetUploadType.POST_IMAGE),
+    ));
+    fileUrls = uploads.map(u => u.secure_url);
   }
 
-  // Create announcement
-  const announcement = await this.prisma.institutionAnnouncement.create({
+  return this.prisma.institutionAnnouncement.create({
     data: {
       institutionId,
       title: dto.title,
@@ -86,48 +123,23 @@ async createAnnouncement(
       createdById: userId,
     },
   });
+}
 
-  // Get all students in institution
-  const students = await this.prisma.profile.findMany({
-    where: { institutionId },
-    select: { userId: true },
+/** List approved institutions for dropdowns */
+async getApprovedInstitutions() {
+  return this.prisma.institution.findMany({
+    where: { status: 'APPROVED' },
+    select: { 
+      id: true,
+      name: true,
+      logoUrl: true, 
+      websiteUrl: true, 
+      officialEmail: true,
+      description: true,
+      createdAt: true 
+    },
+    orderBy: { name: 'asc' },
   });
-
-  if (students.length > 0) {
-    // Save notifications in DB
-    const createdNotifications = await Promise.all(
-      students.map((student) =>
-        this.prisma.notification.create({
-          data: {
-            recipientId: student.userId,
-            type: 'ANNOUNCEMENT',
-            referenceId: announcement.id,
-            message: `New announcement: ${announcement.title}`,
-          },
-        }),
-      ),
-    );
-
-    // Push via WebSocket
-    createdNotifications.forEach((notification) => {
-      const dto: StudentNotificationDto = {
-        id: notification.id,
-        recipientId: notification.recipientId,
-        type: notification.type,
-        referenceId: notification.referenceId,
-        message: notification.message,
-        status: notification.status,
-        createdAt: notification.createdAt,
-        updatedAt: notification.updatedAt,
-        readAt: notification.readAt,
-      };
-
-      // Send only to the specific student
-      this.notificationsGateway.sendToStudent(notification.recipientId, dto);
-    });
-  }
-
-  return announcement;
 }
 
   /** Assign a user as institution admin */
@@ -378,6 +390,15 @@ async createAnnouncement(
           id: true,
           name: true,
           logoUrl: true,
+          officialEmail: true,
+          websiteUrl: true,
+          description: true,
+          status: true,
+
+          // Include the count of students for each institution
+          _count: {
+            select: { profiles: true },
+          },
         },
         orderBy: {
           name: 'asc',

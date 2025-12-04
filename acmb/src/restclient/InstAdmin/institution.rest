@@ -1,12 +1,24 @@
-### 1️⃣ Create Institution
-POST http://localhost:3000/institutions
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMjhlZWNjMS01MmMwLTQzODQtYmI2My1jMmUxYWIxMmQzZTEiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpQGdtYWlsLmNvbSIsInJvbGUiOiJJTlNUSVRVVElPTl9BRE1JTiIsImlhdCI6MTc1ODIyMzU0MCwiZXhwIjoxNzU4MzA5OTQwfQ.Qstuj9m5xcLZnBbjpTa_hyLwRA-lINCeWeULc2E7ITU
+### 1️⃣Register a New Institution
+POST http://localhost:3000/institutions/register
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc2NDg3NjcxNywiZXhwIjoxNzY0OTYzMTE3fQ.N7uj8ahZ5rVnkv_qryFfx400kSv4tvQG9KoItxFlzkk
 Content-Type: application/json
 
 {
-  "name": "Chuka University",
-  "description": "A top university in Kenya",
-  "logoUrl": "https://example.com/logo.png"
+  "name": "Lukenya University",
+  "description": "Testing institution registration",
+  "officialEmail": "lukenya@lukenya.ac.ke",
+  "websiteUrl": "https://www.lukenya.ac.ke",
+  "officialDomain": "lukenya.ac.ke"
+}
+
+### Update Institution Status (Super Admin)
+PATCH http://localhost:3000/institutions/8d514992-5558-4db5-a1a1-d2bd516b89da/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMTdkZjkxOC1lZmViLTQ2YTUtYWYzMC05M2MwYTUyYjdjM2UiLCJlbWFpbCI6ImpvbmF0aGFubXVsaW5nZW13YW5kaUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NjQ4NzY4NTksImV4cCI6MTc2NDk2MzI1OX0.KoF1BeDKaJRRTfA84pFrkakU76m9P-jU5AmP3R9N2Dk
+Content-Type: application/json
+
+{
+  "status": "APPROVED",
+  "reviewedById": "b17df918-efeb-46a5-af30-93c0a52b7c3e"
 }
 
 ### Assign Admin to Institution
@@ -99,3 +111,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5YmU1YmY0O
 ### Get Institution Analytics
 GET http://localhost:3000/institutions
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5YmU1YmY0OC0zMzQzLTRhZDMtODcwNi1kMjVhOTM5Y2E3ZWQiLCJlbWFpbCI6ImoyNjUxNTc2MkBnbWFpbC5jb20iLCJyb2xlIjoiSU5TVElUVVRJT05fQURNSU4iLCJpYXQiOjE3NTgzMTc1MDUsImV4cCI6MTc1ODQwMzkwNX0.YIv5CGCSGJJSBjkRylWI8cJHM9_hKmuteerlGSnv3lc
+
+###
+GET http://localhost:3000/institutions/approved
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc2NDg3NjcxNywiZXhwIjoxNzY0OTYzMTE3fQ.N7uj8ahZ5rVnkv_qryFfx400kSv4tvQG9KoItxFlzkk
+Content-Type: application/json

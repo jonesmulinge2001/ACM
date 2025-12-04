@@ -22,11 +22,39 @@ import { Permission } from 'src/permissions/permission.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RequirePermissions } from 'src/decorator/permissions.decorator';
 import { CreateAnnouncementDto } from 'src/dto/createAnnouncement.dto';
+import { CreateInstitutionRequestDto } from 'src/dto/create-institution-request.dto';
 
 @Controller('institutions')
 @UseGuards(AuthGuard('jwt'))
 export class InstitutionController {
   constructor(private readonly institutionService: InstitutionService) {}
+
+  @Post('register')
+@UseInterceptors(FilesInterceptor('logo', 1))
+async registerInstitution(
+  @Body(new ValidationPipe({ transform: true })) body: CreateInstitutionRequestDto,
+  @UploadedFiles() files: Express.Multer.File[],
+) {
+  const file = files?.[0];
+  return this.institutionService.registerInstitution(body, file);
+}
+
+
+@Patch(':institutionId/status')
+@RequirePermissions(Permission.MANAGE_USERS)
+async updateInstitutionStatus(
+  @Param('institutionId') institutionId: string,
+  @Body() body: { status: 'APPROVED' | 'REJECTED'; reviewedById: string },
+) {
+  return this.institutionService.updateInstitutionStatus(institutionId, body);
+}
+
+
+@Get('approved')
+async getApprovedInstitutions() {
+  return this.institutionService.getApprovedInstitutions();
+}
+
 
   /** Create an announcement with optional file uploads */
   @Post(':institutionId/announcement')

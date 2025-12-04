@@ -81,11 +81,25 @@ model Institution {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+    // NEW
+  status          InstitutionStatus @default(PENDING_REVIEW)
+  officialEmail   String?
+  officialDomain  String?
+  websiteUrl      String?
+  documents       String[]          // uploaded verification files (PDF/JPEG)
+
   admins        InstitutionAdmin[]
   invites       InstitutionInvite[]
   announcements InstitutionAnnouncement[]
   profiles      Profile[]
 }
+
+enum InstitutionStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
 
 model InstitutionAdmin {
   id            String   @id @default(uuid())
