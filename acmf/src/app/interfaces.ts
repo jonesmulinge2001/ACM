@@ -634,7 +634,25 @@ export interface Institution {
   name: string;
   description?: string;
   logoUrl?: string;
+  websiteUrl?: string;
+  status?: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
+  officialEmail?: string;
+  // officialDomain?: string;
+  createdAt?: string;
+  reviewedById?: string | null;
+  _count?: { profiles: number }; 
 }
+
+export interface RegisterInstitutionRequest {
+  name: string;
+  description: string;
+  officialEmail: string;
+  officialDomain: string;
+  websiteUrl: string;
+}
+
+
+export type InstitutionStatusFilter = 'ALL' | 'PENDING_REVIEW' | 'APPROVED';
 
 export interface StudentNotification {
   id: string;

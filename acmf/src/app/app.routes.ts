@@ -37,6 +37,7 @@ import { AnnouncementDetailComponent } from './components/announcement-detail/an
 import { AuthGuard } from './auth.guard';
 import { CreateGroupComponent } from './groups/grou-formation/grou-formation.component';
 import { ManageGroupsComponent } from './admin/manage-groups/manage-groups.component';
+import { SuperAdminInstitutionsComponent } from './admin/institution-management/institution-management.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -84,7 +85,8 @@ export const routes: Routes = [
       { path: 'manage-users', component: ManageUsersComponent },
       { path: 'manage-posts', component: AdminPostsComponent },
       { path: 'posts/:id', component: PostDetailComponent },
-      { path: 'manage-groups', component: ManageGroupsComponent } 
+      { path: 'manage-groups', component: ManageGroupsComponent } ,
+      { path: 'institution-management', component: SuperAdminInstitutionsComponent },
     ]
   },
 

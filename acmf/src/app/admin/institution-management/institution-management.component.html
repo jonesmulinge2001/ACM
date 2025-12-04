@@ -1,0 +1,227 @@
+<div class="p-6 bg-gray-50 min-h-screen">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-800">Institution Management</h1>
+      <p class="text-gray-600 text-sm mt-1">Manage all registered institutions, approve or reject applications.</p>
+    </div>
+  
+    <!-- Fixed Tabs -->
+    <div class="sticky top-0 z-20 bg-gray-50 pb-3 pt-2">
+      <div class="flex space-x-3">
+  
+        <!-- ALL -->
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-1"
+          [ngClass]="currentTab === 'ALL'
+            ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600 shadow-md'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+          (click)="applyFilter('ALL')">
+          <span class="material-icons text-base">list</span>
+          All
+        </button>
+  
+        <!-- Pending -->
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-1"
+          [ngClass]="currentTab === 'PENDING_REVIEW'
+            ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600 shadow-md'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+          (click)="applyFilter('PENDING_REVIEW')">
+          <span class="material-icons text-base">hourglass_empty</span>
+          Pending
+        </button>
+  
+        <!-- Approved -->
+        <button
+          class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-1"
+          [ngClass]="currentTab === 'APPROVED'
+            ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600 shadow-md'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+          (click)="applyFilter('APPROVED')">
+          <span class="material-icons text-base">check_circle</span>
+          Approved
+        </button>
+  
+      </div>
+    </div>
+  
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-10">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-b-4 border-purple-600 mx-auto"></div>
+      <p class="text-gray-500 text-sm mt-2">Loading institutions...</p>
+    </div>
+
+    <!-- Create Institution Button -->
+<div class="flex justify-end mb-4">
+    <button
+      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:scale-105 transition"
+      (click)="openCreateModal()">
+      <span class="material-icons text-base">add_circle</span>
+      Add Institution
+    </button>
+  </div>
+  
+  
+    <!-- Table -->
+    <div *ngIf="!loading && filteredInstitutions.length > 0" class="overflow-x-auto mt-4">
+      <table class="w-full bg-white rounded-lg shadow-md text-sm">
+        <thead class="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs">
+          <tr>
+            <th class="px-4 py-2 text-left">Logo</th>
+            <th class="px-4 py-2 text-left">Name</th>
+            <th class="px-4 py-2 text-left">Status</th>
+            <th class="px-4 py-2 text-left">Email</th>
+            <th class="px-4 py-2 text-left">Website</th>
+            <th class="px-4 py-2 text-center">Actions</th>
+          </tr>
+        </thead>
+  
+        <tbody class="divide-y divide-gray-200">
+  
+          <tr *ngFor="let inst of filteredInstitutions">
+            
+            <!-- Logo -->
+            <td class="px-4 py-3">
+              <img [src]="inst.logoUrl || 'https://via.placeholder.com/40'"
+                   class="h-8 w-8 rounded-full object-cover border" />
+            </td>
+  
+            <!-- Name -->
+            <td class="px-4 py-3 font-medium">{{ inst.name }}</td>
+  
+            <!-- Status -->
+            <td class="px-4 py-3">
+              <span class="flex items-center gap-1 px-2 py-1 rounded-full text-xs"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700': inst.status === 'PENDING_REVIEW',
+                  'bg-green-100 text-green-700': inst.status === 'APPROVED',
+                  'bg-red-100 text-red-700': inst.status === 'REJECTED'
+                }">
+  
+                <span class="material-icons text-sm">
+                  {{ inst.status === 'PENDING_REVIEW' ? 'hourglass_empty'
+                    : inst.status === 'APPROVED' ? 'check_circle'
+                    : 'cancel' }}
+                </span>
+  
+                {{ inst.status }}
+              </span>
+            </td>
+  
+            <!-- Email -->
+            <td class="px-4 py-3 text-gray-600">{{ inst.officialEmail || '—' }}</td>
+  
+            <!-- Website -->
+            <td class="px-4 py-3">
+              <a *ngIf="inst.websiteUrl"
+                 [href]="inst.websiteUrl" target="_blank"
+                 class="text-blue-600 hover:underline text-xs">
+                 {{ inst.websiteUrl }}
+              </a>
+              <span *ngIf="!inst.websiteUrl" class="text-gray-400 text-xs">—</span>
+            </td>
+  
+            <!-- Actions -->
+            <td class="px-4 py-3 text-center">
+  
+              <!-- If PENDING → Show Approve/Reject -->
+              <div *ngIf="inst.status === 'PENDING_REVIEW'" class="flex justify-center gap-1">
+  
+                <button
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:scale-105 transition"
+                  (click)="approveInstitution(inst.id)">
+                  <span class="material-icons text-sm">check</span>
+                  Approve
+                </button>
+  
+                <button
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-white bg-gradient-to-r from-red-500 to-pink-600 hover:scale-105 transition"
+                  (click)="rejectInstitution(inst.id)">
+                  <span class="material-icons text-sm">close</span>
+                  Reject
+                </button>
+              </div>
+  
+              <!-- APPROVED → No buttons -->
+              <div *ngIf="inst.status === 'APPROVED'" class="text-xs text-gray-500 flex items-center justify-center gap-1">
+                <span class="material-icons text-green-600 text-base">verified</span>
+                Approved
+              </div>
+  
+              <!-- REJECTED → No buttons -->
+              <div *ngIf="inst.status === 'REJECTED'" class="text-xs text-gray-500 flex items-center justify-center gap-1">
+                <span class="material-icons text-red-600 text-base">block</span>
+                Rejected
+              </div>
+  
+            </td>
+  
+          </tr>
+  
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- No Institutions -->
+    <div *ngIf="!loading && filteredInstitutions.length === 0"
+         class="text-center py-10 text-gray-500 text-sm">
+      No institutions found for this filter.
+    </div>
+  
+    <!-- Create Institution Modal -->
+    <div *ngIf="showCreateModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+          <h2 class="text-lg font-bold mb-4">Create Institution</h2>
+      
+          <form (ngSubmit)="submitCreateInstitution()">
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Name</label>
+              <input type="text" [(ngModel)]="createData.name" name="name" required
+                     class="w-full border rounded px-2 py-1 text-sm" />
+            </div>
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Description</label>
+              <textarea [(ngModel)]="createData.description" name="description"
+                        class="w-full border rounded px-2 py-1 text-sm"></textarea>
+            </div>
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Official Email</label>
+              <input type="email" [(ngModel)]="createData.officialEmail" name="officialEmail" required
+                     class="w-full border rounded px-2 py-1 text-sm" />
+            </div>
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Official Domain</label>
+              <input type="text" [(ngModel)]="createData.officialDomain" name="officialDomain" required
+                     placeholder="example.edu" class="w-full border rounded px-2 py-1 text-sm" />
+            </div>
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Website URL</label>
+              <input type="url" [(ngModel)]="createData.websiteUrl" name="websiteUrl" required
+                     placeholder="https://example.edu" class="w-full border rounded px-2 py-1 text-sm" />
+            </div>
+      
+            <div class="mb-3">
+              <label class="block text-sm font-medium mb-1">Logo</label>
+              <input type="file" (change)="handleFileUpload($event)" name="logo"
+                     class="w-full text-sm" />
+            </div>
+      
+            <div class="flex justify-end space-x-2 mt-4">
+              <button type="button" (click)="closeCreateModal()" class="px-3 py-1 rounded bg-gray-300 text-sm">Cancel</button>
+              <button type="submit" class="px-3 py-1 rounded bg-blue-600 text-white text-sm">Create</button>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+      
+
+
+  </div>
+  
