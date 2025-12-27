@@ -164,15 +164,19 @@ export class GroupsController {
   // Optionally: send message via REST (useful for bots or fallback)
   @Post(':id/messages')
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('file'))
   async postMessage(
     @Req() req: RequestWithUser,
     @Param('id') id: string,
     @Body() dto: SendMessageDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
     // ensure groupId matches param
     if (dto.groupId !== id) dto.groupId = id;
-    return this.groupService.sendMessage(req.user.id, dto);
+  
+    return this.groupService.sendMessage(req.user.id, dto, file);
   }
+  
 
   // Edit a group message
   @Patch('messages/:id')

@@ -18,9 +18,10 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { JwtService } from 'src/guards/jwt/jwt.service';
-import { IsString, IsOptional, validateSync } from 'class-validator';
+import { IsString, IsOptional, validateSync, IsArray } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { consumeToken } from 'src/shared/socket-rate-limiter';
+import { MessageAttachment } from 'src/dto/message-attachment.dto';
 
 class SendMessageDto {
   @IsOptional()
@@ -33,6 +34,10 @@ class SendMessageDto {
 
   @IsString()
   content!: string;
+
+  @IsOptional()
+  @IsArray()
+  attachments?: MessageAttachment[];
 }
 
 @WebSocketGateway({

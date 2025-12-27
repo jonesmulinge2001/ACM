@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -277,36 +277,11 @@ export class GroupsService {
 
   /** Persist a group message (supports replies) */
   async sendMessage(userId: string, dto: SendMessageDto, file?: Express.Multer.File) {
-    // 1. Ensure sender is a group member
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: dto.groupId, userId } },
     });
     if (!membership) throw new ForbiddenException('Not a group member');
   
-    // 2. Validate reply target
-    let replyToMessage: Awaited<
-  ReturnType<typeof this.prisma.groupMessage.findUnique>
-> | null = null;
-    if (dto.replyToId) {
-      replyToMessage = await this.prisma.groupMessage.findUnique({
-        where: { id: dto.replyToId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profile: { select: { profileImage: true } },
-            },
-          },
-        },
-      });
-  
-      if (!replyToMessage) {
-        throw new NotFoundException('The message you are replying to was not found');
-      }
-    }
-  
-    // 3. Handle file upload (if provided)
     let mediaUrl: string | null = null;
     let mediaType: string | null = null;
   
@@ -322,7 +297,6 @@ export class GroupsService {
       }
     }
   
-    // 4. Create the message
     const message = await this.prisma.groupMessage.create({
       data: {
         content: dto.content ?? null,
@@ -333,48 +307,27 @@ export class GroupsService {
         mediaType,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profile: { select: { profileImage: true } },
-          },
-        },
-        replyTo: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profile: { select: { profileImage: true } },
-              },
-            },
-          },
-        },
+        user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } },
+        replyTo: { include: { user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } } } },
       },
     });
   
-    // 5. Flatten response for frontend
     return {
       ...message,
-      user: {
-        id: message.user.id,
-        name: message.user.name,
-        profileImage: message.user.profile?.profileImage || null,
-      },
-      replyTo: message.replyTo
-        ? {
-            id: message.replyTo.id,
-            content: message.replyTo.content,
-            user: {
-              id: message.replyTo.user.id,
-              name: message.replyTo.user.name,
-              profileImage: message.replyTo.user.profile?.profileImage || null,
-            },
-          }
-        : null,
+      user: { id: message.user.id, name: message.user.name, profileImage: message.user.profile?.profileImage || null },
+      replyTo: message.replyTo ? {
+        id: message.replyTo.id,
+        content: message.replyTo.content,
+        user: {
+          id: message.replyTo.user.id,
+          name: message.replyTo.user.name,
+          profileImage: message.replyTo.user.profile?.profileImage || null,
+        },
+      } : null,
     };
   }
+  
+  
   
 
   async editMessage(userId: string, messageId: string, newContent: string) {

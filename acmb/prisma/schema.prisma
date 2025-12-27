@@ -458,7 +458,7 @@ model GroupMember {
 
 model GroupMessage {
   id          String   @id @default(uuid())
-  content     String
+  content     String?
   mediaUrl  String?
   mediaType String? 
   createdAt   DateTime @default(now())
@@ -588,7 +588,7 @@ model ConversationMessage {
   conversationId String
   senderId       String
   content        String?
-  attachments    Json? // array of { url, type } or whatever you want
+  attachments    Json? // array of { url, type }
   createdAt      DateTime @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id])

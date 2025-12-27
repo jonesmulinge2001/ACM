@@ -6,10 +6,14 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaClient } from 'generated/prisma';
+import { Prisma, PrismaClient } from 'generated/prisma';
+import { MessageAttachment } from 'src/dto/message-attachment.dto';
+import { AcademeetCloudinaryService } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ConversationsService {
+
+  constructor(private cloudinaryService: AcademeetCloudinaryService) {}
   private prisma = new PrismaClient();
 
   // Create or return existing one-on-one conversation
@@ -74,18 +78,20 @@ export class ConversationsService {
       conversationId?: string;
       recipientId?: string;
       content?: string;
-      attachments?: any;
+      attachments?: MessageAttachment[] | null;
     },
   ) {
     let conversationId = dto.conversationId;
-
-    // If recipientId provided and conversationId not, create or reuse a one-on-one
+  
+    // 1. Resolve Conversation (Auto-create if 1-on-1)
     if (!conversationId && dto.recipientId) {
       const ids = [senderId, dto.recipientId].sort();
       const key = `${ids[0]}:${ids[1]}`;
+  
       let conv = await this.prisma.conversation.findUnique({
         where: { oneOnOneKey: key },
       });
+  
       if (!conv) {
         conv = await this.prisma.conversation.create({
           data: {
@@ -99,21 +105,30 @@ export class ConversationsService {
           },
         });
       }
+  
       conversationId = conv.id;
     }
-
-    if (!conversationId)
+  
+    if (!conversationId) {
       throw new BadRequestException('conversationId or recipientId required');
-
-    // ensure sender is a participant
+    }
+  
+    // 2. Security check
     await this.ensureParticipant(conversationId, senderId);
-
+  
+    // 3. Normalize attachments for Prisma JSON
+    const attachments =
+      dto.attachments && dto.attachments.length > 0
+        ? (dto.attachments as unknown as Prisma.InputJsonValue)
+        : Prisma.JsonNull;
+  
+    // 4. Create message
     const saved = await this.prisma.conversationMessage.create({
       data: {
         conversationId,
         senderId,
         content: dto.content ?? '',
-        attachments: dto.attachments ?? null,
+        attachments,
       },
       include: {
         sender: {
@@ -125,26 +140,23 @@ export class ConversationsService {
         },
       },
     });
-
-    // optional: update conversation.updatedAt is automatic with @updatedAt
-
-    // flatten sender.profileImage like other parts of your app
-    const message = {
+  
+    // 5. Flatten response
+    return {
       id: saved.id,
       conversationId: saved.conversationId,
       content: saved.content,
       attachments: saved.attachments,
       createdAt: saved.createdAt,
+      senderId: saved.senderId,
       sender: {
         id: saved.sender.id,
         name: saved.sender.name,
         profileImage: saved.sender.profile?.profileImage ?? null,
       },
-      senderId: saved.senderId,
     };
-
-    return message;
   }
+  
 
   // Get messages with pagination (cursor = message id)
   async getMessages(conversationId: string, limit = 50, cursor?: string) {
