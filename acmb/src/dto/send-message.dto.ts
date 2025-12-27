@@ -1,16 +1,21 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
+// src/dto/send-group-message.dto.ts
+import { IsOptional, IsString, IsUUID, IsArray } from 'class-validator';
+import { MessageAttachment } from './message-attachment.dto';
 
-export class SendMessageDto {
+export class SendGroupMessageDto {
   @IsUUID()
   groupId: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(2000)
-  content: string;
+  content?: string;
+
+  @IsOptional()
+  @IsUUID()
   replyToId?: string;
 
-  file?: Express.Multer.File;
-  fileType?: 'IMAGE' | 'FILE'; 
+  @IsOptional()
+  @IsArray()
+  attachments?: MessageAttachment[] | null;
 }

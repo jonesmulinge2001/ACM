@@ -23,7 +23,6 @@ import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { JwtService } from 'src/guards/jwt/jwt.service';
-import { SendMessageDto } from 'src/dto/send-message.dto';
 
 @WebSocketGateway({
   namespace: '/groups',
@@ -106,22 +105,32 @@ export class GroupsGateway
 
   /** Client emits 'message' with payload; gateway persists then broadcasts */
   @SubscribeMessage('message')
-  async onMessage(@MessageBody() payload: SendMessageDto, @ConnectedSocket() client: Socket) {
+  async onMessage(
+    @MessageBody() payload: any,
+    @ConnectedSocket() client: Socket,
+  ) {
     const user = client.data.user;
-    try {
-      const saved = await this.groupsService.sendMessage(user.id, payload, payload['file']);
-      this.server.to(`group:${payload.groupId}`).emit('message', {
-        id: saved.id,
-        content: saved.content,
-        mediaUrl: saved.mediaUrl,
-        mediaType: saved.mediaType,
-        replyTo: saved.replyTo,
-        createdAt: saved.createdAt,
-        user: saved.user,
-      });
-    } catch (err: any) {
-      client.emit('error', { message: err.message ?? 'Failed to send message' });
+    if (!user) {
+      client.emit('error', { message: 'Not authenticated' });
+      return;
     }
+  
+    const saved = await this.groupsService.sendMessage(user.id, {
+      groupId: payload.groupId,
+      content: payload.content,
+      replyToId: payload.replyToId ?? null,
+      attachments: payload.attachments ?? null,
+    });
+  
+    this.server
+      .to(`group:${payload.groupId}`)
+      .emit('message', saved);
+  
+    client.emit('message:sent', {
+      tempId: payload.tempId ?? null,
+      id: saved.id,
+    });
   }
+  
   
 }

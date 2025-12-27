@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
- 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
+
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -16,13 +18,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  GroupMessage,
-  GroupRole,
-  PrismaClient,
-  Profile,
-  User,
-} from 'generated/prisma';
+import { GroupRole, Prisma, PrismaClient } from 'generated/prisma';
 import {
   BulkAddMembersDto,
   BulkRemoveMembersDto,
@@ -33,7 +29,8 @@ import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
 import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
 import { CreateGroupDto } from 'src/dto/create-group.dto';
 import { JoinGroup } from 'src/dto/join-group.dto';
-import { SendMessageDto } from 'src/dto/send-message.dto';
+import { MessageAttachment } from 'src/dto/message-attachment.dto';
+import { SendGroupMessageDto } from 'src/dto/send-message.dto';
 import { UpdateGroupDto } from 'src/dto/update-group.dto';
 import {
   AcademeetCloudinaryService,
@@ -195,44 +192,98 @@ export class GroupsService {
     });
   }
 
-  // share a resource in a group (verify membership)
   async shareResource(
     groupId: string,
     userId: string,
     dto: CreateGroupResourceDto,
-    file?: Express.Multer.File,
+    attachments?: MessageAttachment[],
   ) {
-    //  Ensure user is group member
+    // Ensure user is group member
     const isMember = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
     if (!isMember) throw new ForbiddenException('You are not a group member');
-
-    // Upload file if provided
-    let resourceUrl: string | null = null;
-    let originalName: string | null = null;
-    let fileType: string | null = null;
-
-    if (file) {
-      const uploadResult = await this.cloudinary.uploadRaw(
-        file,
-        AcademeetUploadType.RESOURCE_FILE,
-      );
-      resourceUrl = uploadResult.secure_url;
-      originalName = file.originalname;
-      const parts = file.originalname.split('.');
-      fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
+  
+    // If there are attachments, create a resource for each
+    if (attachments && attachments.length > 0) {
+      const createdResources: {
+        id: string;
+        content: string | null;
+        resourceUrl: string | null;
+        originalName: string | null;
+        fileType: string | null;
+        createdAt: Date;
+        groupId: string;
+        likesCount: number;
+        commentsCount: number;
+        sharedBy: {
+          id: string;
+          name: string;
+          profileImage: string | null;
+          institution: { id: string; name: string } | null;
+        };
+      }[] = [];
+  
+      for (const attach of attachments) {
+        const resource = await this.prisma.groupResource.create({
+          data: {
+            groupId,
+            sharedById: userId,
+            content: dto.content,
+            resourceUrl: attach.url,
+            originalName: attach.name,
+            fileType: attach.type,
+          },
+          include: {
+            sharedBy: {
+              select: {
+                id: true,
+                name: true,
+                profile: {
+                  select: {
+                    profileImage: true,
+                    institution: { select: { id: true, name: true } },
+                  },
+                },
+              },
+            },
+          },
+        });
+  
+        // push into array
+        createdResources.push({
+          id: resource.id,
+          content: resource.content,
+          resourceUrl: resource.resourceUrl,
+          originalName: resource.originalName,
+          fileType: resource.fileType,
+          createdAt: resource.createdAt,
+          groupId: resource.groupId,
+          likesCount: resource.likesCount,
+          commentsCount: resource.commentsCount,
+          sharedBy: {
+            id: resource.sharedBy.id,
+            name: resource.sharedBy.name,
+            profileImage: resource.sharedBy.profile?.profileImage ?? null,
+            institution: resource.sharedBy.profile?.institution
+              ? {
+                  id: resource.sharedBy.profile.institution.id,
+                  name: resource.sharedBy.profile.institution.name,
+                }
+              : null,
+          },
+        });
+      }
+  
+      return createdResources; // return array of created resources
     }
-
-    // Create resource
+  
+    // If no attachments, create a single resource with just content
     const resource = await this.prisma.groupResource.create({
       data: {
         groupId,
         sharedById: userId,
         content: dto.content,
-        resourceUrl,
-        originalName,
-        fileType,
       },
       include: {
         sharedBy: {
@@ -249,8 +300,7 @@ export class GroupsService {
         },
       },
     });
-
-    // Return formatted response
+  
     return {
       id: resource.id,
       content: resource.content,
@@ -274,61 +324,80 @@ export class GroupsService {
       },
     };
   }
+  
 
   /** Persist a group message (supports replies) */
-  async sendMessage(userId: string, dto: SendMessageDto, file?: Express.Multer.File) {
+  async sendMessage(userId: string, dto: SendGroupMessageDto) {
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: dto.groupId, userId } },
     });
-    if (!membership) throw new ForbiddenException('Not a group member');
-  
-    let mediaUrl: string | null = null;
-    let mediaType: string | null = null;
-  
-    if (file) {
-      if (dto.fileType === 'IMAGE') {
-        const upload = await this.cloudinary.uploadMedia(file, AcademeetUploadType.POST_IMAGE);
-        mediaUrl = upload.secure_url;
-        mediaType = 'IMAGE';
-      } else if (dto.fileType === 'FILE') {
-        const upload = await this.cloudinary.uploadRaw(file, AcademeetUploadType.RESOURCE_FILE);
-        mediaUrl = upload.secure_url;
-        mediaType = 'FILE';
-      }
+
+    if (!membership) {
+      throw new ForbiddenException('Not a group member');
     }
-  
-    const message = await this.prisma.groupMessage.create({
+
+    // 🔥 SAME AS DM
+    const attachments =
+      dto.attachments && dto.attachments.length > 0
+        ? (dto.attachments as unknown as Prisma.InputJsonValue)
+        : Prisma.JsonNull;
+
+    const saved = await this.prisma.groupMessage.create({
       data: {
-        content: dto.content ?? null,
         groupId: dto.groupId,
         userId,
+        content: dto.content ?? '',
         replyToId: dto.replyToId ?? null,
-        mediaUrl,
-        mediaType,
+        attachments,
       },
       include: {
-        user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } },
-        replyTo: { include: { user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } } } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profile: { select: { profileImage: true } },
+          },
+        },
+        replyTo: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: { select: { profileImage: true } },
+              },
+            },
+          },
+        },
       },
     });
-  
+
+    // 🔥 SAME FLATTENING AS DM
     return {
-      ...message,
-      user: { id: message.user.id, name: message.user.name, profileImage: message.user.profile?.profileImage || null },
-      replyTo: message.replyTo ? {
-        id: message.replyTo.id,
-        content: message.replyTo.content,
-        user: {
-          id: message.replyTo.user.id,
-          name: message.replyTo.user.name,
-          profileImage: message.replyTo.user.profile?.profileImage || null,
-        },
-      } : null,
+      id: saved.id,
+      groupId: saved.groupId,
+      content: saved.content,
+      attachments: saved.attachments,
+      createdAt: saved.createdAt,
+      userId: saved.userId,
+      user: {
+        id: saved.user.id,
+        name: saved.user.name,
+        profileImage: saved.user.profile?.profileImage ?? null,
+      },
+      replyTo: saved.replyTo
+        ? {
+            id: saved.replyTo.id,
+            content: saved.replyTo.content,
+            user: {
+              id: saved.replyTo.user.id,
+              name: saved.replyTo.user.name,
+              profileImage: saved.replyTo.user.profile?.profileImage ?? null,
+            },
+          }
+        : null,
     };
   }
-  
-  
-  
 
   async editMessage(userId: string, messageId: string, newContent: string) {
     //  Find the message
