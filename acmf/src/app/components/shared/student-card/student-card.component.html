@@ -3,7 +3,7 @@
   (click)="navigateToProfile()"
 >
   <!-- Follow/Unfollow Button -->
-  <div class="absolute top-4 right-4 z-10" (click)="$event.stopPropagation()">
+  <div class="absolute top-4 right-4" (click)="$event.stopPropagation()">
     <button
       *ngIf="!isFollowing"
       (click)="handleFollow()"

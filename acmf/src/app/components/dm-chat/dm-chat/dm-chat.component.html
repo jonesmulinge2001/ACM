@@ -1,15 +1,19 @@
-<div class="flex flex-col h-screen w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+<div
+  class="flex flex-col h-screen w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200"
+>
   <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg">
+  <div
+    class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+  >
     <div class="flex items-center gap-2">
       <img
         [src]="participantImage"
         alt="avatar"
         class="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
       />
-      <span class="font-semibold text-sm drop-shadow-sm">
-        {{ participantName }}
-      </span>
+      <span class="font-semibold text-sm drop-shadow-sm">{{
+        participantName
+      }}</span>
     </div>
     <button
       (click)="close.emit()"
@@ -21,12 +25,16 @@
   </div>
 
   <!-- Meta -->
-  <div class="text-xs text-gray-400 px-4 py-1 border-b bg-gray-50/50 backdrop-blur-sm">
+  <div
+    class="text-xs text-gray-400 px-4 py-1 border-b bg-gray-50/50 backdrop-blur-sm"
+  >
     {{ messages.length }} messages
   </div>
 
   <!-- Messages -->
-  <div class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-100">
+  <div
+    class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-100"
+  >
     <div
       *ngFor="let msg of messages"
       [ngClass]="{
@@ -43,7 +51,60 @@
         "
       >
         {{ msg.content }}
+
+        <!-- Attachments -->
+        <ng-container *ngIf="msg.attachments?.length">
+          <div class="mt-2 flex flex-col gap-2">
+            <ng-container *ngFor="let att of msg.attachments">
+              <div *ngIf="att.type.startsWith('image')" class="relative">
+                <img
+                  [src]="att.url"
+                  class="rounded-md max-h-40 object-contain"
+                />
+                <div
+                  *ngIf="att.progress !== undefined && att.progress < 100"
+                  class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
+                >
+                  {{ att.progress }}%
+                </div>
+              </div>
+
+              <div *ngIf="att.type.startsWith('video')" class="relative">
+                <video
+                  [src]="att.url"
+                  controls
+                  class="rounded-md max-h-40"
+                ></video>
+                <div
+                  *ngIf="att.progress !== undefined && att.progress < 100"
+                  class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
+                >
+                  {{ att.progress }}%
+                </div>
+              </div>
+
+              <div
+                *ngIf="
+                  !att.type.startsWith('image') && !att.type.startsWith('video')
+                "
+                class="flex items-center gap-1 text-sm text-gray-700"
+              >
+                📎
+                <a [href]="att.url" target="_blank" class="underline">{{
+                  att.name
+                }}</a>
+                <span
+                  *ngIf="att.progress !== undefined && att.progress < 100"
+                  class="ml-2 text-xs text-gray-500"
+                >
+                  {{ att.progress }}%
+                </span>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
       </div>
+
       <div class="text-xs text-gray-400 mt-1 flex items-center gap-1">
         <img
           *ngIf="msg.sender.profileImage"
@@ -51,26 +112,77 @@
           alt="avatar"
           class="w-4 h-4 rounded-full object-cover border"
         />
-        {{ msg.sender.name || 'Unknown' }}
+        {{ msg.sender.name || "Unknown" }}
       </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div *ngIf="typingUsers.length" class="text-sm text-gray-500 italic">
+      {{ participantName }} is typing...
     </div>
   </div>
 
   <!-- Composer -->
-  <div class="p-3 border-t bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-md flex items-center gap-2">
-    <input
-      [(ngModel)]="newMessage"
-      (keyup.enter)="sendMessage()"
-      type="text"
-      placeholder="Write a message..."
-      class="flex-1 px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-70 shadow-inner"
-    />
-    <button
-      (click)="sendMessage()"
-      class="flex items-center gap-1 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 active:scale-95"
-    >
-      <span class="material-icons text-[18px] animate-pulse">send</span>
-      Send
-    </button>
+  <div
+    class="p-3 border-t bg-gradient-to-r from-blue-50/50 to-purple-50/50 backdrop-blur-md flex flex-col gap-2"
+  >
+    <!-- Selected attachments preview -->
+    <div *ngIf="selectedAttachments.length" class="flex gap-2 overflow-x-auto">
+      <div
+        *ngFor="let att of selectedAttachments; let i = index"
+        class="relative"
+      >
+        <img
+          *ngIf="att.type === 'IMAGE'"
+          [src]="att.previewUrl"
+          class="h-16 w-16 object-cover rounded-md"
+        />
+        <video
+          *ngIf="att.type === 'VIDEO'"
+          [src]="att.previewUrl"
+          class="h-16 w-16 rounded-md"
+          controls
+        ></video>
+        <div
+          class="absolute top-0 right-0 cursor-pointer text-white bg-black bg-opacity-60 rounded-full px-1"
+          (click)="removeAttachment(i)"
+        >
+          ✕
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        [(ngModel)]="newMessage"
+        (input)="onInputChange()"
+        (keyup.enter)="sendMessage()"
+        type="text"
+        placeholder="Write a message..."
+        class="flex-1 px-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-70 shadow-inner"
+      />
+
+      <input
+        #fileInput
+        type="file"
+        (change)="onFileSelected($event)"
+        class="hidden"
+        multiple
+      />
+      <button
+        (click)="fileInput.click()"
+        class="px-3 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+      >
+        <span class="material-icons text-[18px]">attach_file</span>
+      </button>
+
+      <button
+        (click)="sendMessage()"
+        class="flex items-center gap-1 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 active:scale-95"
+      >
+        <span class="material-icons text-[18px] animate-pulse">send</span>
+        Send
+      </button>
+    </div>
   </div>
 </div>

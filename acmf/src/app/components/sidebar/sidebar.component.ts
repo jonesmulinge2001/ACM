@@ -17,7 +17,8 @@ export class SidebarComponent implements OnInit {
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
     { label: 'Resources', link: '/resources', icon: 'work' },
-    { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
+    // { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
+    // { label: 'Fund Me', link: '/fund-me', icon: 'volunteer_activism' },
     { label: 'Groups', link: '/groups', icon: 'handshake' },
   ];
 
@@ -28,7 +29,7 @@ export class SidebarComponent implements OnInit {
       Create: 'from-green-500 to-emerald-500',
       Resources: 'from-blue-500 to-cyan-500',
       Opportunities: 'from-yellow-500 to-orange-500',
-      UniTok: 'from-rose-500 to-pink-500',
+      'Fund Me': 'from-black via-red-600 to-green-600', 
     };
   
     const gradient = gradients[label] || 'from-gray-500 to-gray-700';

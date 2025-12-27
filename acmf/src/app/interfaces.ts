@@ -503,7 +503,7 @@ export interface ConversationMessage {
   createdAt: string;
   senderId: string;
   sender: UserProfile;
-  attachments?: string[] | null;
+  attachments?: MessageAttachment[] | null;
 }
 
 export interface UserProfile {
@@ -552,6 +552,16 @@ export interface ConversationParticipant {
   lastReadAt?: string | null;
 }
 
+export interface MessageAttachment {
+  url: string;
+  type: string; // 'image', 'video', 'file', etc.
+  name: string;
+  progress?: number
+}
+
+
+
+
 /** Message coming from REST or socket */
 export interface ConversationMessage {
   id: string;
@@ -560,7 +570,7 @@ export interface ConversationMessage {
   createdAt: string;
   senderId: string;
   sender: UserProfile; // flattened shape: { id, name, profileImage }
-  attachments?: string[] | null; // array of urls or attachment ids
+  attachments?: MessageAttachment[] | null;
 }
 
 /** Request to start a 1:1 conversation (REST) */
@@ -575,7 +585,8 @@ export interface SendMessageRequest {
   conversationId?: string;
   recipientId?: string; // optional convenience: backend can create one-on-one
   content: string;
-  attachments?: string[] | null;
+  // attachments?: string[] | null;
+  attachments?: MessageAttachment[] | null; 
 }
 
 /** WebSocket client -> server payload */

@@ -17,17 +17,18 @@ import { SocketService } from '../../services/socket.service';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 
-type Attachment = {
+interface Attachment {
   file: File;
-  previewUrl?: string | null; // for image preview (object URL)
+  previewUrl?: string | null;
   uploading?: boolean;
   progress?: number;
-  fileType: 'IMAGE' |'VIDEO'| 'FILE';
-};
+  fileType: 'IMAGE' | 'VIDEO' | 'FILE';
+}
+
 
 interface GroupMessageUI extends GroupMessage {
-  uploading?: boolean;   // is the file currently uploading?
-  progress?: number;     // upload progress percentage (0..100)
+  uploading?: boolean; // is the file currently uploading?
+  progress?: number; // upload progress percentage (0..100)
   mediaType?: 'image' | 'video' | 'file';
 }
 
@@ -40,8 +41,10 @@ interface GroupMessageUI extends GroupMessage {
 })
 export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() groupId!: string;
-  @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
-  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('messagesContainer')
+  private messagesContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('fileInput', { static: false })
+  fileInput!: ElementRef<HTMLInputElement>;
 
   messages: GroupMessageUI[] = [];
   subs = new Subscription();
@@ -64,9 +67,8 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   replyingTo: GroupMessage | null = null;
 
   // Attachments
-  pendingAttachment: Attachment | null = null;
+  pendingAttachments: Attachment[] = [];
 
-  
 
   constructor(
     private socket: SocketService,
@@ -112,9 +114,13 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.socket.leave(this.groupId);
     this.subs.unsubscribe();
-    // revoke object URL if any
-    if (this.pendingAttachment?.previewUrl) URL.revokeObjectURL(this.pendingAttachment.previewUrl);
+  
+    // Revoke any object URLs from attachments
+    this.pendingAttachments.forEach(att => {
+      if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+    });
   }
+  
 
   // ------------------ MESSAGES ------------------
   loadMessages() {
@@ -132,7 +138,6 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     if (file.type.startsWith('video/')) return 'VIDEO';
     return 'FILE';
   }
-  
 
   /** Trigger file input (attach button) */
   openFilePicker() {
@@ -141,50 +146,52 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /** file selected (from hidden input) */
-  onFileSelected(ev: Event) {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files && input.files[0];
-    if (!file) return;
-
-    // validate size? you can mirror server limits if desired
-    // create preview for images
-    const fileType = this.detectFileType(file);
-    const previewUrl = fileType === 'IMAGE' ? URL.createObjectURL(file) : null;
-
-    // replace any existing pending attachment (revoke url)
-    if (this.pendingAttachment?.previewUrl) URL.revokeObjectURL(this.pendingAttachment.previewUrl);
-
-    this.pendingAttachment = {
-      file,
-      previewUrl,
-      uploading: false,
-      progress: 0,
-      fileType,
-    };
-
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+  
+    const newFiles: Attachment[] = Array.from(input.files).map(file => {
+      let type: 'IMAGE' | 'VIDEO' | 'FILE' = 'FILE';
+      let previewUrl: string | null = null;
+  
+      if (file.type.startsWith('image/')) {
+        type = 'IMAGE';
+        previewUrl = URL.createObjectURL(file);
+      } else if (file.type.startsWith('video/')) {
+        type = 'VIDEO';
+        previewUrl = URL.createObjectURL(file);
+      }
+  
+      return { file, previewUrl, fileType: type, progress: 0, uploading: false };
+    });
+  
+    this.pendingAttachments.push(...newFiles);
     this.cdr.markForCheck();
   }
+  
 
   /** Cancel pending attachment (before sending) */
-  cancelAttachment() {
-    if (this.pendingAttachment?.previewUrl) URL.revokeObjectURL(this.pendingAttachment.previewUrl);
-    this.pendingAttachment = null;
-    this.cdr.markForCheck();
-  }
+/** Cancel all pending attachments (before sending) */
+cancelAttachment() {
+  this.pendingAttachments.forEach(att => {
+    if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+  });
+  this.pendingAttachments = [];
+  this.cdr.markForCheck();
+}
+
 
   async send(): Promise<void> {
-    const content: string = this.messageControl.value?.trim() || '';
+    const content = this.messageControl.value?.trim() || '';
+    const attachments = [...this.pendingAttachments];
   
-    const attach = this.pendingAttachment;
+    if (!content && attachments.length === 0) return;
   
-    // If nothing to send, exit
-    if (!content && !attach) return;
-  
-    // Build optimistic message
-    const optimistic: GroupMessageUI = {
+    // Optimistic message
+    const tempMsg: GroupMessageUI = {
       id: 'temp-' + Date.now(),
-      content: content || '',
       groupId: this.groupId,
+      content,
       userId: this.currentUserId ?? '',
       createdAt: new Date().toISOString(),
       user: {
@@ -192,58 +199,48 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         name: 'Me',
         profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
       },
+      mediaType: attachments.length ? 'file' : undefined,
+      uploading: attachments.length ? true : undefined,
+      progress: attachments.length ? 0 : undefined,
       replyTo: this.replyingTo || undefined,
-      mediaUrl: attach?.previewUrl ?? undefined,
-      mediaType: attach ? (attach.fileType.toLowerCase() as 'image' | 'video' | 'file') : undefined,
-      uploading: attach ? true : undefined,
-      progress: attach ? 0 : undefined,
+      // optionally store previewUrls for optimistic rendering
+      mediaUrl: attachments.map(a => a.previewUrl).join(', '),
     };
   
-    this.messages.push(optimistic);
+    this.messages.push(tempMsg);
     this.scrollToBottom();
     this.cdr.markForCheck();
   
-    // Prepare file if exists
-    let file: File | undefined;
-    let fileType: 'IMAGE' | 'VIDEO' | 'FILE' | undefined;
-    if (attach) {
-      file = attach.file;
-      fileType = attach.fileType;
-    }
+    // Send all files as FormData
+    const formData = new FormData();
+    if (content) formData.append('content', content);
+    attachments.forEach((att, i) => {
+      formData.append('file', att.file);
+      formData.append('fileType', att.fileType);
+    });
   
-    // Send via unified service
-    this.groups
-      .sendMessage(this.groupId, content, file, fileType, this.replyingTo?.id, attach ? (p) => {
-        attach.progress = p;
+    this.groups.sendMessage(this.groupId, content, undefined, undefined, this.replyingTo?.id, progress => {
+      attachments.forEach(a => a.progress = progress);
+      this.cdr.markForCheck();
+    }).subscribe({
+      next: (saved) => {
+        const idx = this.messages.findIndex(m => m.id === tempMsg.id);
+        if (idx > -1) this.messages[idx] = saved;
+        this.pendingAttachments.forEach(a => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+        this.pendingAttachments = [];
+        this.messageControl.reset();
+        this.replyingTo = null;
+        this.scrollToBottom();
         this.cdr.markForCheck();
-      } : undefined)
-      .subscribe({
-        next: (saved) => {
-          const idx = this.messages.findIndex((m) => m.id === optimistic.id);
-          if (idx > -1) this.messages[idx] = saved;
+      },
+      error: (err) => {
+        console.error('Send failed', err);
+        this.messages = this.messages.filter(m => m.id !== tempMsg.id);
+        this.cdr.markForCheck();
+      }
+    });
   
-          if (attach?.previewUrl) URL.revokeObjectURL(attach.previewUrl);
-          this.pendingAttachment = null;
-          this.messageControl.reset();
-          this.replyingTo = null;
-          this.cdr.markForCheck();
-          this.scrollToBottom();
-        },
-        error: (err) => {
-          console.error('Send failed', err);
-          this.messages = this.messages.filter((m) => m.id !== optimistic.id);
-  
-          if (attach) {
-            attach.uploading = false;
-            attach.progress = 0;
-          }
-  
-          this.cdr.markForCheck();
-        },
-      });
-  
-    // Emit via socket if only text
-    if (!attach) {
+    if (attachments.length === 0) {
       this.socket.sendMessage(this.groupId, content, this.replyingTo?.id ?? null);
     }
   
@@ -309,7 +306,9 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.groups.editMessage(this.editingMessageId, updatedContent).subscribe({
       next: (res) => {
-        const idx = this.messages.findIndex((m) => m.id === this.editingMessageId);
+        const idx = this.messages.findIndex(
+          (m) => m.id === this.editingMessageId
+        );
         if (idx > -1) this.messages[idx] = { ...res };
         this.cancelEdit();
         this.cdr.markForCheck();
@@ -341,7 +340,9 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.groups.deleteMessage(this.messageToDelete.id).subscribe({
       next: () => {
-        this.messages = this.messages.filter((m) => m.id !== this.messageToDelete?.id);
+        this.messages = this.messages.filter(
+          (m) => m.id !== this.messageToDelete?.id
+        );
         this.showDeleteModal = false;
         this.messageToDelete = null;
         this.cdr.markForCheck();

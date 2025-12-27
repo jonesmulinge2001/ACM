@@ -58,7 +58,7 @@
       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:scale-105 transition"
       (click)="openCreateModal()">
       <span class="material-icons text-base">add_circle</span>
-      Add Institution
+      Register Institution
     </button>
   </div>
   
@@ -172,7 +172,7 @@
     <!-- Create Institution Modal -->
     <div *ngIf="showCreateModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-          <h2 class="text-lg font-bold mb-4">Create Institution</h2>
+          <h2 class="text-lg font-bold mb-4">Register Institution</h2>
       
           <form (ngSubmit)="submitCreateInstitution()">
       
