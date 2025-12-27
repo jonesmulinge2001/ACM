@@ -25,11 +25,11 @@ interface Attachment {
   fileType: 'IMAGE' | 'VIDEO' | 'FILE';
 }
 
-
 interface GroupMessageUI extends GroupMessage {
   uploading?: boolean; // is the file currently uploading?
   progress?: number; // upload progress percentage (0..100)
   mediaType?: 'image' | 'video' | 'file';
+  mediaUrl?: string;   // for preview
 }
 
 @Component({
@@ -68,7 +68,6 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Attachments
   pendingAttachments: Attachment[] = [];
-
 
   constructor(
     private socket: SocketService,
@@ -114,13 +113,12 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.socket.leave(this.groupId);
     this.subs.unsubscribe();
-  
+
     // Revoke any object URLs from attachments
-    this.pendingAttachments.forEach(att => {
+    this.pendingAttachments.forEach((att) => {
       if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
     });
   }
-  
 
   // ------------------ MESSAGES ------------------
   loadMessages() {
@@ -150,7 +148,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
   
-    const newFiles: Attachment[] = Array.from(input.files).map(file => {
+    const newFiles: Attachment[] = Array.from(input.files).map((file) => {
       let type: 'IMAGE' | 'VIDEO' | 'FILE' = 'FILE';
       let previewUrl: string | null = null;
   
@@ -162,24 +160,30 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         previewUrl = URL.createObjectURL(file);
       }
   
-      return { file, previewUrl, fileType: type, progress: 0, uploading: false };
+      return {
+        file,
+        previewUrl,
+        fileType: type,
+        uploading: false,
+        progress: 0,
+      };
     });
   
     this.pendingAttachments.push(...newFiles);
     this.cdr.markForCheck();
   }
   
+  
 
   /** Cancel pending attachment (before sending) */
-/** Cancel all pending attachments (before sending) */
-cancelAttachment() {
-  this.pendingAttachments.forEach(att => {
-    if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
-  });
-  this.pendingAttachments = [];
-  this.cdr.markForCheck();
-}
-
+  /** Cancel all pending attachments (before sending) */
+  cancelAllAttachments() {
+    this.pendingAttachments.forEach(att => {
+      if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+    });
+    this.pendingAttachments = [];
+    this.cdr.markForCheck();
+  }
 
   async send(): Promise<void> {
     const content = this.messageControl.value?.trim() || '';
@@ -199,46 +203,56 @@ cancelAttachment() {
         name: 'Me',
         profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
       },
-      mediaType: attachments.length ? 'file' : undefined,
       uploading: attachments.length ? true : undefined,
       progress: attachments.length ? 0 : undefined,
+      mediaType: attachments.length ? 'file' : undefined,
+      mediaUrl: attachments.map((a) => a.previewUrl).join(','), // for preview
       replyTo: this.replyingTo || undefined,
-      // optionally store previewUrls for optimistic rendering
-      mediaUrl: attachments.map(a => a.previewUrl).join(', '),
     };
   
     this.messages.push(tempMsg);
     this.scrollToBottom();
     this.cdr.markForCheck();
   
-    // Send all files as FormData
-    const formData = new FormData();
-    if (content) formData.append('content', content);
-    attachments.forEach((att, i) => {
-      formData.append('file', att.file);
-      formData.append('fileType', att.fileType);
-    });
+    // Prepare attachments for upload
+    let attachmentFiles: File[] | undefined;
+    let fileTypes: ('IMAGE' | 'VIDEO' | 'FILE')[] | undefined;
   
-    this.groups.sendMessage(this.groupId, content, undefined, undefined, this.replyingTo?.id, progress => {
-      attachments.forEach(a => a.progress = progress);
-      this.cdr.markForCheck();
-    }).subscribe({
-      next: (saved) => {
-        const idx = this.messages.findIndex(m => m.id === tempMsg.id);
-        if (idx > -1) this.messages[idx] = saved;
-        this.pendingAttachments.forEach(a => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
-        this.pendingAttachments = [];
-        this.messageControl.reset();
-        this.replyingTo = null;
-        this.scrollToBottom();
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Send failed', err);
-        this.messages = this.messages.filter(m => m.id !== tempMsg.id);
-        this.cdr.markForCheck();
-      }
-    });
+    if (attachments.length) {
+      attachmentFiles = attachments.map((a) => a.file);
+      fileTypes = attachments.map((a) => a.fileType);
+    }
+  
+    // Use service (like DM) to send
+    this.groups
+      .sendMessage(
+        this.groupId,
+        content,
+        attachmentFiles?.[0], // only single-file support for now; extend to multi with FormData
+        fileTypes?.[0],
+        this.replyingTo?.id,
+        (progress) => {
+          attachments.forEach((a) => (a.progress = progress));
+          this.cdr.markForCheck();
+        }
+      )
+      .subscribe({
+        next: (saved) => {
+          const idx = this.messages.findIndex((m) => m.id === tempMsg.id);
+          if (idx > -1) this.messages[idx] = saved;
+          this.pendingAttachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+          this.pendingAttachments = [];
+          this.messageControl.reset();
+          this.replyingTo = null;
+          this.scrollToBottom();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Send failed', err);
+          this.messages = this.messages.filter((m) => m.id !== tempMsg.id);
+          this.cdr.markForCheck();
+        },
+      });
   
     if (attachments.length === 0) {
       this.socket.sendMessage(this.groupId, content, this.replyingTo?.id ?? null);
@@ -367,5 +381,12 @@ cancelAttachment() {
   openAttachment(url?: string | null) {
     if (!url) return;
     window.open(url, '_blank');
+  }
+
+  removeAttachment(index: number) {
+    const att = this.pendingAttachments[index];
+    if (att.previewUrl) URL.revokeObjectURL(att.previewUrl);
+    this.pendingAttachments.splice(index, 1);
+    this.cdr.markForCheck();
   }
 }
