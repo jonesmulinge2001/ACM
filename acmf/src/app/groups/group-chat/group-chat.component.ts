@@ -30,6 +30,12 @@ interface GroupMessageUI extends GroupMessage {
   progress?: number; // upload progress percentage (0..100)
   mediaType?: 'image' | 'video' | 'file';
   mediaUrl?: string;   // for preview
+  attachments?: {
+    fileName: string;
+    fileType: 'IMAGE' | 'VIDEO' | 'FILE';
+    previewUrl?: string | null;
+    progress?: number;
+  }[];
 }
 
 @Component({
@@ -139,9 +145,14 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /** Trigger file input (attach button) */
   openFilePicker() {
+    if (!this.fileInput || !this.fileInput.nativeElement) {
+      console.warn('File input not ready');
+      return;
+    }
     this.fileInput.nativeElement.value = '';
     this.fileInput.nativeElement.click();
   }
+  
 
   /** file selected (from hidden input) */
   onFilesSelected(event: Event) {
@@ -187,11 +198,12 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async send(): Promise<void> {
     const content = this.messageControl.value?.trim() || '';
+    if (!content && this.pendingAttachments.length === 0) return;
+  
     const attachments = [...this.pendingAttachments];
+    const files = attachments.map(a => a.file);
   
-    if (!content && attachments.length === 0) return;
-  
-    // Optimistic message
+    // ------------------ OPTIMISTIC MESSAGE ------------------
     const tempMsg: GroupMessageUI = {
       id: 'temp-' + Date.now(),
       groupId: this.groupId,
@@ -204,62 +216,58 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
         profileImage: this.auth.getCurrentuser()?.profileImage ?? null,
       },
       uploading: attachments.length ? true : undefined,
-      progress: attachments.length ? 0 : undefined,
-      mediaType: attachments.length ? 'file' : undefined,
-      mediaUrl: attachments.map((a) => a.previewUrl).join(','), // for preview
+      progress: 0,
+      mediaType: undefined, // optional, not needed if multiple attachments
+      mediaUrl: undefined,  // don't join URLs, instead use attachments[]
       replyTo: this.replyingTo || undefined,
+      attachments: attachments.map(a => ({
+        fileName: a.file.name,
+        fileType: a.fileType,
+        previewUrl: a.previewUrl,
+        progress: 0
+      }))
     };
+    
   
     this.messages.push(tempMsg);
     this.scrollToBottom();
     this.cdr.markForCheck();
   
-    // Prepare attachments for upload
-    let attachmentFiles: File[] | undefined;
-    let fileTypes: ('IMAGE' | 'VIDEO' | 'FILE')[] | undefined;
+    // ------------------ SEND VIA SERVICE WITH PROGRESS ------------------
+    this.groups.sendMessage(this.groupId, content, files, this.replyingTo?.id, (progress) => {
+      tempMsg.attachments?.forEach(a => a.progress = progress);
+      this.cdr.markForCheck();
+    }).subscribe({
+      next: (saved) => {
+        // Replace optimistic message with saved message
+        const idx = this.messages.findIndex(m => m.id === tempMsg.id);
+        if (idx > -1) this.messages[idx] = saved;
   
-    if (attachments.length) {
-      attachmentFiles = attachments.map((a) => a.file);
-      fileTypes = attachments.map((a) => a.fileType);
-    }
+        // Cleanup
+        this.pendingAttachments.forEach(a => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+        this.pendingAttachments = [];
+        this.messageControl.reset();
+        this.replyingTo = null;
   
-    // Use service (like DM) to send
-    this.groups
-      .sendMessage(
-        this.groupId,
-        content,
-        attachmentFiles?.[0], // only single-file support for now; extend to multi with FormData
-        fileTypes?.[0],
-        this.replyingTo?.id,
-        (progress) => {
-          attachments.forEach((a) => (a.progress = progress));
-          this.cdr.markForCheck();
-        }
-      )
-      .subscribe({
-        next: (saved) => {
-          const idx = this.messages.findIndex((m) => m.id === tempMsg.id);
-          if (idx > -1) this.messages[idx] = saved;
-          this.pendingAttachments.forEach((a) => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
-          this.pendingAttachments = [];
-          this.messageControl.reset();
-          this.replyingTo = null;
-          this.scrollToBottom();
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error('Send failed', err);
-          this.messages = this.messages.filter((m) => m.id !== tempMsg.id);
-          this.cdr.markForCheck();
-        },
-      });
+        this.scrollToBottom();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('[GroupChat] sendMessage error', err);
+        this.messages = this.messages.filter(m => m.id !== tempMsg.id);
+        this.cdr.markForCheck();
+      }
+    });
   
+    // ------------------ SEND VIA SOCKET IF NO ATTACHMENTS ------------------
     if (attachments.length === 0) {
       this.socket.sendMessage(this.groupId, content, this.replyingTo?.id ?? null);
     }
   
     this.replyingTo = null;
   }
+  
+  
   
 
   // ------------------ SCROLL & UI ------------------

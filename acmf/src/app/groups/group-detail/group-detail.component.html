@@ -69,52 +69,65 @@
     </div>
 
     <!-- Tabs -->
-    <div class="border-b flex space-x-6 px-6">
+    <div class="flex  gap-1 p-1 bg-gray-50 rounded-2xl border border-gray-200 w-full">
+  
       <button
         (click)="activeTab = 'feed'"
-        [ngClass]="
-          activeTab === 'feed'
-            ? 'border-b-2 border-blue-600 text-blue-600'
-            : 'text-gray-500'
-        "
-        class="py-3 text-sm font-medium"
+        [ngClass]="activeTab === 'feed' 
+          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+          : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'"
+        class="flex-1 flex items-center justify-center gap-1 px-1 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300 ease-in-out"
       >
+        <span class="material-icons text-[10px]">dynamic_feed</span>
         Feed
       </button>
+    
       <button
         (click)="activeTab = 'chat'"
-        [ngClass]="
-          activeTab === 'chat'
-            ? 'border-b-2 border-blue-600 text-blue-600'
-            : 'text-gray-500'
-        "
-        class="py-3 text-sm font-medium"
+        [ngClass]="activeTab === 'chat' 
+          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+          : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'"
+        class="flex-1 flex items-center justify-center gap-1 px-1 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300 ease-in-out"
       >
+        <span class="material-icons text-[10px]">chat</span>
         Chat
       </button>
+    
       <button
         (click)="activeTab = 'members'"
-        [ngClass]="
-          activeTab === 'members'
-            ? 'border-b-2 border-blue-600 text-blue-600'
-            : 'text-gray-500'
-        "
-        class="py-3 text-sm font-medium"
+        [ngClass]="activeTab === 'members' 
+          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+          : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'"
+        class="flex-1 flex items-center justify-center gap-1 px-1 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300 ease-in-out"
       >
-        Members ({{ group.members?.length || 0 }})
+        <span class="material-icons text-[10px]">group</span>
+        Members
+        <span [ngClass]="activeTab === 'members' ? 'bg-white/20' : 'bg-gray-200'" 
+              class="px-1 py-0.5 rounded-full text-[8px] font-bold transition-all">
+          {{ group.members?.length || 0 }}
+        </span>
       </button>
+    
       <button
         (click)="activeTab = 'resources'"
-        [ngClass]="
-          activeTab === 'resources'
-            ? 'border-b-2 border-blue-600 text-blue-600'
-            : 'text-gray-500'
-        "
-        class="py-3 text-sm font-medium"
+        [ngClass]="activeTab === 'resources' 
+          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+          : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'"
+        class="flex-1 flex items-center justify-center gap-1 px-1 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300 ease-in-out"
       >
-        Resources ({{ group.resources?.length || 0 }})
+        <span class="material-icons text-[10px]">folder</span>
+        Resources
+        <span [ngClass]="activeTab === 'resources' ? 'bg-white/20' : 'bg-gray-200'" 
+              class="px-1 py-0.5 rounded-full text-[8px] font-bold transition-all">
+          {{ group.resources?.length || 0 }}
+        </span>
       </button>
+    
     </div>
+    
+    
+    
+    
 
     <!-- Tab Content -->
     <div class="p-6">

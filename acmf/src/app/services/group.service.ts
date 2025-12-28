@@ -102,37 +102,39 @@ export class GroupsService {
 sendMessage(
   groupId: string,
   content?: string,
-  file?: File,
-  fileType?: 'FILE' | 'IMAGE' | 'VIDEO',
+  files?: File[],             // note: accept an array
   replyToId?: string,
   progressCb?: (progress: number) => void
 ): Observable<GroupMessage> {
   const formData = new FormData();
+
   if (content) formData.append('content', content);
-  if (file) formData.append('file', file);
-  if (fileType) formData.append('fileType', fileType);
+  if (files && files.length > 0) {
+    for (const file of files) {
+      formData.append('attachments', file); // must match backend
+    }
+  }
   if (replyToId) formData.append('replyToId', replyToId);
 
-  return this.http
-    .post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
-      headers: this.getAuthHeaders(),
-      reportProgress: true,
-      observe: 'events',
-    })
-    .pipe(
-      map((event: HttpEvent<any>) => {
-        if (event.type === HttpEventType.UploadProgress && progressCb) {
-          const percentDone = Math.round((100 * (event.loaded ?? 0)) / (event.total ?? 1));
-          progressCb(percentDone);
-        }
-        if (event.type === HttpEventType.Response) {
-          return event.body as GroupMessage;
-        }
-        return null;
-      }),
-      filter((res): res is GroupMessage => res !== null)
-    );
+  return this.http.post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
+    headers: this.getAuthHeaders(),
+    reportProgress: true,
+    observe: 'events',
+  }).pipe(
+    map(event => {
+      if (event.type === HttpEventType.UploadProgress && progressCb) {
+        const percentDone = Math.round((100 * (event.loaded ?? 0)) / (event.total ?? 1));
+        progressCb(percentDone);
+      }
+      if (event.type === HttpEventType.Response) {
+        return event.body as GroupMessage;
+      }
+      return null;
+    }),
+    filter((res): res is GroupMessage => res !== null)
+  );
 }
+
 
 
 
