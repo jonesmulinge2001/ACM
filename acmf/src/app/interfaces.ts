@@ -595,7 +595,7 @@ export interface DmSocketSendPayload {
   recipientId?: string;
   content: string;
   tempId?: string | null; // optional client temp id for local optimistic UI
-  attachments?: string[] | null;
+  attachments?:  MessageAttachment[]
 }
 
 /** WebSocket events */

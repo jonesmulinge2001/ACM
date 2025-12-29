@@ -97,7 +97,7 @@ export class GroupsService {
     });
   }
 
-  // ------------------ TEXT MESSAGES ------------------
+
 // ------------------ SEND MESSAGE (TEXT OR FILE) ------------------
 sendMessage(
   groupId: string,

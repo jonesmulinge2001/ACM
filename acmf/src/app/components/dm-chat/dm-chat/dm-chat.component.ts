@@ -54,6 +54,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   isTyping = false;
   typingUsers: string[] = [];
 
+  isChatVisible = true;
   constructor(
     private convos: ConversationsService,
     private socket: DmSocketService,
@@ -109,26 +110,44 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   private joinAndLoad(convoId: string) {
+    // 1. Join conversation safely
     this.socket.join(convoId);
-
-    // Load past messages
+  
+    // 2. Load past messages
     this.sub.add(
       this.convos.getMessages(convoId).subscribe(msgs => {
         this.messages = msgs.reverse();
         this.cdr.markForCheck();
       })
     );
-
-    // Listen for live messages
+  
+    // 3. Live message subscription
     this.sub.add(
       this.socket.onMessage().subscribe(msg => {
-        if (msg.conversationId === convoId) {
+        if (!this.conversation) return;
+        // Compare as strings to avoid type mismatch
+        if (msg.conversationId.toString() === this.conversation.id.toString()) {
           this.messages = [...this.messages, msg];
           this.cdr.markForCheck();
         }
       })
     );
+  
+    // 4. Typing indicator
+    this.sub.add(
+      this.socket.onTyping().subscribe(event => {
+        if (!this.conversation) return;
+        if (event.conversationId.toString() === this.conversation.id.toString()) {
+          const userId = event.userId;
+          this.typingUsers = event.typing
+            ? [...new Set([...this.typingUsers, userId])]
+            : this.typingUsers.filter(id => id !== userId);
+          this.cdr.markForCheck();
+        }
+      })
+    );
   }
+  
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -162,12 +181,12 @@ export class DmChatComponent implements OnInit, OnDestroy {
   sendMessage(): void {
     if (!this.newMessage.trim() && this.selectedAttachments.length === 0) return;
     if (!this.conversation) return;
-
+  
     const convoId = this.conversation.id;
     const content = this.newMessage.trim();
     const files = this.selectedAttachments.map(a => a.file);
-
-    // Optimistic UI message
+  
+    // 1. Optimistic UI message
     const tempMsg: ConversationMessage = {
       id: 'temp-' + Date.now(),
       conversationId: convoId,
@@ -180,22 +199,29 @@ export class DmChatComponent implements OnInit, OnDestroy {
       })) as MessageAttachmentUI[],
       createdAt: new Date().toISOString(),
       senderId: this.myId,
-      sender: { id: this.myId, name: 'You', profileImage: localStorage.getItem('profileImage') || undefined },
+      sender: {
+        id: this.myId,
+        name: 'You',
+        profileImage: localStorage.getItem('profileImage') || undefined
+      },
     };
-
+  
     this.messages = [...this.messages, tempMsg];
     this.newMessage = '';
     this.selectedAttachments = [];
     this.cdr.markForCheck();
-
-    // Send via service with progress
+  
+    // 2. Upload + save via service (still needed for DB + attachments)
     this.sub.add(
-      this.convos.sendMessageWithFiles(convoId, content, files, (progress) => {
-        tempMsg.attachments?.forEach(a => a.progress = progress);
+      this.convos.sendMessageWithFiles(convoId, content, files, progress => {
+        tempMsg.attachments?.forEach(a => (a.progress = progress));
         this.cdr.markForCheck();
       }).subscribe({
         next: saved => {
-          this.messages = this.messages.map(m => m.id === tempMsg.id ? saved : m);
+          // Replace optimistic message with DB-confirmed message
+          this.messages = this.messages.map(m =>
+            m.id === tempMsg.id ? saved : m
+          );
           this.cdr.markForCheck();
         },
         error: err => {
@@ -205,10 +231,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
         },
       })
     );
-
-    // Notify typing stopped
+  
+    // 3. Stop typing notification
     this.socket.sendTyping(convoId, false);
   }
+  
 
   onInputChange() {
     if (!this.conversation) return;

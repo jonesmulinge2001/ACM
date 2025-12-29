@@ -1,23 +1,19 @@
-// src/app/services/dm-socket.service.ts
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
-
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import {
-  ConversationMessage,
-  DmTypingEvent,
-  DmSocketSendPayload,
-} from '../interfaces';
+import { ConversationMessage, DmTypingEvent, DmSocketSendPayload } from '../interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class DmSocketService implements OnDestroy {
   private socket?: Socket;
+  private isConnected = false;
 
   private message$ = new Subject<ConversationMessage>();
   private typing$ = new Subject<DmTypingEvent>();
   private joined$ = new Subject<{ conversationId: string }>();
   private error$ = new Subject<{ message: string }>();
+  private pendingJoins: string[] = [];
 
   connect(): void {
     if (this.socket?.connected) return;
@@ -25,38 +21,43 @@ export class DmSocketService implements OnDestroy {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No auth token for DM socket');
 
-    const url = `${environment.socketBase1}/dm`;
-    this.socket = io(url, {
+    this.socket = io(`${environment.socketBase1}/dm`, {
       auth: { token },
       transports: ['websocket'],
     });
 
-    this.socket.on('connect', () => console.debug('DM socket connected'));
-    this.socket.on('disconnect', () => console.debug('DM socket disconnected'));
+    this.socket.on('connect', () => {
+      console.debug('DM socket connected');
+      this.isConnected = true;
 
-    this.socket.on('message', (m: ConversationMessage) =>
-      this.message$.next(m)
-    );
-
-    this.socket.on('error', (err: { message: string }) => {
-      console.error('[WS error]', err);
-      this.error$.next(err);
+      // Process any pending join requests
+      this.pendingJoins.forEach(cid => this.join(cid));
+      this.pendingJoins = [];
     });
+
+    this.socket.on('disconnect', () => {
+      console.debug('DM socket disconnected');
+      this.isConnected = false;
+    });
+
+    this.socket.on('message', (m: ConversationMessage) => this.message$.next(m));
     this.socket.on('typing', (t: DmTypingEvent) => this.typing$.next(t));
-    this.socket.on('joined', (j: { conversationId: string }) =>
-      this.joined$.next(j)
-    );
-    this.socket.on('error', (err: { message: string }) =>
-      this.error$.next(err)
-    );
+    this.socket.on('joined', (j: { conversationId: string }) => this.joined$.next(j));
+    this.socket.on('error', (err: { message: string }) => this.error$.next(err));
   }
 
   disconnect(): void {
     this.socket?.disconnect();
     this.socket = undefined;
+    this.isConnected = false;
   }
 
   join(conversationId: string): void {
+    if (!this.isConnected) {
+      // Queue the join request until socket connects
+      this.pendingJoins.push(conversationId);
+      return;
+    }
     this.socket?.emit('join', { conversationId });
   }
 
@@ -73,18 +74,10 @@ export class DmSocketService implements OnDestroy {
   }
 
   // Observables
-  onMessage(): Observable<ConversationMessage> {
-    return this.message$.asObservable();
-  }
-  onTyping(): Observable<DmTypingEvent> {
-    return this.typing$.asObservable();
-  }
-  onJoined(): Observable<{ conversationId: string }> {
-    return this.joined$.asObservable();
-  }
-  onError(): Observable<{ message: string }> {
-    return this.error$.asObservable();
-  }
+  onMessage(): Observable<ConversationMessage> { return this.message$.asObservable(); }
+  onTyping(): Observable<DmTypingEvent> { return this.typing$.asObservable(); }
+  onJoined(): Observable<{ conversationId: string }> { return this.joined$.asObservable(); }
+  onError(): Observable<{ message: string }> { return this.error$.asObservable(); }
 
   ngOnDestroy(): void {
     this.disconnect();
