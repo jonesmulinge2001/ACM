@@ -17,6 +17,7 @@ export class StudentCardComponent {
   @Output() unfollow = new EventEmitter<string>();
 
   showAllSkills: boolean = false;
+  
 
   constructor(private router: Router) {}
 

@@ -14,10 +14,11 @@ import {
   query,
   stagger,
 } from '@angular/animations';
+import { DmChatComponent } from "../../components/dm-chat/dm-chat/dm-chat.component";
 
 @Component({
   selector: 'app-student-profile',
-  imports: [CommonModule, RouterModule, NgxSkeletonLoaderModule],
+  imports: [CommonModule, RouterModule, NgxSkeletonLoaderModule, DmChatComponent],
   templateUrl: './student-profile.component.html',
   styleUrl: './student-profile.component.css',
   animations: [
@@ -59,12 +60,14 @@ export class StudentProfileComponent implements OnInit {
 
   showFullBody: { [postId: string]: boolean } = {};
 
+  activeChatUserId?: string;
+
   constructor(
     private route: ActivatedRoute,
     private postService: PostService,
     private followService: FollowService,
     private profileService: ProfileService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -127,11 +130,27 @@ export class StudentProfileComponent implements OnInit {
     });
   }
 
+  loadFollowingState() {
+    this.followService.getFollowing(this.currentUserId).subscribe(following => {
+      this.following = following;
+      this.isFollowing = this.following.some(
+        f => f.followingId === this.profile.userId
+      );
+    });
+  }
+
+  
+
   checkIfFollowing(): void {
     this.isFollowing = this.followers.some(
       (f) => f.followerId === this.currentUserId
     );
   }
+
+  isUserFollowing(userId: string): boolean {
+    return this.following.some(f => f.followingId === userId);
+  }
+  
 
   toggleFollow(): void {
     if (this.isFollowing) {
@@ -146,6 +165,20 @@ export class StudentProfileComponent implements OnInit {
       });
     }
   }
+
+  toggleFollowUser(userId: string): void {
+    if (this.isUserFollowing(userId)) {
+      this.followService.unFollowUser(userId).subscribe(() => {
+        this.loadFollowingState(); // refresh list
+      });
+    } else {
+      this.followService.followUser(userId).subscribe(() => {
+        this.loadFollowingState(); // refresh list
+      });
+    }
+  }
+  
+  
 
   // navigateToProfile() {
   //   this.router.navigate(['/profile', this.profile.userId]);
@@ -189,4 +222,10 @@ export class StudentProfileComponent implements OnInit {
   hasLongBody(body?: string): boolean {
     return !!body && body.split(' ').length > 8;
   }
+  openInlineChat(participantId?: string) {
+    if (!participantId) return;
+    // Always set the ID to open the chat
+    this.activeChatUserId = participantId;
+  }
+  
 }

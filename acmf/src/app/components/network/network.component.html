@@ -1,37 +1,89 @@
-<div class="p-6 -ml-8 -mt-8">
+<div class="sm:p-6 w-full overflow-x-hidden">
   <!-- Tabs -->
-  <div class="flex gap-4 border-b pb-2 mb-4 text-sm font-medium">
-    <button
-      (click)="selectedTab = 'all'"
-      [ngClass]="{
-        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'all'
-      }"
+  <div class="">
+    <nav
+      class="flex gap-2 sm:gap-4 border-b border-gray-100 relative overflow-x-auto no-scrollbar py-2 text-sm font-medium"
     >
-      All Students
-    </button>
+      <!-- All Profiles -->
+      <button
+        (click)="selectedTab = 'all'"
+        class="group relative px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 rounded-lg overflow-hidden"
+        [ngClass]="
+          selectedTab === 'all'
+            ? 'text-white'
+            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+        "
+      >
+        <div
+          *ngIf="selectedTab === 'all'"
+          class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 z-0 animate-fadeIn"
+        ></div>
 
-    <button
-      (click)="selectedTab = 'following'"
-      [ngClass]="{
-        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'following'
-      }"
-    >
-      Following
-    </button>
+        <span class="relative">All Profiles</span>
 
-    <button
-      (click)="selectedTab = 'followers'"
-      [ngClass]="{
-        'text-blue-600 p-2 rounded-lg bg-[#dbeafe]': selectedTab === 'followers'
-      }"
-    >
-      Followers
-    </button>
+        <span
+          *ngIf="selectedTab !== 'all'"
+          class="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 group-hover:w-1/2 group-hover:-translate-x-1/2"
+        ></span>
+      </button>
+
+      <!-- Following -->
+      <button
+        (click)="selectedTab = 'following'"
+        class="group relative px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 rounded-lg overflow-hidden"
+        [ngClass]="
+          selectedTab === 'following'
+            ? 'text-white'
+            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+        "
+      >
+        <div
+          *ngIf="selectedTab === 'following'"
+          class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 z-0 animate-fadeIn"
+        ></div>
+
+        <span class="relative">Following</span>
+
+        <span
+          *ngIf="selectedTab !== 'following'"
+          class="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 group-hover:w-1/2 group-hover:-translate-x-1/2"
+        ></span>
+      </button>
+
+      <!-- Followers -->
+      <button
+        (click)="selectedTab = 'followers'"
+        class="group relative px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 rounded-lg overflow-hidden"
+        [ngClass]="
+          selectedTab === 'followers'
+            ? 'text-white'
+            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+        "
+      >
+        <div
+          *ngIf="selectedTab === 'followers'"
+          class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 z-0 animate-fadeIn"
+        ></div>
+
+        <span class="relative">Followers</span>
+
+        <span
+          *ngIf="selectedTab !== 'followers'"
+          class="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 group-hover:w-1/2 group-hover:-translate-x-1/2"
+        ></span>
+      </button>
+    </nav>
   </div>
 
   <!-- Skeleton Loader -->
-  <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div *ngFor="let i of [1,2,3,4,5,6]" class="p-4 border rounded-lg shadow animate-pulse">
+  <div
+    *ngIf="loading"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+  >
+    <div
+      *ngFor="let i of [1, 2, 3, 4, 5, 6]"
+      class="p-4 border rounded-lg shadow animate-pulse"
+    >
       <div class="w-16 h-16 rounded-full bg-gray-200 mb-4"></div>
       <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
       <div class="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
