@@ -47,84 +47,115 @@
   <div
     class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-100 sm:p-2"
   >
-    <div
-      *ngFor="let msg of messages"
-      [ngClass]="{
-        'text-right': msg.senderId.toString() === myId,
-        'text-left': msg.senderId.toString() !== myId
-      }"
-    >
-      <div
-        class="inline-block px-4 py-2 rounded-3xl text-sm max-w-[70%] break-words shadow-md transition-transform hover:scale-[1.02] sm:max-w-[85%]"
-        [ngClass]="
-          msg.senderId.toString() === myId
-            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-            : 'bg-gray-100 text-gray-800'
-        "
-      >
-        {{ msg.content }}
+  <div
+  *ngFor="let msg of messages"
+  [ngClass]="{
+    'text-right': msg.senderId.toString() === myId,
+    'text-left': msg.senderId.toString() !== myId
+  }"
+  class="relative"
+>
+  <!-- Message bubble -->
+  <div
+    class="inline-block px-4 py-2 rounded-3xl text-sm max-w-[70%] break-words shadow-md transition-transform hover:scale-[1.02] sm:max-w-[85%]"
+    [ngClass]="
+      msg.senderId.toString() === myId
+        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+        : 'bg-gray-100 text-gray-800'
+    "
+  >
+  <div
+  *ngIf="isMyMessage(msg)"
+  class="absolute top-0 right-0 flex gap-1"
+>
+  <button
+    (click)="openEditModal(msg)"
+    class="text-xs text-gray-500 hover:text-gray-800"
+    title="Edit message"
+  >
+    ✎
+  </button>
+  <button
+    (click)="openDeleteModal(msg)"
+    class="text-xs text-red-500 hover:text-red-700"
+    title="Delete message"
+  >
+    🗑
+  </button>
+</div>
+    {{ msg.content }}
 
-        <!-- Attachments -->
-        <ng-container *ngIf="msg.attachments?.length">
-          <div class="mt-2 flex flex-col gap-2 sm:gap-1">
-            <ng-container *ngFor="let att of msg.attachments">
-              <div *ngIf="att.type.startsWith('image')" class="relative">
-                <img
-                  [src]="att.url"
-                  class="rounded-md max-h-40 w-full object-contain sm:max-h-32"
-                />
-                <div
-                  *ngIf="att.progress !== undefined && att.progress < 100"
-                  class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
-                >
-                  {{ att.progress }}%
-                </div>
-              </div>
+    <!-- Attachments -->
+    <ng-container *ngIf="msg.attachments?.length">
+      <div class="mt-2 flex flex-col gap-2 sm:gap-1">
+        <ng-container *ngFor="let att of msg.attachments">
+          <div *ngIf="att.type.startsWith('image')" class="relative">
+            <img
+              [src]="att.url"
+              class="rounded-md max-h-40 w-full object-contain sm:max-h-32"
+            />
+            <div
+              *ngIf="att.progress !== undefined && att.progress < 100"
+              class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
+            >
+              {{ att.progress }}%
+            </div>
+          </div>
 
-              <div *ngIf="att.type.startsWith('video')" class="relative">
-                <video
-                  [src]="att.url"
-                  controls
-                  class="rounded-md max-h-40 w-full sm:max-h-32"
-                ></video>
-                <div
-                  *ngIf="att.progress !== undefined && att.progress < 100"
-                  class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
-                >
-                  {{ att.progress }}%
-                </div>
-              </div>
+          <div *ngIf="att.type.startsWith('video')" class="relative">
+            <video
+              [src]="att.url"
+              controls
+              class="rounded-md max-h-40 w-full sm:max-h-32"
+            ></video>
+            <div
+              *ngIf="att.progress !== undefined && att.progress < 100"
+              class="absolute bottom-1 left-1 bg-black bg-opacity-40 text-white text-xs px-1 rounded"
+            >
+              {{ att.progress }}%
+            </div>
+          </div>
 
-              <div
-                *ngIf="!att.type.startsWith('image') && !att.type.startsWith('video')"
-                class="flex items-center gap-1 text-sm text-gray-700"
-              >
-                📎
-                <a [href]="att.url" target="_blank" class="underline">
-                  {{ att.name }}
-                </a>
-                <span
-                  *ngIf="att.progress !== undefined && att.progress < 100"
-                  class="ml-2 text-xs text-gray-500"
-                >
-                  {{ att.progress }}%
-                </span>
-              </div>
-            </ng-container>
+          <div
+            *ngIf="!att.type.startsWith('image') && !att.type.startsWith('video')"
+            class="flex items-center gap-1 text-sm text-gray-700"
+          >
+            📎
+            <a [href]="att.url" target="_blank" class="underline">
+              {{ att.name }}
+            </a>
+            <span
+              *ngIf="att.progress !== undefined && att.progress < 100"
+              class="ml-2 text-xs text-gray-500"
+            >
+              {{ att.progress }}%
+            </span>
           </div>
         </ng-container>
       </div>
+    </ng-container>
+  </div>
 
-      <div class="text-xs text-gray-400 mt-1 flex items-center gap-1 sm:text-[10px]">
-        <img
-          *ngIf="msg.sender.profileImage"
-          [src]="msg.sender.profileImage"
-          alt="avatar"
-          class="w-4 h-4 rounded-full object-cover border"
-        />
-        {{ msg.sender.name || "Unknown" }}
-      </div>
-    </div>
+  <!-- Edit & Delete buttons (for your own messages) -->
+
+
+  <!-- Sender info -->
+  <div class="text-xs text-gray-400 mt-1 flex items-center gap-1 sm:text-[10px]">
+    <img
+      *ngIf="msg.sender.profileImage"
+      [src]="msg.sender.profileImage"
+      alt="avatar"
+      class="w-4 h-4 rounded-full object-cover border"
+    />
+    {{ msg.sender.name || "Unknown" }}
+  </div>
+</div>
+
+<!-- Typing indicator -->
+<div *ngIf="typingUsers.length" class="text-sm text-gray-500 italic sm:text-xs">
+  {{ participantName }} is typing...
+</div>
+
 
     <!-- Typing indicator -->
     <div *ngIf="typingUsers.length" class="text-sm text-gray-500 italic sm:text-xs">

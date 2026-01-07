@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders, HttpEventType } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpParams,
+  HttpHeaders,
+  HttpEventType,
+} from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
@@ -8,7 +13,7 @@ import {
   ConversationSummary,
   SendMessageRequest,
   StartConversationRequest,
-  MessageAttachment
+  MessageAttachment,
 } from '../interfaces';
 import { environment } from '../../environments/environment';
 
@@ -31,26 +36,47 @@ export class ConversationsService {
 
   /** Start a 1:1 conversation */
   createOneOnOne(participantId: string): Observable<Conversation> {
-    const payload: StartConversationRequest = { participantIds: [participantId], isGroup: false };
-    return this.http.post<Conversation>(this.base, payload, { headers: this.getAuthHeaders() });
+    const payload: StartConversationRequest = {
+      participantIds: [participantId],
+      isGroup: false,
+    };
+    return this.http.post<Conversation>(this.base, payload, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   /** List conversations */
   list(): Observable<ConversationSummary[]> {
-    return this.http.get<ConversationSummary[]>(this.base, { headers: this.getAuthHeaders() });
+    return this.http.get<ConversationSummary[]>(this.base, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   /** Fetch messages */
-  getMessages(conversationId: string, limit = 50, cursor?: string): Observable<ConversationMessage[]> {
+  getMessages(
+    conversationId: string,
+    limit = 50,
+    cursor?: string
+  ): Observable<ConversationMessage[]> {
     let params = new HttpParams().set('limit', limit.toString());
     if (cursor) params = params.set('cursor', cursor);
-    return this.http.get<ConversationMessage[]>(`${this.base}/${conversationId}/messages`, { params, headers: this.getAuthHeaders() });
+    return this.http.get<ConversationMessage[]>(
+      `${this.base}/${conversationId}/messages`,
+      { params, headers: this.getAuthHeaders() }
+    );
   }
 
   /** Send plain text message */
-  sendMessage(conversationId: string, content: string): Observable<ConversationMessage> {
+  sendMessage(
+    conversationId: string,
+    content: string
+  ): Observable<ConversationMessage> {
     const payload: SendMessageRequest = { conversationId, content };
-    return this.http.post<ConversationMessage>(`${this.base}/${conversationId}/messages`, payload, { headers: this.getAuthHeaders() });
+    return this.http.post<ConversationMessage>(
+      `${this.base}/${conversationId}/messages`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   /** Send message with multiple files & optional content + track progress */
@@ -63,35 +89,59 @@ export class ConversationsService {
     const formData = new FormData();
     if (content) formData.append('content', content);
     if (files && files.length > 0) {
-      files.forEach(file => formData.append('attachments', file));
+      files.forEach((file) => formData.append('attachments', file));
     }
 
     return new Observable<ConversationMessage>((subscriber) => {
-      this.http.post<ConversationMessage>(
-        `${this.base}/${conversationId}/messages`,
-        formData,
-        {
-          headers: this.getAuthHeaders(),
-          reportProgress: true,
-          observe: 'events'
-        }
-      ).subscribe({
-        next: (event) => {
-          if (event.type === HttpEventType.UploadProgress && event.total) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            if (onProgress) onProgress(percent);
-          } else if (event.type === HttpEventType.Response) {
-            subscriber.next(event.body as ConversationMessage);
-            subscriber.complete();
+      this.http
+        .post<ConversationMessage>(
+          `${this.base}/${conversationId}/messages`,
+          formData,
+          {
+            headers: this.getAuthHeaders(),
+            reportProgress: true,
+            observe: 'events',
           }
-        },
-        error: (err) => subscriber.error(err)
-      });
+        )
+        .subscribe({
+          next: (event) => {
+            if (event.type === HttpEventType.UploadProgress && event.total) {
+              const percent = Math.round((event.loaded / event.total) * 100);
+              if (onProgress) onProgress(percent);
+            } else if (event.type === HttpEventType.Response) {
+              subscriber.next(event.body as ConversationMessage);
+              subscriber.complete();
+            }
+          },
+          error: (err) => subscriber.error(err),
+        });
     });
+  }
+
+  // edit a message
+  editMessage(
+    messageId: string,
+    content: string
+  ): Observable<ConversationMessage> {
+    return this.http.patch<ConversationMessage>(
+      `${this.base}/messages/${messageId}`,
+      { content },
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  // delete a message
+  deleteMessage(messageId: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.base}/messages/${messageId}`,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
   /** Fetch single conversation */
   getConversation(id: string): Observable<Conversation> {
-    return this.http.get<Conversation>(`${this.base}/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.get<Conversation>(`${this.base}/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }

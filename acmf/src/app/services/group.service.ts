@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders, HttpEvent, HttpEventType } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpParams,
+  HttpHeaders,
+  HttpEvent,
+  HttpEventType,
+} from '@angular/common/http';
 import { filter, map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
@@ -88,7 +94,11 @@ export class GroupsService {
 
   // Messages
   // ------------------ FETCH MESSAGES ------------------
-  getMessages(groupId: string, limit = 50, cursor?: string): Observable<GroupMessage[]> {
+  getMessages(
+    groupId: string,
+    limit = 50,
+    cursor?: string
+  ): Observable<GroupMessage[]> {
     let params = new HttpParams().set('limit', String(limit));
     if (cursor) params = params.set('cursor', cursor);
     return this.http.get<GroupMessage[]>(`${this.base}/${groupId}/messages`, {
@@ -97,46 +107,46 @@ export class GroupsService {
     });
   }
 
+  // ------------------ SEND MESSAGE (TEXT OR FILE) ------------------
+  sendMessage(
+    groupId: string,
+    content?: string,
+    files?: File[], // note: accept an array
+    replyToId?: string,
+    progressCb?: (progress: number) => void
+  ): Observable<GroupMessage> {
+    const formData = new FormData();
 
-// ------------------ SEND MESSAGE (TEXT OR FILE) ------------------
-sendMessage(
-  groupId: string,
-  content?: string,
-  files?: File[],             // note: accept an array
-  replyToId?: string,
-  progressCb?: (progress: number) => void
-): Observable<GroupMessage> {
-  const formData = new FormData();
-
-  if (content) formData.append('content', content);
-  if (files && files.length > 0) {
-    for (const file of files) {
-      formData.append('attachments', file); // must match backend
+    if (content) formData.append('content', content);
+    if (files && files.length > 0) {
+      for (const file of files) {
+        formData.append('attachments', file); // must match backend
+      }
     }
+    if (replyToId) formData.append('replyToId', replyToId);
+
+    return this.http
+      .post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
+        headers: this.getAuthHeaders(),
+        reportProgress: true,
+        observe: 'events',
+      })
+      .pipe(
+        map((event) => {
+          if (event.type === HttpEventType.UploadProgress && progressCb) {
+            const percentDone = Math.round(
+              (100 * (event.loaded ?? 0)) / (event.total ?? 1)
+            );
+            progressCb(percentDone);
+          }
+          if (event.type === HttpEventType.Response) {
+            return event.body as GroupMessage;
+          }
+          return null;
+        }),
+        filter((res): res is GroupMessage => res !== null)
+      );
   }
-  if (replyToId) formData.append('replyToId', replyToId);
-
-  return this.http.post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
-    headers: this.getAuthHeaders(),
-    reportProgress: true,
-    observe: 'events',
-  }).pipe(
-    map(event => {
-      if (event.type === HttpEventType.UploadProgress && progressCb) {
-        const percentDone = Math.round((100 * (event.loaded ?? 0)) / (event.total ?? 1));
-        progressCb(percentDone);
-      }
-      if (event.type === HttpEventType.Response) {
-        return event.body as GroupMessage;
-      }
-      return null;
-    }),
-    filter((res): res is GroupMessage => res !== null)
-  );
-}
-
-
-
 
   // Bulk admin actions
   bulkAddMembers(groupId: string, dto: BulkAddMembersDto) {
@@ -282,7 +292,7 @@ sendMessage(
       { headers: this.getAuthHeaders() }
     );
   }
-  
+
   unlikeFeedComment(commentId: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.base}/comments/${commentId}/unlike`,
@@ -290,8 +300,6 @@ sendMessage(
       { headers: this.getAuthHeaders() }
     );
   }
-  
-  
 
   getGroupResources(groupId: string, limit = 20) {
     const params = new HttpParams().set('limit', limit);
@@ -330,22 +338,20 @@ sendMessage(
     );
   }
 
-    // Edit a message
-    editMessage(messageId: string, content: string): Observable<GroupMessage> {
-      return this.http.patch<GroupMessage>(
-        `${this.base}/messages/${messageId}`,
-        { content },
-        { headers: this.getAuthHeaders() }
-      );
-    }
-  
-    //  Delete a message
-    deleteMessage(messageId: string): Observable<{ message: string }> {
-      return this.http.delete<{ message: string }>(
-        `${this.base}/messages/${messageId}`,
-        { headers: this.getAuthHeaders() }
-      );
-    }
-  
+  // Edit a message
+  editMessage(messageId: string, content: string): Observable<GroupMessage> {
+    return this.http.patch<GroupMessage>(
+      `${this.base}/messages/${messageId}`,
+      { content },
+      { headers: this.getAuthHeaders() }
+    );
+  }
 
+  //  Delete a message
+  deleteMessage(messageId: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.base}/messages/${messageId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
 }

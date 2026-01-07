@@ -7,10 +7,12 @@ import {
   EventEmitter,
   Output,
   ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { Conversation, ConversationMessage, MessageAttachment } from '../../../interfaces';
 import { ConversationsService, FileUploadProgress } from '../../../services/conversations.service';
 import { DmSocketService } from '../../../services/dm-socket.service';
@@ -41,6 +43,10 @@ export class DmChatComponent implements OnInit, OnDestroy {
   @Input() conversationId?: string;
   @Output() close = new EventEmitter<void>();
 
+  @ViewChild('messagesContainer')
+  private messagesContainer!: ElementRef<HTMLDivElement>;
+  // @ViewChild('fileInput', { static: false})
+
   conversation?: Conversation;
   messages: ConversationMessage[] = [];
   newMessage = '';
@@ -53,8 +59,25 @@ export class DmChatComponent implements OnInit, OnDestroy {
   selectedAttachments: AttachmentUI[] = [];
   isTyping = false;
   typingUsers: string[] = [];
+  showNewMessageButton: boolean = false;
+  currentUserId: string | null = null;
+  menuOpen: Record<string, boolean> = {};
+
+  // delete modal
+  showDeleteModal: boolean = false;
+  messageToDelete: ConversationMessage | null = null
+
+  // edit modal
+  showEditModal: boolean = false;
+  editedMessage: string = '';
+  editingMessageId: string | null = null;
+
+  // reply
+  replyingTo: ConversationMessage | null = null;
 
   isChatVisible = true;
+
+
   constructor(
     private convos: ConversationsService,
     private socket: DmSocketService,
@@ -76,6 +99,8 @@ export class DmChatComponent implements OnInit, OnDestroy {
               ? [event.userId]
               : this.typingUsers.filter(id => id !== event.userId);
             this.cdr.markForCheck();
+            if(this.isNearBottom()) this.scrollToBottom();
+            else this.showNewMessageButton = true;
           }
         }
       })
@@ -210,6 +235,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.newMessage = '';
     this.selectedAttachments = [];
     this.cdr.markForCheck();
+    this.scrollToBottom();
   
     // 2. Upload + save via service (still needed for DB + attachments)
     this.sub.add(
@@ -254,5 +280,118 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.selectedAttachments.forEach(a => {
       if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
     });
+  }
+
+  // scroll and UI
+  private scrollToBottom() {
+    setTimeout(() => {
+      const el = this.messagesContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+      this.showNewMessageButton = false;
+      this.cdr.markForCheck();
+    }, 50);
+  }
+
+  private isNearBottom(): boolean {
+    const ele = this.messagesContainer.nativeElement;
+    const threshold = 100;
+    return ele.scrollHeight - ele.scrollTop - ele.clientHeight < threshold;
+  }
+
+  jumpToBottom() {
+    this.scrollToBottom();
+  }
+
+  isMyMessage(m: ConversationMessage): boolean {
+    return m.senderId === this.currentUserId;
+  }
+
+  // menu handlers
+  toggleMenu(id: string) {
+    this.menuOpen[id] = !this.menuOpen[id];
+    this.cdr.markForCheck();
+  }
+
+  closeAllMenus() {
+    this.menuOpen = {};
+    this.cdr.markForCheck();
+  }
+
+  // Edit Modal
+  openEditModal(message: ConversationMessage) {
+    if(!this.isMyMessage(message)) return;
+    this.closeAllMenus();
+    this.editedMessage = message.content;
+    this.editingMessageId = message.id;
+    this.cdr.markForCheck();
+  }
+
+  cancelEdit() {
+    this.showDeleteModal = false;
+    this.editedMessage = '';
+    this.editingMessageId = null;
+    this.cdr.markForCheck();
+  }
+
+  saveEdit() {
+    if(!this.editingMessageId || !this.editedMessage.trim()) return;
+    const updatedContent = this.editedMessage.trim();
+
+    this.convos.editMessage(this.editingMessageId, updatedContent).subscribe({
+      next: (res) => {
+        const idx = this.messages.findIndex(
+          (m) => m.id === this.editingMessageId
+        );
+        if(idx > 1) this.messages[idx] = {...res};
+        this.cancelEdit();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Edit failed', err);
+        this.cancelEdit();
+      }
+    });
+  }
+
+  // open delete Modal
+  openDeleteModal(message: ConversationMessage) {
+    if(!this.isMyMessage(message)) return;
+    this.closeAllMenus();
+    this.messageToDelete = message;
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.messageToDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  confirmDelete() {
+    if(!this.messageToDelete) return;
+    this.convos.deleteMessage(this.messageToDelete.id).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(
+          (m) => m.id !== this.messageToDelete?.id
+        );
+        this.showDeleteModal = false;
+        this.messageToDelete = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Delete Failde')
+        this.cancelDelete();
+      },
+    });
+  }
+
+  // reply
+  replyToMessage(message: ConversationMessage) {
+    this.replyingTo = message;
+  }
+
+  cancelreply() {
+    this.replyingTo = null;
   }
 }

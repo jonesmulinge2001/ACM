@@ -267,9 +267,6 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.replyingTo = null;
   }
   
-  
-  
-
   // ------------------ SCROLL & UI ------------------
   private scrollToBottom() {
     setTimeout(() => {

@@ -9,7 +9,7 @@ import Fuse from 'fuse.js';
 @Component({
   imports: [CommonModule, FormsModule],
   selector: 'app-admin-users',
-  templateUrl: './manage-users.component.html'
+  templateUrl: './manage-users.component.html',
 })
 export class ManageUsersComponent implements OnInit {
   users: AdminUser[] = [];
@@ -68,35 +68,25 @@ export class ManageUsersComponent implements OnInit {
     });
   }
 
-
-
   onSearch() {
     const term = this.searchTerm.trim();
-  
+
     if (!term) {
       this.filteredUsers = [...this.users];
     } else {
       const fuse = new Fuse(this.users, {
-        keys: [
-          'name',
-          'email',
-          'role',
-          'profile.institution.name'
-        ],
+        keys: ['name', 'email', 'role', 'profile.institution.name'],
         threshold: 0.3, // smaller = stricter, bigger = fuzzier
         ignoreLocation: true, // ignore where in the string the match is
         minMatchCharLength: 2, // only search if 2+ chars entered
       });
-  
-      this.filteredUsers = fuse.search(term).map(result => result.item);
+
+      this.filteredUsers = fuse.search(term).map((result) => result.item);
     }
-  
+
     this.totalUsers = this.filteredUsers.length;
     this.setPage(1);
   }
-  
-  
-  
 
   setPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
@@ -140,7 +130,6 @@ export class ManageUsersComponent implements OnInit {
           if (this.selectedUserIds.has(u.id)) u.status = 'SUSPENDED';
         });
         this.clearSelection();
-        
       });
       this.closeConfirm();
     });
@@ -195,7 +184,6 @@ export class ManageUsersComponent implements OnInit {
       this.adminUserService.restoreUser(user.id).subscribe(() => {
         user.status = 'ACTIVE';
         this.refreshPagination();
-        
       });
       this.closeConfirm();
     });
