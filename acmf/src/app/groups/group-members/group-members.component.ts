@@ -162,6 +162,7 @@ export class GroupMembersComponent implements OnInit {
   }
 
   openChatFromSidebar(userId: string) {
+    console.log('openChatFromSidebar called with userId:', userId);
     this.showSidebar = false;
     this.selectedParticipantId = userId;
     this.showChatPopup = true;

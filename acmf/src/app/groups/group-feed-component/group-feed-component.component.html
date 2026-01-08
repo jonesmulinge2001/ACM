@@ -1,8 +1,6 @@
 <div
-  class="max-w-2xl mx-auto mt-8 px-3 sm:px-6 md:px-8 lg:px-10 font-sans
-         w-full overflow-x-hidden"
+  class="max-w-2xl mx-auto mt-8 px-3 sm:px-6 md:px-8 lg:px-10 font-sans w-full overflow-x-hidden"
 >
-
   <!-- Error State -->
   <div
     *ngIf="errorMessage"
@@ -319,67 +317,59 @@
         >
           {{ resource.content }}
         </p>
-
-        <!-- Image Preview -->
+        <!-- IMAGE POST -->
         <div
-          *ngIf="
-            ['jpg', 'jpeg', 'png', 'gif'].includes(
-              (resource.fileType || '').toLowerCase()
-            )
-          "
-          class="flex justify-center bg-gray-50 rounded-xl overflow-hidden mb-3 shadow-sm"
+          *ngIf="resource.fileType === 'image'"
+          class="mt-3 bg-gray-100 rounded-xl overflow-hidden flex justify-center"
         >
           <img
             [src]="resource.resourceUrl"
-            alt="Post Image"
-            class="object-contain w-full h-auto max-h-[70vh] sm:max-h-[80vh] rounded-xl"
+            alt="Post image"
+            loading="lazy"
+            class="max-h-[75vh] w-auto max-w-full object-contain"
           />
         </div>
 
-        <!-- VIDEO PREVIEW IN FEED -->
+        <!-- VIDEO PREVIEW -->
         <div
-          *ngIf="
-            ['mp4', 'mov', 'webm'].includes(
-              (resource.fileType || '').toLowerCase()
-            )
-          "
-          class="flex justify-center bg-black rounded-xl overflow-hidden mb-3 shadow-sm"
+          *ngIf="resource.fileType === 'video'"
+          class="mt-3 bg-black rounded-xl overflow-hidden flex justify-center"
         >
           <video
-            [src]="resource.resourceUrl"
             controls
-            class="object-contain w-full h-auto max-h-[60vh] sm:max-h-[70vh] rounded-xl"
-          ></video>
+            preload="metadata"
+            playsinline
+            class="max-h-[70vh] w-auto max-w-full object-contain"
+          >
+            <source [src]="resource.resourceUrl" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
 
-        <!-- File / Doc -->
+        <!-- DOCUMENT / OTHER FILE -->
         <div
-          *ngIf="
-            !['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'webm'].includes(
-              (resource.fileType || '').toLowerCase()
-            )
-          "
-          class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-gray-50 border rounded-xl mb-3 shadow-sm"
+          *ngIf="resource.fileType === 'doc'"
+          class="mt-3 flex items-center justify-between gap-3 p-4 bg-gray-50 border rounded-xl"
         >
-          <div class="flex items-center gap-3 truncate w-full sm:w-auto">
+          <div class="flex items-center gap-3 truncate">
             <span class="material-icons text-blue-600 text-3xl"
               >description</span
             >
             <div class="truncate">
-              <p class="text-sm font-semibold text-gray-800 truncate">
+              <p class="text-sm font-semibold truncate">
                 {{ resource.originalName || "Attached Document" }}
               </p>
-              <p class="text-xs text-gray-500 truncate">
-                {{ resource.fileType?.toUpperCase() }} File
-              </p>
+              <p class="text-xs text-gray-500">Document</p>
             </div>
           </div>
+
           <a
             [href]="resource.resourceUrl"
             target="_blank"
+            rel="noopener"
             class="text-blue-600 text-sm font-medium hover:underline"
           >
-            Open / Download
+            Open
           </a>
         </div>
       </div>

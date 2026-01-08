@@ -6,7 +6,7 @@ import { GroupResource, GroupResourceComment, Profile } from '../../interfaces';
 import { GroupsService } from '../../services/group.service';
 import { ProfileService } from '../../services/profile.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-group-feed',
@@ -23,7 +23,6 @@ export class GroupFeedComponent implements OnInit {
 
   commentToDelete: { resource: GroupResource; commentId: string } | null = null;
   isDeleteCommentModalOpen = false;
-
 
   editingPost: {
     id: string;
@@ -56,7 +55,7 @@ export class GroupFeedComponent implements OnInit {
     private route: ActivatedRoute,
     private groupsService: GroupsService,
     private profileService: ProfileService,
-    private sanitizer: DomSanitizer 
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -68,7 +67,7 @@ export class GroupFeedComponent implements OnInit {
       return;
     }
 
-    // ✅ Load logged-in user's profile first
+    // Load logged-in user's profile first
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         this.userProfile = profile;
@@ -78,14 +77,13 @@ export class GroupFeedComponent implements OnInit {
       },
     });
 
-    // ✅ Load group feed next
+    // Load group feed next
     this.loadFeed();
   }
 
   getSafeUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
-  
 
   /** Optimize rendering: track by unique resource ID */
   trackByResourceId(index: number, resource: GroupResource) {
@@ -94,12 +92,18 @@ export class GroupFeedComponent implements OnInit {
 
   loadFeed(): void {
     this.loading = true;
+
     this.groupsService.getGroupFeed(this.groupId).subscribe({
       next: (data: GroupResource[]) => {
         this.feed = (data || []).map((r) => ({
           ...r,
           comments: r.comments ?? [],
+          resourceUrl: r.resourceUrl,
+          fileType: this.detectFileType(
+            r.fileType || r.originalName || r.resourceUrl || ''
+          ),
         }));
+
         this.loading = false;
       },
       error: () => {
@@ -107,6 +111,38 @@ export class GroupFeedComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  private detectFileType(fileTypeOrName?: string): 'image' | 'video' | 'doc' {
+    if (!fileTypeOrName) return 'doc';
+    const val = fileTypeOrName.toLowerCase();
+
+    // Map common extensions
+    const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const videoExt = ['mp4', 'mov', 'webm', 'ogg'];
+    const docExt = [
+      'pdf',
+      'doc',
+      'docx',
+      'ppt',
+      'pptx',
+      'xls',
+      'xlsx',
+      'txt',
+      'zip',
+      'rar',
+    ];
+
+    if (imageExt.includes(val)) return 'image';
+    if (videoExt.includes(val)) return 'video';
+    if (docExt.includes(val)) return 'doc';
+
+    // fallback by URL if raw Cloudinary URL
+    if (val.includes('/image/upload/')) return 'image';
+    if (val.includes('/video/upload/')) return 'video';
+    if (val.includes('/raw/upload/')) return 'doc';
+
+    return 'doc';
   }
 
   toggleLike(resource: GroupResource): void {
@@ -224,33 +260,32 @@ export class GroupFeedComponent implements OnInit {
     const req = comment.isLikedByCurrentUser
       ? this.groupsService.unlikeFeedComment(comment.id)
       : this.groupsService.likeFeedComment(comment.id);
-  
+
     req.subscribe({
       next: () => {
         comment.isLikedByCurrentUser = !comment.isLikedByCurrentUser;
         comment.likesCount =
           (comment.likesCount ?? 0) + (comment.isLikedByCurrentUser ? 1 : -1);
       },
-      error: err => {
+      error: (err) => {
         console.error('Failed to toggle comment like', err);
       },
     });
   }
-  
-  
 
-  /** 🆕 Cached icon + responsive preview fix */
+  /** Cached icon + responsive preview fix */
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
     this.selectedFile = file;
+
     const type = file.type.split('/')[0];
     this.fileType =
       type === 'image' ? 'image' : type === 'video' ? 'video' : 'doc';
 
     const ext = file.name.split('.').pop()?.toLowerCase();
-    this.fileIcon = this.getFileIcon(ext); // precompute once
+    this.fileIcon = this.getFileIcon(ext);
 
     const reader = new FileReader();
     reader.onload = () => (this.previewUrl = reader.result as string);
@@ -259,6 +294,7 @@ export class GroupFeedComponent implements OnInit {
 
   createPost(): void {
     const content = this.newPost.content?.trim() || '';
+
     if (!content && !this.selectedFile) {
       this.errorMessage = 'Please write something or attach a file.';
       return;
@@ -268,17 +304,43 @@ export class GroupFeedComponent implements OnInit {
     const formData = new FormData();
 
     if (content) formData.append('content', content);
-    if (this.selectedFile) formData.append('file', this.selectedFile);
+    if (this.selectedFile) formData.append('attachments', this.selectedFile);
 
     this.groupsService.shareResource(this.groupId, formData).subscribe({
       next: (newResource) => {
-        this.feed.unshift(newResource);
+        const normalized = Array.isArray(newResource)
+          ? newResource.map((r) => ({
+              ...r,
+              resourceUrl: r.resourceUrl, // use full URL from backend
+              fileType: this.detectFileType(
+                r.fileType || r.originalName || r.resourceUrl
+              ),
+            }))
+          : {
+              ...newResource,
+              resourceUrl: newResource.resourceUrl,
+              fileType: this.detectFileType(
+                newResource.fileType ||
+                  newResource.originalName ||
+                  newResource.resourceUrl
+              ),
+            };
+
+        // Add to feed
+        if (Array.isArray(normalized)) {
+          this.feed.unshift(...normalized);
+        } else {
+          this.feed.unshift(normalized);
+        }
+
+        // Reset form
         this.newPost.content = '';
         this.selectedFile = null;
         this.previewUrl = null;
         this.fileType = null;
         this.fileIcon = null;
         this.creatingPost = false;
+        this.errorMessage = null;
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to create post';
@@ -292,14 +354,10 @@ export class GroupFeedComponent implements OnInit {
       id: resource.id,
       content: resource.content,
       file: null,
-      previewUrl: resource.resourceUrl || null,
-      fileType: resource.fileType
-        ? ['jpg', 'jpeg', 'png', 'gif'].includes(resource.fileType)
-          ? 'image'
-          : ['mp4', 'mov', 'avi'].includes(resource.fileType)
-          ? 'video'
-          : 'doc'
-        : null,
+      previewUrl: resource.resourceUrl || '', // never null
+      fileType: this.detectFileType(
+        resource.fileType || resource.originalName || resource.resourceUrl || ''
+      ),
     };
   }
 
@@ -322,10 +380,10 @@ export class GroupFeedComponent implements OnInit {
   savePostEdit(): void {
     if (!this.editingPost) return;
     const { id, content, file } = this.editingPost;
-  
+
     // Safely handle null/undefined/empty content
     const safeContent = content ? content.trim() : '';
-  
+
     this.groupsService
       .updateGroupResource(this.groupId, id, safeContent, file || undefined)
       .subscribe({
@@ -341,7 +399,6 @@ export class GroupFeedComponent implements OnInit {
         },
       });
   }
-  
 
   cancelPostEdit(): void {
     this.editingPost = null;
@@ -351,21 +408,22 @@ export class GroupFeedComponent implements OnInit {
     this.commentToDelete = { resource, commentId };
     this.isDeleteCommentModalOpen = true;
   }
-  
+
   closeDeleteCommentModal(): void {
     this.commentToDelete = null;
     this.isDeleteCommentModalOpen = false;
   }
-  
+
   confirmDeleteComment(): void {
     if (!this.commentToDelete) return;
-  
+
     const { resource, commentId } = this.commentToDelete;
-  
+
     this.groupsService.deleteFeedComment(commentId).subscribe({
       next: () => {
         // remove deleted comment from local array
-        resource.comments = resource.comments?.filter((c) => c.id !== commentId) ?? [];
+        resource.comments =
+          resource.comments?.filter((c) => c.id !== commentId) ?? [];
         resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
         this.closeDeleteCommentModal();
       },
@@ -375,7 +433,6 @@ export class GroupFeedComponent implements OnInit {
       },
     });
   }
-  
 
   getFileIcon(fileType?: string | null): string {
     if (!fileType) return 'folder';

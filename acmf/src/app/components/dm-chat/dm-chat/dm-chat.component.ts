@@ -9,12 +9,20 @@ import {
   ChangeDetectorRef,
   ViewChild,
   ElementRef,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription, filter } from 'rxjs';
-import { Conversation, ConversationMessage, MessageAttachment } from '../../../interfaces';
-import { ConversationsService, FileUploadProgress } from '../../../services/conversations.service';
+import {
+  Conversation,
+  ConversationMessage,
+  MessageAttachment,
+} from '../../../interfaces';
+import {
+  ConversationsService,
+  FileUploadProgress,
+} from '../../../services/conversations.service';
 import { DmSocketService } from '../../../services/dm-socket.service';
 
 interface AttachmentUI {
@@ -53,7 +61,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   participantName = '';
   participantImage = '/assets/default-avatar.png';
-  myId: string = localStorage.getItem('userId') || '';
+  myId!: string;
 
   private sub = new Subscription();
   selectedAttachments: AttachmentUI[] = [];
@@ -65,7 +73,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   // delete modal
   showDeleteModal: boolean = false;
-  messageToDelete: ConversationMessage | null = null
+  messageToDelete: ConversationMessage | null = null;
 
   // edit modal
   showEditModal: boolean = false;
@@ -74,9 +82,9 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   // reply
   replyingTo: ConversationMessage | null = null;
+  
 
   isChatVisible = true;
-
 
   constructor(
     private convos: ConversationsService,
@@ -85,21 +93,27 @@ export class DmChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    console.log('conversationId:', this.conversationId, 'participantId:', this.participantId);
+
+    this.myId = localStorage.getItem('userId')!;
     this.socket.connect();
 
     if (this.conversationId) this.loadConversation(this.conversationId);
     else if (this.participantId) this.createOrLoadConversation();
-    
+
     // Typing indicator subscription
     this.sub.add(
-      this.socket.onTyping().subscribe(event => {
-        if (this.conversation && event.conversationId === this.conversation.id) {
+      this.socket.onTyping().subscribe((event) => {
+        if (
+          this.conversation &&
+          event.conversationId === this.conversation.id
+        ) {
           if (event.userId !== this.myId) {
             this.typingUsers = event.typing
               ? [event.userId]
-              : this.typingUsers.filter(id => id !== event.userId);
+              : this.typingUsers.filter((id) => id !== event.userId);
             this.cdr.markForCheck();
-            if(this.isNearBottom()) this.scrollToBottom();
+            if (this.isNearBottom()) this.scrollToBottom();
             else this.showNewMessageButton = true;
           }
         }
@@ -109,7 +123,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   private createOrLoadConversation() {
     this.sub.add(
-      this.convos.createOneOnOne(this.participantId!).subscribe(convo => {
+      this.convos.createOneOnOne(this.participantId!).subscribe((convo) => {
         this.conversation = convo;
         this.setupParticipantInfo(convo);
         this.joinAndLoad(convo.id);
@@ -119,7 +133,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   private loadConversation(convoId: string) {
     this.sub.add(
-      this.convos.getConversation(convoId).subscribe(convo => {
+      this.convos.getConversation(convoId).subscribe((convo) => {
         this.conversation = convo;
         this.setupParticipantInfo(convo);
         this.joinAndLoad(convo.id);
@@ -128,8 +142,8 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   private setupParticipantInfo(convo: Conversation): void {
-    const other = convo.participants.find(p => p.id !== this.myId);
-    this.participantName = other?.name || 'Unknown';
+    const other = convo.participants.find((p) => p.id !== this.myId);
+    this.participantName = other?.name || 'Recipient';
     this.participantImage = other?.profileImage || '/assets/default-avatar.png';
     this.cdr.markForCheck();
   }
@@ -137,18 +151,18 @@ export class DmChatComponent implements OnInit, OnDestroy {
   private joinAndLoad(convoId: string) {
     // 1. Join conversation safely
     this.socket.join(convoId);
-  
+
     // 2. Load past messages
     this.sub.add(
-      this.convos.getMessages(convoId).subscribe(msgs => {
+      this.convos.getMessages(convoId).subscribe((msgs) => {
         this.messages = msgs.reverse();
         this.cdr.markForCheck();
       })
     );
-  
+
     // 3. Live message subscription
     this.sub.add(
-      this.socket.onMessage().subscribe(msg => {
+      this.socket.onMessage().subscribe((msg) => {
         if (!this.conversation) return;
         // Compare as strings to avoid type mismatch
         if (msg.conversationId.toString() === this.conversation.id.toString()) {
@@ -157,40 +171,43 @@ export class DmChatComponent implements OnInit, OnDestroy {
         }
       })
     );
-  
+
     // 4. Typing indicator
     this.sub.add(
-      this.socket.onTyping().subscribe(event => {
+      this.socket.onTyping().subscribe((event) => {
         if (!this.conversation) return;
-        if (event.conversationId.toString() === this.conversation.id.toString()) {
+        if (
+          event.conversationId.toString() === this.conversation.id.toString()
+        ) {
           const userId = event.userId;
           this.typingUsers = event.typing
             ? [...new Set([...this.typingUsers, userId])]
-            : this.typingUsers.filter(id => id !== userId);
+            : this.typingUsers.filter((id) => id !== userId);
           this.cdr.markForCheck();
         }
       })
     );
   }
-  
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
 
     // convert to AttachmentUI
-    const newAttachments: AttachmentUI[] = Array.from(input.files).map(file => {
-      let previewUrl: string | undefined;
-      let type: 'IMAGE' | 'VIDEO' | 'FILE' = 'FILE';
-      if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-        type = 'IMAGE';
-      } else if (file.type.startsWith('video/')) {
-        previewUrl = URL.createObjectURL(file);
-        type = 'VIDEO';
+    const newAttachments: AttachmentUI[] = Array.from(input.files).map(
+      (file) => {
+        let previewUrl: string | undefined;
+        let type: 'IMAGE' | 'VIDEO' | 'FILE' = 'FILE';
+        if (file.type.startsWith('image/')) {
+          previewUrl = URL.createObjectURL(file);
+          type = 'IMAGE';
+        } else if (file.type.startsWith('video/')) {
+          previewUrl = URL.createObjectURL(file);
+          type = 'VIDEO';
+        }
+        return { file, previewUrl, type, progress: 0 };
       }
-      return { file, previewUrl, type, progress: 0 };
-    });
+    );
 
     this.selectedAttachments.push(...newAttachments);
     this.cdr.markForCheck();
@@ -204,64 +221,66 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim() && this.selectedAttachments.length === 0) return;
+    if (!this.newMessage.trim() && this.selectedAttachments.length === 0)
+      return;
     if (!this.conversation) return;
-  
+
     const convoId = this.conversation.id;
     const content = this.newMessage.trim();
-    const files = this.selectedAttachments.map(a => a.file);
-  
+    const files = this.selectedAttachments.map((a) => a.file);
+
     // 1. Optimistic UI message
     const tempMsg: ConversationMessage = {
       id: 'temp-' + Date.now(),
       conversationId: convoId,
       content,
-      attachments: this.selectedAttachments.map(a => ({
+      attachments: this.selectedAttachments.map((a) => ({
         name: a.file.name,
         type: a.file.type,
         url: a.previewUrl || '',
-        progress: 0
+        progress: 0,
       })) as MessageAttachmentUI[],
       createdAt: new Date().toISOString(),
       senderId: this.myId,
       sender: {
         id: this.myId,
         name: 'You',
-        profileImage: localStorage.getItem('profileImage') || undefined
+        profileImage: localStorage.getItem('profileImage') || undefined,
       },
     };
-  
+
     this.messages = [...this.messages, tempMsg];
     this.newMessage = '';
     this.selectedAttachments = [];
     this.cdr.markForCheck();
     this.scrollToBottom();
-  
+
     // 2. Upload + save via service (still needed for DB + attachments)
     this.sub.add(
-      this.convos.sendMessageWithFiles(convoId, content, files, progress => {
-        tempMsg.attachments?.forEach(a => (a.progress = progress));
-        this.cdr.markForCheck();
-      }).subscribe({
-        next: saved => {
-          // Replace optimistic message with DB-confirmed message
-          this.messages = this.messages.map(m =>
-            m.id === tempMsg.id ? saved : m
-          );
+      this.convos
+        .sendMessageWithFiles(convoId, content, files, (progress) => {
+          tempMsg.attachments?.forEach((a) => (a.progress = progress));
           this.cdr.markForCheck();
-        },
-        error: err => {
-          console.error('[DmChat] sendMessage error', err);
-          this.messages = this.messages.filter(m => m.id !== tempMsg.id);
-          this.cdr.markForCheck();
-        },
-      })
+        })
+        .subscribe({
+          next: (saved) => {
+            // Replace optimistic message with DB-confirmed message
+            this.messages = this.messages.map((m) =>
+              m.id === tempMsg.id ? saved : m
+            );
+            this.cdr.markForCheck();
+          },
+          error: (err) => {
+            console.error('[DmChat] sendMessage error', err);
+            this.messages = this.messages.filter((m) => m.id !== tempMsg.id);
+            this.cdr.markForCheck();
+          },
+        })
     );
-  
+
     // 3. Stop typing notification
     this.socket.sendTyping(convoId, false);
   }
-  
 
   onInputChange() {
     if (!this.conversation) return;
@@ -277,7 +296,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
 
     // Revoke any preview URLs
-    this.selectedAttachments.forEach(a => {
+    this.selectedAttachments.forEach((a) => {
       if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
     });
   }
@@ -303,7 +322,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   isMyMessage(m: ConversationMessage): boolean {
-    return m.senderId === this.currentUserId;
+    return m.senderId.toString() === this.myId;
   }
 
   // menu handlers
@@ -319,22 +338,23 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   // Edit Modal
   openEditModal(message: ConversationMessage) {
-    if(!this.isMyMessage(message)) return;
+    if (message.senderId.toString() !== this.myId) return;
     this.closeAllMenus();
     this.editedMessage = message.content;
     this.editingMessageId = message.id;
+    this.showEditModal = true;
     this.cdr.markForCheck();
   }
 
   cancelEdit() {
-    this.showDeleteModal = false;
+    this.showEditModal = false;
     this.editedMessage = '';
     this.editingMessageId = null;
     this.cdr.markForCheck();
   }
 
   saveEdit() {
-    if(!this.editingMessageId || !this.editedMessage.trim()) return;
+    if (!this.editingMessageId || !this.editedMessage.trim()) return;
     const updatedContent = this.editedMessage.trim();
 
     this.convos.editMessage(this.editingMessageId, updatedContent).subscribe({
@@ -342,20 +362,20 @@ export class DmChatComponent implements OnInit, OnDestroy {
         const idx = this.messages.findIndex(
           (m) => m.id === this.editingMessageId
         );
-        if(idx > 1) this.messages[idx] = {...res};
+        if (idx > 1) this.messages[idx] = { ...res };
         this.cancelEdit();
         this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Edit failed', err);
         this.cancelEdit();
-      }
+      },
     });
   }
 
   // open delete Modal
   openDeleteModal(message: ConversationMessage) {
-    if(!this.isMyMessage(message)) return;
+    if (message.senderId.toString() !== this.myId) return; // Fix this check
     this.closeAllMenus();
     this.messageToDelete = message;
     this.showDeleteModal = true;
@@ -369,7 +389,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete() {
-    if(!this.messageToDelete) return;
+    if (!this.messageToDelete) return;
     this.convos.deleteMessage(this.messageToDelete.id).subscribe({
       next: () => {
         this.messages = this.messages.filter(
@@ -380,7 +400,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Delete Failde')
+        console.error('Delete Failde');
         this.cancelDelete();
       },
     });
@@ -394,4 +414,32 @@ export class DmChatComponent implements OnInit, OnDestroy {
   cancelreply() {
     this.replyingTo = null;
   }
+
+  isMenuOpen(id: string): boolean {
+    return !!this.menuOpen[id];
+  }
+  
+  closeMenu(id?: string) {
+    if (id) {
+      this.menuOpen[id] = false;
+    } else {
+      this.menuOpen = {};
+    }
+    this.cdr.markForCheck();
+  }
+  
+  // Close menus when clicking outside
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: Event) {
+  const target = event.target as HTMLElement;
+
+  // Check if click is inside a menu or its button
+  const clickedInsideMenu = target.closest('.dm-menu, .dm-menu-btn');
+
+  if (!clickedInsideMenu) {
+    this.closeAllMenus();
+  }
+}
+
+
 }
