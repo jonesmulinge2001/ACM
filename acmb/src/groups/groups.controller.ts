@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
- 
- 
+
 /* eslint-disable prettier/prettier */
 import { RequestWithUser } from './../interfaces/requestwithUser.interface';
 /* eslint-disable prettier/prettier */
@@ -24,8 +23,6 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
-  ValidationPipe,
-  UsePipes,
   UploadedFiles,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt/jwtAuth.guard';
@@ -130,7 +127,6 @@ export class GroupsController {
   @Post(':id/resources')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FilesInterceptor('attachments'))
-  @UsePipes(new ValidationPipe({ transform: true }))
   async shareResource(
     @Req() req: RequestWithUser,
     @Param('id') id: string,
@@ -143,10 +139,19 @@ export class GroupsController {
       attachments = [];
   
       for (const file of files) {
-        const isMedia = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+        const isMedia =
+          file.mimetype.startsWith('image/') ||
+          file.mimetype.startsWith('video/');
+  
         const result = isMedia
-          ? await this.cloudinary.uploadMedia(file, AcademeetUploadType.RESOURCE_FILE)
-          : await this.cloudinary.uploadRaw(file, AcademeetUploadType.RESOURCE_FILE);
+          ? await this.cloudinary.uploadMedia(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            )
+          : await this.cloudinary.uploadRaw(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            );
   
         attachments.push({
           url: result.secure_url,
@@ -157,9 +162,13 @@ export class GroupsController {
       }
     }
   
-    return this.groupService.shareResource(id, req.user.id, dto, attachments);
+    return this.groupService.shareResource(
+      id,
+      req.user.id,
+      dto,
+      attachments,
+    );
   }
-  
   
 
   @Get(':id')
@@ -188,68 +197,73 @@ export class GroupsController {
   }
 
   // Optionally: send message via REST (useful for bots or fallback)
-// --------------------- Group Messaging ---------------------
+  // --------------------- Group Messaging ---------------------
 
-// Post a message (supports multiple attachments like DM)
-@Post(':id/messages')
-@UseInterceptors(FilesInterceptor('attachments'))
-async postMessage(
-  @Req() req: RequestWithUser,
-  @Param('id') id: string,
-  @Body() dto: SendGroupMessageDto,
-  @UploadedFiles() files?: Express.Multer.File[],
-) {
-  // Ensure groupId matches param
-  dto.groupId = id;
+  // Post a message (supports multiple attachments like DM)
+  @Post(':id/messages')
+  @UseInterceptors(FilesInterceptor('attachments'))
+  async postMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() dto: SendGroupMessageDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    // Ensure groupId matches param
+    dto.groupId = id;
 
-  let attachments: MessageAttachment[] | null = null;
+    let attachments: MessageAttachment[] | null = null;
 
-  if (files && files.length > 0) {
-    attachments = [];
+    if (files && files.length > 0) {
+      attachments = [];
 
-    for (const file of files) {
-      const isMedia =
-        file.mimetype.startsWith('image/') ||
-        file.mimetype.startsWith('video/');
-      const result = isMedia
-        ? await this.cloudinary.uploadMedia(file, AcademeetUploadType.RESOURCE_FILE)
-        : await this.cloudinary.uploadRaw(file, AcademeetUploadType.RESOURCE_FILE);
+      for (const file of files) {
+        const isMedia =
+          file.mimetype.startsWith('image/') ||
+          file.mimetype.startsWith('video/');
+        const result = isMedia
+          ? await this.cloudinary.uploadMedia(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            )
+          : await this.cloudinary.uploadRaw(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            );
 
-      attachments.push({
-        url: result.secure_url,
-        type: result.resource_type,
-        name: file.originalname,
-      });
+        attachments.push({
+          url: result.secure_url,
+          type: result.resource_type,
+          name: file.originalname,
+        });
+      }
     }
+
+    return this.groupService.sendMessage(req.user.id, {
+      ...dto,
+      attachments,
+    });
   }
 
-  return this.groupService.sendMessage(req.user.id, {
-    ...dto,
-    attachments,
-  });
-}
+  // Edit a group message
+  @Patch('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async editMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+    @Body() dto: EditMessageDto,
+  ) {
+    return this.groupService.editMessage(req.user.id, messageId, dto.content);
+  }
 
-// Edit a group message
-@Patch('messages/:id')
-@HttpCode(HttpStatus.OK)
-async editMessage(
-  @Req() req: RequestWithUser,
-  @Param('id') messageId: string,
-  @Body() dto: EditMessageDto,
-) {
-  return this.groupService.editMessage(req.user.id, messageId, dto.content);
-}
-
-// Delete a group message
-@Delete('messages/:id')
-@HttpCode(HttpStatus.OK)
-async deleteMessage(
-  @Req() req: RequestWithUser,
-  @Param('id') messageId: string,
-) {
-  return this.groupService.deleteMessage(req.user.id, messageId);
-}
-
+  // Delete a group message
+  @Delete('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async deleteMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+  ) {
+    return this.groupService.deleteMessage(req.user.id, messageId);
+  }
 
   @Get()
   @HttpCode(HttpStatus.OK)

@@ -474,9 +474,6 @@ model GroupMessage {
   user        User  @relation(fields: [userId], references: [id])
 }
 
-
-
-
 model GroupResource {
   id          String   @id @default(uuid())
   content     String?
@@ -583,6 +580,7 @@ model ConversationMessage {
   content        String?
   attachments    Json? // array of { url, type }
   createdAt      DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   sender       User         @relation(fields: [senderId], references: [id])

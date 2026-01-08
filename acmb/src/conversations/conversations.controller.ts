@@ -11,22 +11,30 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
+  Patch,
+  HttpCode,
+  HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from 'src/dto/create-conversation.dto';
 import { SendConversationMessageDto } from 'src/dto/1o1-send-message.dto';
 import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
 import { JwtAuthGuard } from 'src/guards/jwt/jwtAuth.guard';
-import { AcademeetCloudinaryService, AcademeetUploadType } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+import {
+  AcademeetCloudinaryService,
+  AcademeetUploadType,
+} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MessageAttachment } from 'src/dto/message-attachment.dto';
+import { EditMessageDto } from 'src/dto/edit-message.dto';
 
 @Controller('conversations')
 @UseGuards(JwtAuthGuard)
 export class ConversationsController {
   constructor(
     private conv: ConversationsService,
-    private cloudinaryService: AcademeetCloudinaryService
+    private cloudinaryService: AcademeetCloudinaryService,
   ) {}
 
   @Post()
@@ -47,21 +55,20 @@ export class ConversationsController {
   }
 
   @Post('uploads/message')
-@UseInterceptors(FileInterceptor('file'))
-async uploadMessageAttachment(@UploadedFile() file: Express.Multer.File) {
-  const result = await this.cloudinaryService.uploadMedia(
-    file,
-    AcademeetUploadType.RESOURCE_FILE,
-  );
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMessageAttachment(@UploadedFile() file: Express.Multer.File) {
+    const result = await this.cloudinaryService.uploadMedia(
+      file,
+      AcademeetUploadType.RESOURCE_FILE,
+    );
 
-  return {
-    url: result.secure_url,
-    type: result.resource_type,
-    name: file.originalname,
-    size: file.size,
-  };
-}
-
+    return {
+      url: result.secure_url,
+      type: result.resource_type,
+      name: file.originalname,
+      size: file.size,
+    };
+  }
 
   @Get(':id/messages')
   async messages(
@@ -90,18 +97,26 @@ async uploadMessageAttachment(@UploadedFile() file: Express.Multer.File) {
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
     dto.conversationId = id;
-  
+
     let attachments: MessageAttachment[] | null = null;
-  
+
     if (files && files.length > 0) {
       attachments = [];
-  
+
       for (const file of files) {
-        const isMedia = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+        const isMedia =
+          file.mimetype.startsWith('image/') ||
+          file.mimetype.startsWith('video/');
         const result = isMedia
-          ? await this.cloudinaryService.uploadMedia(file, AcademeetUploadType.RESOURCE_FILE)
-          : await this.cloudinaryService.uploadRaw(file, AcademeetUploadType.RESOURCE_FILE);
-  
+          ? await this.cloudinaryService.uploadMedia(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            )
+          : await this.cloudinaryService.uploadRaw(
+              file,
+              AcademeetUploadType.RESOURCE_FILE,
+            );
+
         attachments.push({
           url: result.secure_url,
           type: result.resource_type,
@@ -109,18 +124,37 @@ async uploadMessageAttachment(@UploadedFile() file: Express.Multer.File) {
         });
       }
     }
-  
+
     return this.conv.sendMessage(req.user.id, {
       ...dto,
       attachments,
     });
   }
-  
-  
+
+  // edit a message
+  @Patch('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async editMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+    @Body() dto: EditMessageDto
+  ) {
+    return this.conv.editMessage(req.user.id, messageId, dto.content)
+  }
+
+  // delete a message
+  @Delete('messages/:id')
+  @HttpCode(HttpStatus.OK)
+  async deleteMessage(
+    @Req() req: RequestWithUser,
+    @Param('id') messageId: string,
+  )
+  {
+    return this.conv.deleteMessage(req.user.id, messageId)
+  }
 
   @Get(':id')
-async getOne(@Req() req: RequestWithUser, @Param('id') id: string) {
-  return this.conv.getConversation(id, req.user.id);
-}
-
+  async getOne(@Req() req: RequestWithUser, @Param('id') id: string) {
+    return this.conv.getConversation(id, req.user.id);
+  }
 }

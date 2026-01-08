@@ -1,19 +1,26 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
 import {
   Injectable,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Prisma, PrismaClient } from 'generated/prisma';
 import { MessageAttachment } from 'src/dto/message-attachment.dto';
 import { AcademeetCloudinaryService } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 
+
 @Injectable()
 export class ConversationsService {
 
-  constructor(private cloudinaryService: AcademeetCloudinaryService) {}
+  constructor(
+    private cloudinaryService: AcademeetCloudinaryService,
+  
+  ) {}
   private prisma = new PrismaClient();
 
   // Create or return existing one-on-one conversation
@@ -157,6 +164,53 @@ export class ConversationsService {
     };
   }
   
+  async editMessage(senderId: string, messageId: string, newContent: string) {
+    // 1. find the message
+    const message = await this.prisma.conversationMessage.findUnique({
+      where: { id: messageId},
+    });
+    if(!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // 2. ensure the user is the sender
+    if(message.senderId !== senderId){
+      throw new ForbiddenException('You can only edit your own message');
+    }
+
+    // 3. prevent editing deleted messages
+    if((message as any).isDeleted) {
+      throw new BadRequestException('Cannot edit a deleted message')
+    }
+
+    // 4. Update message
+    return this.prisma.conversationMessage.update({
+      where: { id: messageId},
+      data: {
+        content: newContent,
+      }
+    })
+  }
+
+  // Delete Message
+  async deleteMessage(senderId: string, messageId: string) {
+    const message = await this.prisma.conversationMessage.findUnique({
+      where: { id: messageId}
+    });
+
+    if(!message) {
+      throw new NotFoundException('Message not found');
+    }
+    if(message.senderId !== senderId) {
+      throw new ForbiddenException('You can only delete your own message');
+    }
+    return this.prisma.conversationMessage.update({
+      where: { id: messageId},
+      data: {
+        content: '[message deleted]',
+      }
+    });
+  }
 
   // Get messages with pagination (cursor = message id)
   async getMessages(conversationId: string, limit = 50, cursor?: string) {

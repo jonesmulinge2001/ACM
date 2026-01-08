@@ -198,12 +198,22 @@ export class GroupsService {
     dto: CreateGroupResourceDto,
     attachments?: MessageAttachment[],
   ) {
+    // Prevent empty submissions (NO content + NO attachments)
+    if (
+      (!dto.content || dto.content.trim() === '') &&
+      (!attachments || attachments.length === 0)
+    ) {
+      throw new BadRequestException(
+        'Either content or at least one attachment is required',
+      );
+    }
+
     // Ensure user is group member
     const isMember = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
     if (!isMember) throw new ForbiddenException('You are not a group member');
-  
+
     // If there are attachments, create a resource for each
     if (attachments && attachments.length > 0) {
       const createdResources: {
@@ -223,7 +233,7 @@ export class GroupsService {
           institution: { id: string; name: string } | null;
         };
       }[] = [];
-  
+
       for (const attach of attachments) {
         const resource = await this.prisma.groupResource.create({
           data: {
@@ -249,7 +259,7 @@ export class GroupsService {
             },
           },
         });
-  
+
         // push into array
         createdResources.push({
           id: resource.id,
@@ -274,10 +284,10 @@ export class GroupsService {
           },
         });
       }
-  
+
       return createdResources; // return array of created resources
     }
-  
+
     // If no attachments, create a single resource with just content
     const resource = await this.prisma.groupResource.create({
       data: {
@@ -300,7 +310,7 @@ export class GroupsService {
         },
       },
     });
-  
+
     return {
       id: resource.id,
       content: resource.content,
@@ -324,7 +334,6 @@ export class GroupsService {
       },
     };
   }
-  
 
   /** Persist a group message (supports replies) */
   async sendMessage(userId: string, dto: SendGroupMessageDto) {
@@ -336,7 +345,7 @@ export class GroupsService {
       throw new ForbiddenException('Not a group member');
     }
 
-    // 🔥 SAME AS DM
+    //  SAME AS DM
     const attachments =
       dto.attachments && dto.attachments.length > 0
         ? (dto.attachments as unknown as Prisma.InputJsonValue)

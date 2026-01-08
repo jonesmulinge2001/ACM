@@ -49,18 +49,30 @@ export class FollowService {
       where: { followingId: userId },
       include: {
         follower: {
-          include: { profile: true },
+          include: { 
+            profile: {
+              include: {
+                institution: true // This fetches the full institution object
+              }
+            } 
+          },
         },
       },
     });
   }
-
+  
   async getFollowing(userId: string) {
     return this.prisma.follow.findMany({
       where: { followerId: userId },
       include: {
         following: {
-          include: { profile: true },
+          include: { 
+            profile: {
+              include: {
+                institution: true // This fetches the full institution object
+              }
+            } 
+          },
         },
       },
     });

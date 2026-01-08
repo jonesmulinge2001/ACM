@@ -75,7 +75,7 @@ async getProfileById(id: string) {
         select: {
           id: true,
           name: true,
-          logoUrl: true, // optional
+          logoUrl: true,
         },
       },
     },
