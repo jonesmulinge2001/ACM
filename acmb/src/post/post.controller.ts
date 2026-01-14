@@ -58,6 +58,8 @@ export class PostController {
     return this.postService.getAllPosts(req.user.id);
   }
 
+  
+
   @Get('trending')
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)

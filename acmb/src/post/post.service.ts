@@ -171,7 +171,6 @@ export class PostService {
     });
   }
 
-  //>>> get post by id
   async getPostById(postId: string, currentUserId?: string): Promise<PostDto> {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
@@ -194,13 +193,49 @@ export class PostService {
             tag: true,
           },
         },
+        likes: {
+          select: {
+            userId: true, // to check if current user liked
+          },
+        },
+        comments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: {
+                  select: {
+                    profileImage: true,
+                  },
+                },
+              },
+            },
+            replies: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profile: { select: { profileImage: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
+  
     if (!post || post.isDeleted) {
       throw new NotFoundException('Post not found');
     }
+  
+    // Transform to PostDto (add like info, comment counts, etc.)
     return this.toPostDto(post, currentUserId);
   }
+  
 
   //>>> update post
   async updatePost(

@@ -19,6 +19,8 @@ export interface PostDto {
     };
     tags?: string[];
 
+    readTime?: string;
+
     likesCount: number;
     likedByCurrentUser: boolean;
   }

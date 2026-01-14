@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -108,7 +108,7 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
     });
-    if (!group) throw new NotFoundException('Group not found');
+    if (!group) throw new NotFoundException(`Group with id (${groupId}) not found`);
     return group;
   }
 
@@ -129,7 +129,7 @@ export class GroupsService {
     } catch (err: any) {
       // unique constraint violation => already a member ensure no multiple joining in a single group
       if (err.code === 'p2002') {
-        throw new BadRequestException('Already a member of the group');
+        throw new BadRequestException('You are already a member of the group');
       }
       throw err;
     }
@@ -140,7 +140,7 @@ export class GroupsService {
     const memebrship = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
-    if (!memebrship) throw new NotFoundException('Not a group member');
+    if (!memebrship) throw new NotFoundException('You are not a group member');
 
     // prevent the owner from leaving without transfer (business choice)
     if (memebrship.role === GroupRole.OWNER) {
@@ -169,7 +169,7 @@ export class GroupsService {
       });
     } catch (err: any) {
       if (err.code === 'p2002')
-        throw new BadRequestException('User already a member');
+        throw new BadRequestException('This user is already a member the group');
       throw err;
     }
   }
@@ -204,7 +204,7 @@ export class GroupsService {
       (!attachments || attachments.length === 0)
     ) {
       throw new BadRequestException(
-        'Either content or at least one attachment is required',
+        'Either content or at least one file attachment is required',
       );
     }
 
@@ -342,7 +342,7 @@ export class GroupsService {
     });
 
     if (!membership) {
-      throw new ForbiddenException('Not a group member');
+      throw new ForbiddenException('You are not a group member');
     }
 
     //  SAME AS DM
@@ -381,7 +381,7 @@ export class GroupsService {
       },
     });
 
-    // 🔥 SAME FLATTENING AS DM
+    // SAME FLATTENING AS DM
     return {
       id: saved.id,
       groupId: saved.groupId,
@@ -411,24 +411,24 @@ export class GroupsService {
   async editMessage(userId: string, messageId: string, newContent: string) {
     //  Find the message
     const message = await this.prisma.groupMessage.findUnique({
-      where: { id: messageId },
+      where: { id: messageId, isDeleted: false },
     });
 
     if (!message) {
       throw new NotFoundException('Message not found');
     }
 
-    // 2️⃣ Ensure the user is the sender
+    //  Ensure the user is the sender
     if (message.userId !== userId) {
       throw new ForbiddenException('You can only edit your own message');
     }
 
-    // 3️⃣ Optional: prevent editing deleted messages
+    //  Optional: prevent editing deleted messages
     if ((message as any).isDeleted) {
       throw new BadRequestException('Cannot edit a deleted message');
     }
 
-    // 4️⃣ Update message
+    //  Update message
     return this.prisma.groupMessage.update({
       where: { id: messageId },
       data: {
@@ -461,7 +461,7 @@ export class GroupsService {
     });
   }
 
-  /** Useful retrieval helpers with pagination (cursor-based or offset as you like) */
+  /** Useful retrieval helpers with pagination (cursor-based) */
   /** Retrieve group messages (with reply data) */
   async getGroupMessages(groupId: string, limit = 50, cursor?: string) {
     const where = { groupId, isDeleted: false };
@@ -751,7 +751,7 @@ export class GroupsService {
       where: { id: commentId },
     });
 
-    // Validate
+    // Validate comment existence
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
@@ -773,7 +773,7 @@ export class GroupsService {
       where: { id: commentId },
     });
 
-    // Validate existence
+    // Validate comment existence
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
@@ -802,14 +802,14 @@ export class GroupsService {
     const membership = await this.prisma.groupMember.findUnique({
       where: { groupId_userId: { groupId: comment.resource.groupId, userId } },
     });
-    if (!membership) throw new ForbiddenException('Not a group member');
+    if (!membership) throw new ForbiddenException('You are not a group member');
 
     try {
       await this.prisma.groupResourceCommentLike.create({
         data: { userId, commentId },
       });
     } catch (err: any) {
-      if (err.code === 'P2002') throw new BadRequestException('Already liked');
+      if (err.code === 'P2002') throw new BadRequestException('You already liked this comment');
       throw err;
     }
 
@@ -931,7 +931,7 @@ export class GroupsService {
       ...r,
       likesCount: r.likes.length,
       commentsCount: r.comments.length,
-      isLiked: r.likes.some((l) => l.userId === userId),
+      isLiked: r.likes.some((like) => like.userId === userId),
     }));
   }
 
@@ -942,24 +942,24 @@ export class GroupsService {
     dto: { content?: string },
     file?: Express.Multer.File,
   ) {
-    // 1️⃣ Find the existing resource
+    //  Find the existing resource
     const resource = await this.prisma.groupResource.findUnique({
       where: { id: resourceId },
     });
 
     if (!resource) throw new NotFoundException('Resource not found');
 
-    // 2️⃣ Ensure the user owns the post
+    //  Ensure the user owns the post
     if (resource.sharedById !== userId) {
       throw new ForbiddenException('You can only edit your own post');
     }
 
-    // 3️⃣ Keep old file info, unless a new file is provided
+    //  Keep old file info, unless a new file is provided
     let resourceUrl = resource.resourceUrl;
     let originalName = resource.originalName;
     let fileType = resource.fileType;
 
-    // 4️⃣ If a new file is uploaded, replace the file details
+    //  If a new file is uploaded, replace the file details
     if (file) {
       const uploadResult = await this.cloudinary.uploadRaw(
         file,

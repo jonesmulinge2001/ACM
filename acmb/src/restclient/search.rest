@@ -1,0 +1,3 @@
+### search
+GET http://localhost:3000/search?q=jstar
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNDZiYTBiNy1lNTEzLTQxOGQtODlkZC01MzlmZmVjNTlhMDQiLCJlbWFpbCI6ImpvbmF0aGFubXdhbmRpNkBnbWFpbC5jb20iLCJyb2xlIjoiU1RVREVOVCIsImlhdCI6MTc2ODMyODg1MywiZXhwIjoxNzY4NDE1MjUzfQ.O_jE71ENzYKmNsgsgn2U8VNWFADoUF1-0yaPsFYT_xs
