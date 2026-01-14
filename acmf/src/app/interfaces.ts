@@ -118,6 +118,7 @@ export interface Post {
   author: Author;
   tags?: string[];
 
+  readTime?: string;
   likesCount?: number;
   likedByCurrentUser?: boolean;
   comments?: Comment[];
@@ -186,6 +187,9 @@ export interface AcademicResource {
   fileUrl?: string | null;
   uploadedAt: string;
   downloadCount: number;
+  type?: 'pdf' | 'video' | 'slide' | 'other';
+  size?: string;
+  downloads?: number;
   uploader: {
     id: string;
     name: string;
@@ -723,4 +727,10 @@ export interface FlaggedPost {
 export interface FlagPostResponse {
   message: string;
   flaggedPost: FlaggedPost;
+}
+
+export interface GlobalSearchResult {
+  profiles: Profile[];
+  posts: Post[];
+  resources: AcademicResource[];
 }

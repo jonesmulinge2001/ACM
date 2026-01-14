@@ -10,15 +10,17 @@
       <!-- Post Input -->
       <div class="hidden md:flex items-center space-x-3 mb-3">
         <img
+          routerLink="my-profile"
           [src]="userProfile?.profileImage"
           alt="User avatar"
-          class="w-10 h-10 rounded-full object-cover"
+          class="w-10 h-10 rounded-full object-cover cursor-pointer"
         />
-        <input
-          type="text"
-          placeholder="Share something with the student community"
-          class="flex-1 bg-gray-100 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
-        />
+          <input
+            routerLink="/create"
+            type="text"
+            placeholder="Share something with the student community"
+            class="flex-1 bg-gray-100 cursor-pointer hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
+          />
       </div>
 
       <!-- Welcome Message -->
@@ -185,19 +187,21 @@
       </div>
 
       <!-- Content -->
-      <h2 class="text-base font-semibold text-gray-800 mb-1">
+      <a
+      [routerLink]="['/posts', post.id]"
+      class="block cursor-pointer group"
+    >
+      <h2
+        class="text-base font-semibold text-gray-800 mb-1 group-hover:text-blue-600 transition"
+      >
         {{ post.title }}
       </h2>
+    
       <p class="text-gray-700 text-sm mb-2 leading-relaxed">
         {{ getPostPreview(post.body, post.id) }}
-        <button
-          *ngIf="post.body && post.body.split(' ').length > 10"
-          (click)="toggleReadMore(post.id)"
-          class="text-blue-600 font-medium ml-1 hover:underline text-xs"
-        >
-          {{ isExpanded(post.id) ? "Read less" : "Read more" }}
-        </button>
       </p>
+    </a>
+    
 
       <!-- Post type -->
       <span
@@ -218,13 +222,16 @@
 
       <!-- Image -->
       <div *ngIf="post.fileUrl" class="mt-3">
-        <img
+        <a [routerLink]="['/posts', post.id]">
+          <img
           [src]="post.fileUrl"
           alt="Post image"
           loading="lazy"
           decoding="async"
           class="rounded-lg w-full max-h-[500px] object-cover border border-gray-200"
         />
+        </a>
+
       </div>
 
       <!-- Actions -->
@@ -401,11 +408,12 @@
     >
       <div class="flex items-center gap-3">
         <img
+          [routerLink]="['/profile', post.author.id]"
           [src]="post.author.profileImage || 'assets/default-avatar.png'"
           alt="Profile Image"
           loading="lazy"
           decoding="async"
-          class="w-10 h-10 rounded-full object-cover border border-gray-300 !aspect-square"
+          class="w-10 h-10 rounded-full object-cover cursor-pointer border border-gray-300 !aspect-square"
         />
         <div>
           <p class="text-sm font-medium text-gray-900">
@@ -430,7 +438,7 @@
           alt="Post image"
           loading="lazy"
           decoding="async"
-          class="rounded-lg w-full max-h-72 object-cover border border-gray-200"
+          class="rounded-lg w-full max-h-72 object-cover cursor-pointer border border-gray-200"
         />
       </div>
     </div>

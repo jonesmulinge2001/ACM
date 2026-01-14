@@ -1,3 +1,4 @@
+import { RouterModule } from '@angular/router';
 import {
   Component,
   Input,
@@ -18,6 +19,7 @@ import {
   Conversation,
   ConversationMessage,
   MessageAttachment,
+  Post,
 } from '../../../interfaces';
 import {
   ConversationsService,
@@ -41,7 +43,7 @@ interface MessageAttachmentUI extends MessageAttachment {
 @Component({
   selector: 'app-dm-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './dm-chat.component.html',
   styleUrls: ['./dm-chat.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,15 +59,15 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   conversation?: Conversation;
   messages: ConversationMessage[] = [];
-  newMessage = '';
+  newMessage:string = '';
 
-  participantName = '';
+  participantName: string = '';
   participantImage = '/assets/default-avatar.png';
   myId!: string;
 
   private sub = new Subscription();
   selectedAttachments: AttachmentUI[] = [];
-  isTyping = false;
+  isTyping: boolean = false;
   typingUsers: string[] = [];
   showNewMessageButton: boolean = false;
   currentUserId: string | null = null;
@@ -84,7 +86,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   replyingTo: ConversationMessage | null = null;
   
 
-  isChatVisible = true;
+  isChatVisible: boolean = true;
 
   constructor(
     private convos: ConversationsService,

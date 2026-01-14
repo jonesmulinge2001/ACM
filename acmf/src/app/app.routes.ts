@@ -39,6 +39,7 @@ import { CreateGroupComponent } from './groups/grou-formation/grou-formation.com
 import { ManageGroupsComponent } from './admin/manage-groups/manage-groups.component';
 import { SuperAdminInstitutionsComponent } from './admin/institution-management/institution-management.component';
 import { FundMeComponent } from './components/fund-me/fund-me.component';
+import { SearchResultsComponent } from './components/search-results/search-results.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -70,6 +71,8 @@ export const routes: Routes = [
       { path: 'groups', component: GroupListComponent },
       { path: 'groups/:id', component: GroupDetailComponent },
       { path: 'fund-me', component: FundMeComponent },
+      { path: 'search', component: SearchResultsComponent },
+
 
       // Notifications + Announcements under StudentLayout
       { path: 'notifications', component: NotificationCenterComponent },

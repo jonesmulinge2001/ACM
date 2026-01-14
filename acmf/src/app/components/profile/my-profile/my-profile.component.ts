@@ -3,7 +3,7 @@ import { ProfileService } from '../../../services/profile.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink, RouterModule } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { Follow, Profile, ProfileView } from '../../../interfaces';
 
 @Component({
@@ -28,7 +28,8 @@ export class MyProfileComponent implements OnInit {
 
   constructor(
     private profileService: ProfileService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -37,6 +38,7 @@ export class MyProfileComponent implements OnInit {
 
   closeProfileModal() {
     this.showProfileModal = false;
+    this.router.navigate(['/'])
   }
 
   // Load your own profile + followers/following

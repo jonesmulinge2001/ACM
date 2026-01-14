@@ -20,8 +20,8 @@
     <div class="flex items-center gap-2">
       <img
         [src]="participantImage"
-        alt="avatar"
-        class="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+        alt="Profile"
+        class="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-white shadow"
       />
       <span class="font-semibold text-sm drop-shadow-sm sm:text-base">
         {{ participantName }}
@@ -64,7 +64,6 @@
             : 'bg-gray-100 text-gray-800'
         "
       >
-        <!-- Message content with menu for my messages -->
         <!-- Message content with menu for my messages -->
         <div class="relative">
           {{ msg.content }}

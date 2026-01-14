@@ -1,118 +1,160 @@
 <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-[#1a75f1] to-purple-600 px-8 py-12 text-white">
-      <h1 class="text-3xl font-bold mb-2">Create a New Group</h1>
-      <p class="text-blue-100">Build your community and connect with like-minded students</p>
-    </div>
-  
-    <!-- Form -->
-    <form [formGroup]="groupForm" (ngSubmit)="submit()" class="p-8 space-y-8">
-      <!-- Group Details -->
-      <section class="space-y-6">
-        <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-          Group Details
-        </h2>
-  
-        <!-- Group Name -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Group Name *</label>
-          <input type="text" formControlName="name" placeholder="Enter a descriptive group name"
-                 class="w-full p-2 border rounded-lg" />
-          <div *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched"
-               class="text-red-500 text-sm mt-1">
-            Group name is required.
-          </div>
+  <!-- Header -->
+  <div
+    class="bg-gradient-to-r from-[#1a75f1] to-purple-600 px-8 py-12 text-white"
+  >
+    <h1 class="text-3xl font-bold mb-2">Create a New Group</h1>
+    <p class="text-blue-100">
+      Build your community and connect with like-minded students
+    </p>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="groupForm" (ngSubmit)="submit()" class="p-8 space-y-8">
+    <!-- Group Details -->
+    <section class="space-y-6">
+      <h2
+        class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2"
+      >
+        Group Details
+      </h2>
+
+      <!-- Group Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Group Name *</label
+        >
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Enter a descriptive group name"
+          class="w-full p-2 border rounded-lg"
+        />
+        <div
+          *ngIf="groupForm.get('name')?.invalid && groupForm.get('name')?.touched"
+          class="text-red-500 text-sm mt-1"
+        >
+          Group name is required.
         </div>
-  
-        <!-- Description -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-          <textarea formControlName="description" rows="4" placeholder="Describe your group"
-                    class="w-full p-2 border rounded-lg resize-none"></textarea>
-        </div>
-      </section>
-  
-<!-- Privacy Settings -->
-<section class="space-y-6">
-    <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-      Privacy Settings
-    </h2>
-  
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Public Option -->
-      <button
-        type="button"
-        (click)="groupForm.get('visibility')?.setValue('PUBLIC')"
-        [ngClass]="groupForm.get('visibility')?.value === 'PUBLIC' 
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Description (optional)</label
+        >
+        <textarea
+          formControlName="description"
+          rows="4"
+          placeholder="Describe your group"
+          class="w-full p-2 border rounded-lg resize-none"
+        ></textarea>
+      </div>
+    </section>
+
+    <!-- Privacy Settings -->
+    <section class="space-y-6">
+      <h2
+        class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2"
+      >
+        Privacy Settings
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Public Option -->
+        <button
+          type="button"
+          (click)="groupForm.get('visibility')?.setValue('PUBLIC')"
+          [ngClass]="groupForm.get('visibility')?.value === 'PUBLIC' 
           ? 'bg-meta-blue text-white border-meta-blue' 
           : 'bg-white text-black border-gray-300 hover:border-meta-blue'"
-        class="p-6 border-2 rounded-xl transition-all duration-200 text-left flex items-start gap-3"
-      >
-        <span class="material-icons mt-1 text-lg">
-          public
-        </span>
-        <div>
-          <span class="font-semibold">Public</span>
-          <p class="text-sm opacity-80">Anyone can find and join this group</p>
-        </div>
-      </button>
-  
-      <!-- Private Option -->
-      <button
-        type="button"
-        (click)="groupForm.get('visibility')?.setValue('PRIVATE')"
-        [ngClass]="groupForm.get('visibility')?.value === 'PRIVATE' 
-          ? 'bg-meta-blue text-white border-meta-blue' 
-          : 'bg-white text-black border-gray-300 hover:border-meta-blue'"
-        class="p-6 border-2 rounded-xl transition-all duration-200 text-left flex items-start gap-3"
-      >
-        <span class="material-icons mt-1 text-lg">
-          lock
-        </span>
-        <div>
-          <span class="font-semibold">Private</span>
-          <p class="text-sm opacity-80">Only invited members can join</p>
-        </div>
-      </button>
-    </div>
-  </section>
-  
-  
-      <!-- Cover Image -->
-      <section class="space-y-6">
-        <h2 class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-          Group Images
-        </h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Cover Photo -->
+          class="p-6 border-2 rounded-xl transition-all duration-200 text-left flex items-start gap-3"
+        >
+          <span class="material-icons mt-1 text-lg"> public </span>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-4">Cover Photo</label>
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-meta-blue transition-colors cursor-pointer">
-              <input type="file" (change)="onCoverSelected($event)" accept="image/*" class="hidden" #coverInput>
-              <div *ngIf="!coverPreview" (click)="coverInput.click()">
-                <p class="text-sm text-gray-600">Click to upload cover photo (PNG, JPG up to 5MB)</p>
-              </div>
-              <div *ngIf="coverPreview" class="relative">
-                <img [src]="coverPreview" alt="Cover preview" class="w-full h-32 object-cover rounded-lg">
-                <button type="button" (click)="coverPreview=''; groupForm.get('coverImage')?.setValue(null)"
-                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
-                  &times;
-                </button>
-              </div>
+            <span class="font-semibold">Public</span>
+            <p class="text-sm opacity-80">
+              Anyone can find and join this group
+            </p>
+          </div>
+        </button>
+
+        <!-- Private Option -->
+        <button
+          type="button"
+          (click)="groupForm.get('visibility')?.setValue('PRIVATE')"
+          [ngClass]="groupForm.get('visibility')?.value === 'PRIVATE' 
+          ? 'bg-meta-blue text-white border-meta-blue' 
+          : 'bg-white text-black border-gray-300 hover:border-meta-blue'"
+          class="p-6 border-2 rounded-xl transition-all duration-200 text-left flex items-start gap-3"
+        >
+          <span class="material-icons mt-1 text-lg"> lock </span>
+          <div>
+            <span class="font-semibold">Private</span>
+            <p class="text-sm opacity-80">Only invited members can join</p>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Cover Image -->
+    <section class="space-y-6">
+      <h2
+        class="text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2"
+      >
+        Group Images
+      </h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Cover Photo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-4"
+            >Cover Photo</label
+          >
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-meta-blue transition-colors cursor-pointer"
+          >
+            <input
+              type="file"
+              (change)="onCoverSelected($event)"
+              accept="image/*"
+              class="hidden"
+              #coverInput
+            />
+            <div *ngIf="!coverPreview" (click)="coverInput.click()">
+              <p class="text-sm text-gray-600">
+                Click to upload cover photo (PNG, JPG up to 5MB)
+              </p>
+            </div>
+            <div *ngIf="coverPreview" class="relative">
+              <img
+                [src]="coverPreview"
+                alt="Cover preview"
+                class="w-full h-32 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                (click)="coverPreview=''; groupForm.get('coverImage')?.setValue(null)"
+                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+              >
+                &times;
+              </button>
             </div>
           </div>
         </div>
-      </section>
-  
-      <!-- Messages -->
-      <p *ngIf="successMessage" class="text-green-600">{{ successMessage }}</p>
-      <p *ngIf="errorMessage" class="text-red-600">{{ errorMessage }}</p>
-  
-      <!-- Submit -->
-      <button type="submit" [disabled]="isLoading || groupForm.invalid"
-              class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-        {{ isLoading ? 'Creating...' : 'Create Group' }}
-      </button>
-    </form>
-  </div>
-  
+      </div>
+    </section>
+
+    <!-- Messages -->
+    <p *ngIf="successMessage" class="text-green-600">{{ successMessage }}</p>
+    <p *ngIf="errorMessage" class="text-red-600">{{ errorMessage }}</p>
+
+    <!-- Submit -->
+    <button
+      type="submit"
+      [disabled]="isLoading || groupForm.invalid"
+      class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+    >
+      {{ isLoading ? 'Creating...' : 'Create Group' }}
+    </button>
+  </form>
+</div>

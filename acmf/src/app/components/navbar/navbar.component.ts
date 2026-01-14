@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -9,11 +9,24 @@ import { StudentNotificationService } from '../../services/student-notification.
 import { NotificationSocketService } from '../../services/notification-socket.service';
 import { Subscription } from 'rxjs';
 import { NotificationCenterComponent } from '../notification-center/notification-center.component';
+import { SearchResultsComponent } from '../search-results/search-results.component';
+import { GlobalSearchService } from '../../services/global-search.service';
+import { GlobalSearchResult } from '../../interfaces';
+import { Subject, debounceTime, switchMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { isPlatformBrowser } from '@angular/common'; 
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationCenterComponent],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    RouterModule, 
+    NotificationCenterComponent,
+    SearchResultsComponent,
+    
+  ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -25,7 +38,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   notifPanelOpen = false;
   logoutModalOpen = false;
+  searchQuery = '';
+  searchResults: GlobalSearchResult = { profiles: [], posts: [], resources: [] };
+  loading = false;
+  searchPanelOpen = false;
+
+  window = window;
+  
   private socketSub?: Subscription;
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
@@ -33,12 +54,42 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private toastr: ToastrService,
     private notifService: StudentNotificationService,
-    private notifSocket: NotificationSocketService
+    private notifSocket: NotificationSocketService,
+    private searchService: GlobalSearchService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.window = window;
+    }
     this.isLoggedIn = this.authService.isLoggedIn();
     document.addEventListener('click', this.closeMenuOnOutsideClick.bind(this));
+
+    // Search subscription
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        switchMap(query => {
+          this.loading = true;
+          return this.searchService.search(query);
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.searchResults = {
+            profiles: res.profiles || [],
+            posts: res.posts || [],
+            resources: res.resources || []
+          };
+          this.loading = false;
+          this.searchPanelOpen = true;
+        },
+        error: () => {
+          this.loading = false;
+          this.searchResults = { profiles: [], posts: [], resources: [] };
+        }
+      });
 
     if (this.isLoggedIn) {
       this.profileService.getMyProfile().subscribe({
@@ -72,6 +123,40 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.socketSub?.unsubscribe();
   }
 
+  // Search methods
+  onSearchQueryChange(value: string): void {
+    this.searchQuery = value;
+    if (value.trim()) {
+      this.searchSubject.next(value);
+    } else {
+      this.searchResults = { profiles: [], posts: [], resources: [] };
+      this.searchPanelOpen = false;
+    }
+  }
+
+  toggleSearchPanel(): void {
+    this.searchPanelOpen = !this.searchPanelOpen;
+    if (this.searchPanelOpen && this.searchQuery.trim()) {
+      this.searchSubject.next(this.searchQuery);
+    }
+  }
+
+  closeSearchPanel(): void {
+    this.searchPanelOpen = false;
+  }
+
+  viewAllResults(): void {
+    this.closeSearchPanel();
+    this.router.navigate(['/search'], { 
+      queryParams: { q: this.searchQuery } 
+    });
+  }
+
+  onSearchItemClick(): void {
+    this.closeSearchPanel();
+    this.searchQuery = '';
+  }
+
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
   }
@@ -87,23 +172,36 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   closeMenuOnOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const isInside = target.closest('.relative'); // The profile dropdown wrapper
-    if (!isInside) {
+    
+    // Close search panel if clicking outside
+    const isInsideSearch = target.closest('.search-container');
+    if (!isInsideSearch) {
+      this.searchPanelOpen = false;
+    }
+    
+    // Close notification panel if clicking outside
+    const isInsideNotif = target.closest('.notification-container');
+    if (!isInsideNotif && this.notifPanelOpen) {
+      this.notifPanelOpen = false;
+    }
+    
+    // Close menu if clicking outside
+    const isInsideMenu = target.closest('.relative');
+    if (!isInsideMenu) {
       this.menuOpen = false;
     }
   }
 
   openLogoutModal(): void {
-    this.menuOpen = false; // close dropdown
+    this.menuOpen = false;
     this.logoutModalOpen = true;
   }
 
-  // UPDATED: Log out directly from component
   logOut(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('userid');
     localStorage.removeItem('role');
-    this.logoutModalOpen = false; // close modal
+    this.logoutModalOpen = false;
     this.router.navigate(['/login']);
   }
 

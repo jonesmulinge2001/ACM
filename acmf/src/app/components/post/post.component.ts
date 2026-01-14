@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Profile } from '../../interfaces';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-post',
@@ -25,7 +26,8 @@ export class PostComponent implements OnInit{
     private fb: FormBuilder,
     private postService: PostService,
     private toastr: ToastrService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ){
     this.postForm = this.fb.group({
       category: ['GENERAL'],
@@ -97,6 +99,7 @@ export class PostComponent implements OnInit{
 
   closeModal(): void {
     this.showModal = false;
+    this.router.navigate(['/'])
   }
 
 }

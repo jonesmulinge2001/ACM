@@ -1,4 +1,4 @@
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { Comment, Post, Profile } from '../../interfaces';
 import { PostService } from '../../services/post.service';
@@ -16,9 +16,8 @@ import { LikeService } from '../../services/like.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { forkJoin, timer } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { FlagPostModalComponent } from "../flag-modal-component/flag-modal-component.component";
+import { FlagPostModalComponent } from '../flag-modal-component/flag-modal-component.component';
 import { ElementRef, HostListener } from '@angular/core';
-
 
 @Component({
   standalone: true,
@@ -33,8 +32,8 @@ import { ElementRef, HostListener } from '@angular/core';
     ResourceUploadModalComponent,
     EditPostComponent,
     InfiniteScrollModule,
-    FlagPostModalComponent
-],
+    FlagPostModalComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -66,14 +65,14 @@ export class HomeComponent implements OnInit {
   posts: Post[] = [];
   nextCursor?: string | null = undefined;
   isLoading = false;
-  limit = 10;
+  limit = 10; 
 
   likingInProgress = new Set<string>();
 
   expandedPosts: { [postId: string]: boolean } = {};
 
   showFlagModal = false;
-  selectedPostToFlag?: Post
+  selectedPostToFlag?: Post;
 
   constructor(
     private postService: PostService,
@@ -82,7 +81,7 @@ export class HomeComponent implements OnInit {
     private followService: FollowService,
     private commentService: CommentService,
     private likeService: LikeService,
-    private eRef: ElementRef 
+    private eRef: ElementRef
   ) {}
 
   ngOnInit(): void {
@@ -94,7 +93,7 @@ export class HomeComponent implements OnInit {
         this.userProfile = profile;
       },
       error: () => {
-        console.error('Failed to load profile')
+        console.error('Failed to load profile');
       },
     });
 
@@ -113,39 +112,40 @@ export class HomeComponent implements OnInit {
 
   loadMorePosts() {
     if (this.isLoading || this.nextCursor === null) return;
-  
+
     this.isLoading = true;
     this.loading = true; // show skeleton loader
-  
+
     // Wrap the HTTP request and a 2-second timer
     forkJoin({
       posts: this.postService.getInfinitePosts(this.limit, this.nextCursor),
-      delay: timer(2000)
+      delay: timer(2000),
     })
-    .pipe(
-      finalize(() => {
-        this.isLoading = false;
-        this.loading = false;
-      })
-    )
-    .subscribe({
-      next: ({ posts }) => {
-        this.posts = [...this.posts, ...posts.posts];
-        this.injectLikesCount(posts.posts);
-  
-        posts.posts.forEach((post) => {
-          this.commentService.getCommentCount(post.id).subscribe({
-            next: (response) => (this.commentCounts[post.id] = response.total),
-            error: () => (this.commentCounts[post.id] = 0),
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.loading = false;
+        })
+      )
+      .subscribe({
+        next: ({ posts }) => {
+          this.posts = [...this.posts, ...posts.posts];
+          this.injectLikesCount(posts.posts);
+
+          posts.posts.forEach((post) => {
+            this.commentService.getCommentCount(post.id).subscribe({
+              next: (response) =>
+                (this.commentCounts[post.id] = response.total),
+              error: () => (this.commentCounts[post.id] = 0),
+            });
           });
-        });
-  
-        this.nextCursor = posts.nextCursor ?? null;
-      },
-      error: () => {
-        console.error('Failed to load more posts')
-      },
-    });
+
+          this.nextCursor = posts.nextCursor ?? null;
+        },
+        error: () => {
+          console.error('Failed to load more posts');
+        },
+      });
   }
 
   loadTrendingAndRecommended() {
@@ -155,7 +155,7 @@ export class HomeComponent implements OnInit {
         this.injectLikesCount(this.trendingPosts);
       },
       error: () => {
-        console.error('Failed to load trending posts')
+        console.error('Failed to load trending posts');
       },
     });
 
@@ -368,65 +368,63 @@ export class HomeComponent implements OnInit {
           this.toastr.error('Failed to update post');
         },
       });
-  
-    }
+  }
 
-    // ✅ Toggles dropdown and closes others
-toggleActionMenu(event: MouseEvent, postId: string): void {
-  event.stopPropagation();
-  Object.keys(this.actionMenuOpen).forEach(
-    (key) => (this.actionMenuOpen[key] = false)
-  );
-  this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
-}
-
+  //  Toggles dropdown and closes others
+  toggleActionMenu(event: MouseEvent, postId: string): void {
+    event.stopPropagation();
+    Object.keys(this.actionMenuOpen).forEach(
+      (key) => (this.actionMenuOpen[key] = false)
+    );
+    this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
+  }
 
   // ✅ Detects outside click to close all menus
-@HostListener('document:click', ['$event'])
-handleClickOutside(event: MouseEvent): void {
-  if (!this.eRef.nativeElement.contains(event.target)) {
-    this.actionMenuOpen = {};
+  @HostListener('document:click', ['$event'])
+  handleClickOutside(event: MouseEvent): void {
+    if (!this.eRef.nativeElement.contains(event.target)) {
+      this.actionMenuOpen = {};
+    }
   }
-}
 
-// ✅ Delete modal controls
-showDeleteModal = false;
-postToDelete?: Post | null;
+  // Delete modal controls
+  showDeleteModal = false;
+  postToDelete?: Post | null;
 
   // Open delete modal
-openDeleteModal(post: Post): void {
-  if (post.author.id !== this.loggedInUserId) {
-    this.toastr.warning('You are not allowed to delete this post');
-    return;
+  openDeleteModal(post: Post): void {
+    if (post.author.id !== this.loggedInUserId) {
+      this.toastr.warning('You are not allowed to delete this post');
+      return;
+    }
+    this.showDeleteModal = true;
+    this.postToDelete = post;
+    this.actionMenuOpen = {};
   }
-  this.showDeleteModal = true;
-  this.postToDelete = post;
-  this.actionMenuOpen = {};
-}
 
-// Confirm delete
-confirmDelete(): void {
-  if (!this.postToDelete) return;
+  // Confirm delete
+  confirmDelete(): void {
+    if (!this.postToDelete) return;
 
-  this.postService.deletePost(this.postToDelete.id).subscribe({
-    next: () => {
-      this.posts = this.posts.filter((p) => p.id !== this.postToDelete?.id);
-      this.trendingPosts = this.trendingPosts.filter(
-        (p) => p.id !== this.postToDelete?.id
-      );
-      this.recommendedPosts = this.recommendedPosts.filter(
-        (p) => p.id !== this.postToDelete?.id
-      );
-      this.toastr.success('Post deleted');
-      this.showDeleteModal = false;
-      this.postToDelete = null;
-    },
-    error: () => {
-      this.toastr.error('Failed to delete post');
-      this.showDeleteModal = false;
-    },
-  });
-}
+    this.postService.deletePost(this.postToDelete.id).subscribe({
+      next: () => {
+        this.posts = this.posts.filter((p) => p.id !== this.postToDelete?.id);
+        this.trendingPosts = this.trendingPosts.filter(
+          (p) => p.id !== this.postToDelete?.id
+        );
+        this.recommendedPosts = this.recommendedPosts.filter(
+          (p) => p.id !== this.postToDelete?.id
+        );
+        this.toastr.success('Post deleted');
+        this.showDeleteModal = false;
+        this.postToDelete = null;
+      },
+      error: () => {
+        this.toastr.error('Failed to delete post');
+        this.showDeleteModal = false;
+      },
+    });
+  }
 
   private injectLikesCount(posts: Post[] | Post) {
     if (!posts) return;
@@ -450,61 +448,57 @@ confirmDelete(): void {
     return !!this.expandedPosts[postId];
   }
 
-  
-toggleReadMore(postId: string) {
-  this.expandedPosts[postId] = !this.expandedPosts[postId];
-}
-
-getPostPreview(postBody: string | undefined, postId: string): string {
-  if (!postBody) return '';
-
-  const words = postBody.split(' ');
-  if (words.length <= 10 || this.isExpanded(postId)) {
-    return postBody;
+  toggleReadMore(postId: string) {
+    this.expandedPosts[postId] = !this.expandedPosts[postId];
   }
-  return words.slice(0, 10).join(' ') + '...';
-}
 
-// Open modal when user clicks “Flag Post”
-openFlagModal(post: Post) {
-  this.selectedPostToFlag = post;
-  this.showFlagModal = true;
-}
+  getPostPreview(postBody: string | undefined, postId: string): string {
+    if (!postBody) return '';
 
-// Handle modal submission
-onSubmitFlag(reason: string) {
-  if (this.selectedPostToFlag) {
-    this.flagPost(this.selectedPostToFlag, reason);
+    const words = postBody.split(' ');
+    if (words.length <= 10 || this.isExpanded(postId)) {
+      return postBody;
+    }
+    return words.slice(0, 10).join(' ') + '...';
+  }
+
+  // Open modal when user clicks “Flag Post”
+  openFlagModal(post: Post) {
+    this.selectedPostToFlag = post;
+    this.showFlagModal = true;
+  }
+
+  // Handle modal submission
+  onSubmitFlag(reason: string) {
+    if (this.selectedPostToFlag) {
+      this.flagPost(this.selectedPostToFlag, reason);
+      this.showFlagModal = false;
+      this.selectedPostToFlag = undefined;
+    }
+  }
+
+  // Handle modal close
+  onCloseFlagModal() {
     this.showFlagModal = false;
     this.selectedPostToFlag = undefined;
   }
-}
 
-// Handle modal close
-onCloseFlagModal() {
-  this.showFlagModal = false;
-  this.selectedPostToFlag = undefined;
-}
+  flagPost(post: Post, reason: string) {
+    if (!this.loggedInUserId) {
+      this.toastr.warning('You must be logged in to flag a post');
+      return;
+    }
 
-// Inside HomeComponent class
-flagPost(post: Post, reason: string) {
-  if (!this.loggedInUserId) {
-    this.toastr.warning('You must be logged in to flag a post');
-    return;
+    this.postService.flagPost(post.id, reason).subscribe({
+      next: (response) => {
+        this.toastr.success('Post flagged successfully');
+        // console.log('Flag response:', response);
+      },
+      error: (err) => {
+        console.error(err);
+        const message = err?.error?.message || 'Failed to flag post';
+        this.toastr.error(message);
+      },
+    });
   }
-
-  this.postService.flagPost(post.id, reason).subscribe({
-    next: (response) => {
-      this.toastr.success('Post flagged successfully');
-      console.log('Flag response:', response);
-    },
-    error: (err) => {
-      console.error(err);
-      const message = err?.error?.message || 'Failed to flag post';
-      this.toastr.error(message);
-    },
-  });
-}
-
-
 }

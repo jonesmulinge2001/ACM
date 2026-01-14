@@ -1,0 +1,29 @@
+/* Add any custom styles if needed */
+.results-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .results-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  /* Custom scrollbar for tabs */
+  .tabs-container::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .tabs-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .tabs-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+  }
+  
+  .tabs-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }

@@ -33,7 +33,7 @@
         />
         <div>
           <p class="font-semibold">{{ profile.name }}</p>
-          <p class="text-sm text-gray-500">{{ profile.institution?.name }}</p>
+          <p class="text-xs text-gray-500">{{ profile.institution?.name }}</p>
         </div>
       </div>
 
@@ -160,7 +160,7 @@
       <div class="flex justify-end space-x-3">
         <button
           (click)="closeModal()"
-          class="bg-gray-100 px-4 py-2 rounded-full"
+          class="bg-gray-100 px-4 py-2 rounded-lg"
           type="button"
         >
           Cancel
@@ -168,7 +168,7 @@
         <button
           [disabled]="postForm.invalid || isSubmitting"
           type="submit"
-          class="bg-blue-600 text-white px-6 py-1 rounded-full hover:bg-blue-700 disabled:opacity-50"
+          class="bg-gradient-to-r from-blue-600 to-purple-500 text-white px-6 py-1 rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
           {{ isSubmitting ? "Posting..." : "Post" }}
         </button>

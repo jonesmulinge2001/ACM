@@ -37,7 +37,7 @@ import { FormsModule } from '@angular/forms';
           [(ngModel)]="reason"
           rows="4"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
-          placeholder="Enter reason..."
+          placeholder="Write your reason..."
         ></textarea>
 
         <div class="flex justify-end gap-3 mt-5 animate-slideUp">
@@ -52,7 +52,7 @@ import { FormsModule } from '@angular/forms';
           <button
             (click)="submit()"
             [disabled]="!reason.trim()"
-            class="px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-5 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full hover:bg-blue-700 transition flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span class="material-icons text-sm">send</span>
             Submit
