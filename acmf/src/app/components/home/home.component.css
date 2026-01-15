@@ -22,4 +22,3 @@
   .animate-scaleIn { animation: scaleIn 0.25s ease-out; }
   .animate-slideUp { animation: slideUp 0.35s ease-out; }
   .animate-bounce-slow { animation: bounceSlow 1.8s infinite ease-in-out; }
-  

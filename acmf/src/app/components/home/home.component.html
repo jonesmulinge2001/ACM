@@ -13,14 +13,14 @@
           routerLink="my-profile"
           [src]="userProfile?.profileImage"
           alt="User avatar"
-          class="w-10 h-10 rounded-full object-cover cursor-pointer"
+          class="w-10 h-10 rounded-full object-contain bg-gray-100 cursor-pointer"
         />
-          <input
-            routerLink="/create"
-            type="text"
-            placeholder="Share something with the student community"
-            class="flex-1 bg-gray-100 cursor-pointer hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
-          />
+        <input
+          routerLink="/create"
+          type="text"
+          placeholder="Share something with the student community"
+          class="flex-1 bg-gray-100 cursor-pointer hover:bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 border border-gray-300 rounded-full px-4 py-2 text-gray-700 placeholder-gray-500 transition"
+        />
       </div>
 
       <!-- Welcome Message -->
@@ -118,7 +118,7 @@
             alt="Profile"
             loading="lazy"
             decoding="async"
-            class="w-10 h-10 rounded-full object-cover border border-gray-300 !aspect-square"
+            class="w-10 h-10 rounded-full bg-gray-100 object-contain border border-gray-300"
           />
         </a>
 
@@ -139,7 +139,6 @@
         </div>
 
         <!-- Action Menu -->
-
         <div class="ml-auto relative">
           <!-- More button -->
           <button
@@ -187,21 +186,17 @@
       </div>
 
       <!-- Content -->
-      <a
-      [routerLink]="['/posts', post.id]"
-      class="block cursor-pointer group"
-    >
-      <h2
-        class="text-base font-semibold text-gray-800 mb-1 group-hover:text-blue-600 transition"
-      >
-        {{ post.title }}
-      </h2>
-    
-      <p class="text-gray-700 text-sm mb-2 leading-relaxed">
-        {{ getPostPreview(post.body, post.id) }}
-      </p>
-    </a>
-    
+      <div class="cursor-pointer group" (click)="goToPost(post.id)">
+        <h2
+          class="text-base font-semibold text-gray-800 mb-1 group-hover:text-blue-600 transition"
+        >
+          {{ post.title }}
+        </h2>
+
+        <p class="text-gray-700 text-sm mb-2 leading-relaxed">
+          {{ getPostPreview(post.body, post.id) }}
+        </p>
+      </div>
 
       <!-- Post type -->
       <span
@@ -219,59 +214,84 @@
           #{{ tag }}
         </span>
       </div>
-
+      
       <!-- Image -->
-      <div *ngIf="post.fileUrl" class="mt-3">
-        <a [routerLink]="['/posts', post.id]">
+      <div *ngIf="post.fileUrl" class="mt-3 w-full overflow-hidden rounded-lg">
+        <div class="w-full bg-black/5 flex justify-center">
           <img
-          [src]="post.fileUrl"
-          alt="Post image"
-          loading="lazy"
-          decoding="async"
-          class="rounded-lg w-full max-h-[500px] object-cover border border-gray-200"
-        />
-        </a>
-
+            [src]="post.fileUrl"
+            alt="Post image"
+            loading="lazy"
+            decoding="async"
+            class="block max-w-full h-auto max-h-96 object-contain cursor-pointer"
+            (click)="goToPost(post.id)"
+          />
+        </div>
       </div>
 
       <!-- Actions -->
       <div
         class="mt-4 border-t border-gray-100 pt-2 flex items-center gap-6 text-sm text-gray-600"
       >
+        <!-- Like Button -->
         <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+          class="flex items-center gap-1.5 hover:text-blue-600 transition-colors group"
           (click)="togglePostLike(post)"
         >
-          <i
-            [class]="'ri-heart-' + (post.likedByCurrentUser ? 'fill' : 'line')"
-          ></i>
-          <span>{{ post.likesCount | numberShort }}</span>
+          <span
+            class="material-icons text-lg transition-colors"
+            [class.text-red-500]="post.likedByCurrentUser"
+            [class.text-gray-600]="!post.likedByCurrentUser"
+            [class.group-hover:text-red-500]="!post.likedByCurrentUser"
+          >
+            {{ post.likedByCurrentUser ? "favorite" : "favorite_border" }}
+          </span>
+          <span>
+            {{ post.likesCount | numberShort }}
+            <span class="text-xs ml-0.5 text-gray-500">
+              {{ post.likesCount === 1 ? "Like" : "Likes" }}
+            </span>
+          </span>
         </button>
 
+        <!-- Comments Button -->
         <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+          class="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
           (click)="toggleComments(post.id)"
         >
-          <i class="ri-chat-3-line"></i>
-          <span>{{ commentCounts[post.id] || 0 | numberShort }}</span>
+          <span class="material-icons text-lg">chat_bubble_outline</span>
+          <span>
+            {{ commentCounts[post.id] || 0 | numberShort }}
+            <span class="text-xs ml-0.5 text-gray-500">
+              {{ (commentCounts[post.id] || 0) === 1 ? "Comment" : "Comments" }}
+            </span>
+          </span>
         </button>
 
+        <!-- Share Button -->
         <button
-          class="flex items-center gap-1 hover:text-blue-600 transition-colors"
+          class="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
         >
-          <i class="ri-share-line"></i>
+          <span class="material-icons text-lg">share</span>
+          <span class="text-gray-500 text-xs">Share</span>
         </button>
       </div>
 
-      <!--  Comments Section -->
+      <!-- Comments Section -->
       <div
         *ngIf="commentVisible[post.id]"
         class="mt-4 pt-4 border-t border-gray-100 space-y-4"
       >
         <!-- Loading -->
-        <p *ngIf="commentLoading[post.id]" class="text-sm text-gray-500 italic">
+        <div
+          *ngIf="commentLoading[post.id]"
+          class="flex items-center text-sm text-gray-500 italic"
+        >
+          <span class="material-icons animate-spin text-base mr-2"
+            >refresh</span
+          >
           Loading comments...
-        </p>
+        </div>
 
         <!-- Comment List -->
         <div
@@ -281,33 +301,37 @@
           <img
             [src]="comment.user.profile.profileImage"
             alt="User"
-            class="w-9 h-9 rounded-full object-cover ring-2 ring-blue-100"
+            class="w-9 h-9 rounded-full bg-gray-100 object-contain ring-2 ring-blue-100"
           />
 
           <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-800">
-              {{ comment.user.name }}
-              <span class="text-xs font-normal text-gray-400 ml-1">
-                {{ comment.createdAt | timeago }}
-              </span>
-            </p>
+            <div class="flex items-center gap-2">
+              <span class="material-icons text-gray-400 text-sm">person</span>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ comment.user.name }}
+                <span class="text-xs font-normal text-gray-400 ml-1">
+                  {{ comment.createdAt | timeago }}
+                </span>
+              </p>
+            </div>
 
-            <p class="text-sm text-gray-700 leading-relaxed mt-0.5">
+            <p class="text-sm text-gray-700 leading-relaxed mt-0.5 ml-7">
               {{ comment.body }}
             </p>
 
             <!-- Like + Reply -->
-            <div class="flex gap-5 mt-2 text-xs font-medium">
+            <div class="flex gap-5 mt-2 text-xs font-medium ml-7">
               <button
                 (click)="toggleLike(comment)"
                 class="flex items-center gap-1 text-gray-500 hover:text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 transition"
               >
-                <i
-                  [class]="
-                    'ri-heart-' +
-                    (comment.isLikedByCurrentUser ? 'fill' : 'line')
-                  "
-                ></i>
+                <span class="material-icons text-base">
+                  {{
+                    comment.isLikedByCurrentUser
+                      ? "favorite"
+                      : "favorite_border"
+                  }}
+                </span>
                 <span>{{ comment.likes || 0 }}</span>
               </button>
 
@@ -315,55 +339,75 @@
                 (click)="
                   repliesVisible[comment.id] = !repliesVisible[comment.id]
                 "
-                class="text-gray-500 hover:text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 transition"
+                class="flex items-center gap-1 text-gray-500 hover:text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 transition"
               >
-                Replies
+              <span class="material-icons text-base">reply_all</span>
+
+                <span>Replies</span>
               </button>
             </div>
 
             <!-- Reply Box -->
-            <div *ngIf="repliesVisible[comment.id]" class="mt-3 ml-6 space-y-2">
-              <input
-                type="text"
-                [(ngModel)]="replyInputs[comment.id]"
-                placeholder="Write a reply..."
-                class="w-full rounded-lg px-3 py-1.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-300"
-              />
-
-              <button
-                (click)="submitReply(comment.id)"
-                class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition"
-              >
-                Reply
-              </button>
-
-              <!-- Replies -->
-              <div
-                *ngFor="let reply of replies[comment.id]"
-                class="flex gap-2 mt-2"
-              >
-                <img
-                  [src]="reply.user.profile.profileImage"
-                  class="w-6 h-6 rounded-full ring-1 ring-purple-200"
+            <div *ngIf="repliesVisible[comment.id]" class="mt-3 ml-7 space-y-2">
+              <div class="flex gap-2 items-center">
+                <span class="material-icons text-gray-400 text-sm"
+                  >subdirectory_arrow_right</span
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="replyInputs[comment.id]"
+                  placeholder="Write a reply..."
+                  class="flex-1 rounded-lg px-3 py-1.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-300"
                 />
-                <div>
-                  <p class="text-xs font-semibold text-gray-800">
-                    {{ reply.user.name }}
-                    <span class="text-[10px] text-gray-400 ml-1">
-                      {{ reply.createdAt | timeago }}
-                    </span>
-                  </p>
-                  <p class="text-xs text-gray-700">
-                    {{ reply.body }}
-                  </p>
-                </div>
               </div>
+
+              <div class="ml-6">
+                <button
+                  (click)="submitReply(comment.id)"
+                  class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition"
+                >
+                <span class="material-icons text-sm">reply</span>
+
+                  Reply
+                </button>
+              </div>
+
+<!-- Replies -->
+<div
+  *ngFor="let reply of replies[comment.id]"
+  class="flex gap-2 mt-2 ml-6"
+>
+  <div class="flex gap-2">
+    
+    <span class="material-icons text-gray-400 text-sm"
+      >subdirectory_arrow_right</span
+    >
+    <img
+      [src]="reply.user.profile.profileImage"
+      class="w-6 h-6 rounded-full bg-gray-100 object-contain ring-1 ring-purple-200"
+    />
+    <div>
+      <div class="flex items-center gap-1">
+        <p class="text-xs font-semibold text-gray-800">
+          {{ reply.user.name }}
+          <span class="text-[10px] text-gray-400 ml-1">
+            {{ reply.createdAt | timeago }}
+          </span>
+        </p>
+      </div>
+      <p class="text-xs text-gray-700">
+        {{ reply.body }}
+      </p>
+    </div>
+  </div>
+</div>
             </div>
           </div>
         </div>
 
         <!-- Add Comment -->
         <div class="flex gap-2 items-center mt-4">
+          <span class="material-icons text-gray-400 ml-1">add_comment</span>
           <input
             [(ngModel)]="newComments[post.id]"
             placeholder="Write a comment..."
@@ -372,8 +416,9 @@
 
           <button
             (click)="submitComment(post.id)"
-            class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition shadow-md"
+            class="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition shadow-md"
           >
+            <span class="material-icons text-sm">send</span>
             Comment
           </button>
         </div>
@@ -413,7 +458,7 @@
           alt="Profile Image"
           loading="lazy"
           decoding="async"
-          class="w-10 h-10 rounded-full object-cover cursor-pointer border border-gray-300 !aspect-square"
+          class="w-10 h-10 rounded-full bg-gray-100 object-contain cursor-pointer border border-gray-300"
         />
         <div>
           <p class="text-sm font-medium text-gray-900">
@@ -432,14 +477,16 @@
         {{ post.body }}
       </p>
 
-      <div *ngIf="post.fileUrl" class="mt-2">
-        <img
-          [src]="post.fileUrl"
-          alt="Post image"
-          loading="lazy"
-          decoding="async"
-          class="rounded-lg w-full max-h-72 object-cover cursor-pointer border border-gray-200"
-        />
+      <div *ngIf="post.fileUrl" class="mt-2 overflow-hidden rounded-lg">
+        <div class="w-full flex justify-center bg-black/5">
+          <img
+            [src]="post.fileUrl"
+            alt="Post image"
+            loading="lazy"
+            decoding="async"
+            class="rounded-lg max-w-full h-auto max-h-72 object-contain cursor-pointer border border-gray-200"
+          />
+        </div>
       </div>
     </div>
   </div>

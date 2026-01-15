@@ -81,7 +81,8 @@ export class HomeComponent implements OnInit {
     private followService: FollowService,
     private commentService: CommentService,
     private likeService: LikeService,
-    private eRef: ElementRef
+    private eRef: ElementRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -501,4 +502,14 @@ export class HomeComponent implements OnInit {
       },
     });
   }
+
+
+  goToPost(id: string) {
+    this.router.navigate(['/posts', id]);
+  }
+  
+
+
+
+  
 }
