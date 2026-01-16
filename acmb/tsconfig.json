@@ -27,5 +27,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*", "socket-test.js"]
+  "include": ["src/**/*", "socket-test.js"],
+  "exclude": ["generated/prisma"]
 }
