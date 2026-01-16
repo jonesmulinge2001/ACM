@@ -6,7 +6,7 @@
 
 import { Transform } from "class-transformer";
 import { IsEmail, IsEnum, IsNotEmpty, IsPhoneNumber, IsString, MaxLength, MinLength } from "class-validator";
-import { UserRole } from "generated/prisma";
+import { UserRole } from '../../generated/prisma/client';
 
 export class RegisterUserDto {
     @IsString({message: 'Name must be a string'})
