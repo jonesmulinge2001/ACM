@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 
-import { CloudinaryModule } from 'src/shared/cloudinary/cloudinary/cloudinary.module';
-import { PermissionModule } from 'src/permissions/permission.module';
+import { CloudinaryModule } from '../shared/cloudinary/cloudinary/cloudinary.module';
+import { PermissionModule } from '../permissions/permission.module';
 import { ProfileController } from './profile.controller';
 
 @Module({

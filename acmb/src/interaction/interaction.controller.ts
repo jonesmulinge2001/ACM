@@ -1,8 +1,4 @@
-/* eslint-disable prettier/prettier */
- 
- 
- 
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable prettier/prettier */ 
 /* eslint-disable prettier/prettier */
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { InteractionService } from './interaction.service';
