@@ -11,7 +11,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import { MailerService } from 'src/shared/mailer/mailer.service';
 import * as bcrypt from 'bcryptjs';
 import { LoginUserDto } from 'src/dto/login.user';

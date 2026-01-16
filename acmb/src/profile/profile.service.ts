@@ -4,7 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient, Prisma } from 'generated/prisma';
+import {  Prisma } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import { CreateProfileDto } from 'src/dto/create-profile.dto';
 import { UpdateProfileDto } from 'src/dto/update-profile.dto';
 import {

@@ -18,7 +18,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { GroupRole, Prisma, PrismaClient } from 'generated/prisma';
+import { GroupRole, Prisma } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import {
   BulkAddMembersDto,
   BulkRemoveMembersDto,

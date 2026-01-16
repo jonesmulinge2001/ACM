@@ -25,7 +25,7 @@ import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AcademicResourceService } from './academic.service';
 import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import type { Express } from 'express'; 
 
 @Controller('academic-resources')

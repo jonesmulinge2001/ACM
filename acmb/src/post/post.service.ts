@@ -11,7 +11,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PostType, Prisma, PrismaClient } from 'generated/prisma';
+import { PostType, Prisma } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import { CreatePostDto } from 'src/dto/create-post.dto';
 import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostDto } from 'src/interfaces/post.interface';

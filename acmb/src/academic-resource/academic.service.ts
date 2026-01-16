@@ -7,7 +7,7 @@ import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
 } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
 import type { Express } from 'express'; 
 

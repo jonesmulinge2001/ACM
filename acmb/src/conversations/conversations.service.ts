@@ -9,7 +9,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, PrismaClient } from 'generated/prisma';
+import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { MessageAttachment } from 'src/dto/message-attachment.dto';
 import { AcademeetCloudinaryService } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 

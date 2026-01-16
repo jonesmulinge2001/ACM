@@ -10,7 +10,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from '../../generated/prisma/client';
 import * as crypto from 'crypto';
 import {
   AcademeetCloudinaryService,
