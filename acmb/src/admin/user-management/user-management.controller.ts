@@ -14,9 +14,10 @@ import {
 } from '@nestjs/common';
 import { UserManagementService } from './user-management.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequirePermissions } from '../../decorator/permissions.decorator';
+import { Permission } from '../../permissions/permission.enum';
+import { RequestWithUser } from '../../interfaces/requestwithUser.interface';
+
 
 @Controller('admin/users')
 export class UserManagementController {

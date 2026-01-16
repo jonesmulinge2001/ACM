@@ -4,8 +4,9 @@
 import { Controller, Get, Param, Delete, Patch, UseGuards } from '@nestjs/common';
 import { ManageGroupsService } from './manage-groups.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
+import { RequirePermissions } from '../../decorator/permissions.decorator';
+import { Permission } from '../../permissions/permission.enum';
+
 
 @Controller('admin/groups')
 

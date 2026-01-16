@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
-import { MailerService } from 'src/shared/mailer/mailer.service';
+import { MailerService } from '../../shared/mailer/mailer.service';
+
 
 @Injectable()
 export class UserManagementService {

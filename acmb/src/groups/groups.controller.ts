@@ -25,19 +25,20 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/guards/jwt/jwtAuth.guard';
+import { JwtAuthGuard } from '../guards/jwt/jwtAuth.guard';
 import { GroupsService } from './groups.service';
-import { CreateGroupDto } from 'src/dto/create-group.dto';
-import { UpdateGroupDto } from 'src/dto/update-group.dto';
-import { JoinGroup } from 'src/dto/join-group.dto';
-import { SendGroupMessageDto } from 'src/dto/send-message.dto';
+import { CreateGroupDto } from '../dto/create-group.dto';
+import { UpdateGroupDto } from '../dto/update-group.dto';
+import { JoinGroup } from '../dto/join-group.dto';
+import { SendGroupMessageDto } from '../dto/send-message.dto';
 import { GroupRole } from 'generated/prisma';
 import {
   BulkAddMembersDto,
   BulkRemoveMembersDto,
   BulkRestoreMembersDto,
   BulkUpdateRolesDto,
-} from 'src/dto/bulk-member-action.dto';
+} from '../dto/bulk-member-action.dto';
+
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,

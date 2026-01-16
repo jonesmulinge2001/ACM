@@ -5,7 +5,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
-import { InstitutionActivity } from 'src/dto/institution-activity.dto';
+import { InstitutionActivity } from '../../dto/institution-activity.dto';
+
 
 @Injectable()
 export class DashboardOverviewService {

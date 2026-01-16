@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
-import { GroupMemberResponse } from 'src/interfaces/group-member';
+import { GroupMemberResponse } from '../../interfaces/group-member';
+
 
 @Injectable()
 export class ManageGroupsService {
