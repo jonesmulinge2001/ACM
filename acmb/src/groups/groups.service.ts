@@ -25,18 +25,18 @@ import {
   BulkRemoveMembersDto,
   BulkRestoreMembersDto,
   BulkUpdateRolesDto,
-} from 'src/dto/bulk-member-action.dto';
-import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
-import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
-import { CreateGroupDto } from 'src/dto/create-group.dto';
-import { JoinGroup } from 'src/dto/join-group.dto';
-import { MessageAttachment } from 'src/dto/message-attachment.dto';
-import { SendGroupMessageDto } from 'src/dto/send-message.dto';
-import { UpdateGroupDto } from 'src/dto/update-group.dto';
+} from '../dto/bulk-member-action.dto';
+import { CommentGroupResourceDto } from '../dto/comment-group-resource.dto';
+import { CreateGroupResourceDto } from '../dto/create-group-resource.dto';
+import { CreateGroupDto } from '../dto/create-group.dto';
+import { JoinGroup } from '../dto/join-group.dto';
+import { MessageAttachment } from '../dto/message-attachment.dto';
+import { SendGroupMessageDto } from '../dto/send-message.dto';
+import { UpdateGroupDto } from '../dto/update-group.dto';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../shared/cloudinary/cloudinary/cloudinary.service';
 import type { Express } from 'express'; 
 
 @Injectable()

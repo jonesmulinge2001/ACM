@@ -7,7 +7,7 @@ import {
     OnGatewayConnection,
   } from '@nestjs/websockets';
   import { Server, Socket } from 'socket.io';
-  import { StudentNotificationDto } from 'src/dto/student-notification';
+  import { StudentNotificationDto } from '../dto/student-notification';
   
   @WebSocketGateway({ cors: { origin: '*' } })
   export class NotificationsGateway implements OnGatewayConnection {

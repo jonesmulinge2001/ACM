@@ -12,10 +12,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaClient } from '../../generated/prisma/client';
-import { MailerService } from 'src/shared/mailer/mailer.service';
+import { MailerService } from '../shared/mailer/mailer.service';
 import * as bcrypt from 'bcryptjs';
-import { LoginUserDto } from 'src/dto/login.user';
-import { RegisterUserDto } from 'src/dto/register.user.dto';
+import { LoginUserDto } from '../dto/login.user';
+import { RegisterUserDto } from '../dto/register.user.dto';
+
 
 @Injectable()
 export class AuthService {

@@ -17,17 +17,17 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
-import { CreateConversationDto } from 'src/dto/create-conversation.dto';
-import { SendConversationMessageDto } from 'src/dto/1o1-send-message.dto';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
-import { JwtAuthGuard } from 'src/guards/jwt/jwtAuth.guard';
+import { CreateConversationDto } from '../dto/create-conversation.dto';
+import { SendConversationMessageDto } from '../dto/1o1-send-message.dto';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
+import { JwtAuthGuard } from '../guards/jwt/jwtAuth.guard';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../shared/cloudinary/cloudinary/cloudinary.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { MessageAttachment } from 'src/dto/message-attachment.dto';
-import { EditMessageDto } from 'src/dto/edit-message.dto';
+import { MessageAttachment } from '../dto/message-attachment.dto';
+import { EditMessageDto } from '../dto/edit-message.dto';
 import type { Express } from 'express'; 
 
 @Controller('conversations')

@@ -22,7 +22,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { GroupsService } from './groups.service';
-import { JwtService } from 'src/guards/jwt/jwt.service';
+import { JwtService } from '../guards/jwt/jwt.service';
 
 @WebSocketGateway({
   namespace: '/groups',

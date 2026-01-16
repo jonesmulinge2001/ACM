@@ -24,14 +24,14 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
-import { CreatePostDto } from 'src/dto/create-post.dto';
-import { UpdatePostDto } from 'src/dto/update-post.dto';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
 import { PostType } from 'generated/prisma';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FlagPostDto } from 'src/dto/flag-post.dto';
+import { FlagPostDto } from '../dto/flag-post.dto';
 import type { Express } from 'express'; 
 
 

@@ -5,10 +5,10 @@
 /* eslint-disable prettier/prettier */
 import { Body, Controller, HttpException, HttpStatus, Post, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiResponse } from 'src/interfaces/apiResponse';
-import { RegisterUserDto } from 'src/dto/register.user.dto';
-import { SafeUser } from 'src/interfaces/user.interface';
-import { LoginUserDto } from 'src/dto/login.user';
+import { ApiResponse } from '../interfaces/apiResponse';
+import { RegisterUserDto } from '../dto/register.user.dto';
+import { SafeUser } from '../interfaces/user.interface';
+import { LoginUserDto } from '../dto/login.user';
 
 @Controller('auth')
 export class AuthController {

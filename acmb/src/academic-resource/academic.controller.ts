@@ -19,12 +19,12 @@ import {
   Param,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AcademicResourceService } from './academic.service';
-import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
+import { CreateAcademicResourceDto } from '../dto/academic-resource.dto';
 import { PrismaClient } from '../../generated/prisma/client';
 import type { Express } from 'express'; 
 

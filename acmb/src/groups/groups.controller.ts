@@ -41,13 +41,13 @@ import {
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../shared/cloudinary/cloudinary/cloudinary.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { CreateGroupResourceDto } from 'src/dto/create-group-resource.dto';
-import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
-import { UpdateGroupResourceCommentDto } from 'src/dto/update-group-resource-comment.dto';
-import { EditMessageDto } from 'src/dto/edit-message.dto';
-import { MessageAttachment } from 'src/dto/message-attachment.dto';
+import { CreateGroupResourceDto } from '../dto/create-group-resource.dto';
+import { CommentGroupResourceDto } from '../dto/comment-group-resource.dto';
+import { UpdateGroupResourceCommentDto } from '../dto/update-group-resource-comment.dto';
+import { EditMessageDto } from '../dto/edit-message.dto';
+import { MessageAttachment } from '../dto/message-attachment.dto';
 import type { Express } from 'express'; 
 
 @Controller('groups')

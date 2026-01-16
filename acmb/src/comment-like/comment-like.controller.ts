@@ -3,9 +3,9 @@
 /* eslint-disable prettier/prettier */
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
-import { Permission } from 'src/permissions/permission.enum';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
+import { Permission } from '../permissions/permission.enum';
 import { CommentLikeService } from './comment-like.service';
 
 @Controller('comment-like')

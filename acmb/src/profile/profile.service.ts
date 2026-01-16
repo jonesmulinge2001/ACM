@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import {  Prisma } from 'generated/prisma';
 import { PrismaClient } from '../../generated/prisma/client';
-import { CreateProfileDto } from 'src/dto/create-profile.dto';
-import { UpdateProfileDto } from 'src/dto/update-profile.dto';
+import { CreateProfileDto } from '../dto/create-profile.dto';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../shared/cloudinary/cloudinary/cloudinary.service';
 import type { Express } from 'express'; 
 
 @Injectable()

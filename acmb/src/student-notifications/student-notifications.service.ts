@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
 import { NotificationsGateway } from './notifications.gateway';
-import { StudentNotificationDto } from 'src/dto/student-notification';
+import { StudentNotificationDto } from '../dto/student-notification';
 
 @Injectable()
 export class StudentNotificationsService {

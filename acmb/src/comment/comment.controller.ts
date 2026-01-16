@@ -14,9 +14,9 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CommentService } from './comment.service';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
 
 @Controller('comments')
 export class CommentController {

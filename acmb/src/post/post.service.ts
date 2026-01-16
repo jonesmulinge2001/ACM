@@ -13,14 +13,14 @@ import {
 } from '@nestjs/common';
 import { PostType, Prisma } from 'generated/prisma';
 import { PrismaClient } from '../../generated/prisma/client';
-import { CreatePostDto } from 'src/dto/create-post.dto';
-import { UpdatePostDto } from 'src/dto/update-post.dto';
-import { PostDto } from 'src/interfaces/post.interface';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
+import { PostDto } from '../interfaces/post.interface';
 import dayjs from 'dayjs';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../shared/cloudinary/cloudinary/cloudinary.service';
 import type { Express } from 'express'; 
 
 @Injectable()

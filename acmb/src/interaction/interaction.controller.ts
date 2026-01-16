@@ -6,10 +6,10 @@
 /* eslint-disable prettier/prettier */
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { InteractionService } from './interaction.service';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
 
 @Controller('interactions')
 export class InteractionController {

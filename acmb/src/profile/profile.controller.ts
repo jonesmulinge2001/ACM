@@ -18,13 +18,13 @@ import {
     UseInterceptors,
   } from '@nestjs/common';
   import { ProfileService } from './profile.service';
-  import { PermissionGuard } from 'src/guards/permissions.guard';
-  import { Permission } from 'src/permissions/permission.enum';
-  import { CreateProfileDto } from 'src/dto/create-profile.dto';
-  import { UpdateProfileDto } from 'src/dto/update-profile.dto';
+  import { PermissionGuard } from '../guards/permissions.guard';
+  import { Permission } from '../permissions/permission.enum';
+  import { CreateProfileDto } from '../dto/create-profile.dto';
+  import { UpdateProfileDto } from '../dto/update-profile.dto';
   import { AuthGuard } from '@nestjs/passport';
   import { FileInterceptor } from '@nestjs/platform-express';
-  import { RequirePermissions } from 'src/decorator/permissions.decorator';
+  import { RequirePermissions } from '../decorator/permissions.decorator';
   import type { Express } from 'express'; 
 
   interface AuthUser {

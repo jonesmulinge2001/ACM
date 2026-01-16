@@ -13,9 +13,9 @@ import {
     UseGuards,
   } from '@nestjs/common';
   import { FollowService } from './follow.service';
-  import { Permission } from 'src/permissions/permission.enum';
+  import { Permission } from '../permissions/permission.enum';
   import { AuthGuard } from '@nestjs/passport'; 
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
+import { RequirePermissions } from '../decorator/permissions.decorator';
   
   @Controller('follow')
   @UseGuards(AuthGuard('jwt'))

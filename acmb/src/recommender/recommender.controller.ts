@@ -6,9 +6,9 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { RecommenderService } from './recommender.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
 
 @Controller('recommendations')
 @UseGuards(AuthGuard('jwt'))

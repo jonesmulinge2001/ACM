@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { LikeService } from './like.service';
 import { AuthGuard } from '@nestjs/passport';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { Permission } from 'src/permissions/permission.enum';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { Permission } from '../permissions/permission.enum';
 
 @Controller('likes')
 export class LikeController {

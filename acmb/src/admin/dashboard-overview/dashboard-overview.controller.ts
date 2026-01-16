@@ -1,9 +1,13 @@
 /* eslint-disable prettier/prettier */
+ 
+ 
+/* eslint-disable prettier/prettier */
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DashboardOverviewService } from './dashboard-overview.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RequirePermissions } from 'src/decorator/permissions.decorator';
 import { Permission } from 'src/permissions/permission.enum';
+
 import { InstitutionActivity } from 'src/dto/institution-activity.dto';
 
 @Controller('dashboard-overview')

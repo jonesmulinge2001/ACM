@@ -18,11 +18,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
-import { JwtService } from 'src/guards/jwt/jwt.service';
+import { JwtService } from '../guards/jwt/jwt.service';
 import { plainToInstance } from 'class-transformer';
 import { validateSync, IsOptional, IsString, IsArray } from 'class-validator';
-import { MessageAttachment } from 'src/dto/message-attachment.dto';
-import { consumeToken } from 'src/shared/socket-rate-limiter';
+import { MessageAttachment } from '../dto/message-attachment.dto';
+import { consumeToken } from '../shared/socket-rate-limiter';
 
 class SendMessageDto {
   @IsOptional() @IsString() conversationId?: string;

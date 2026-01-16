@@ -16,13 +16,13 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { InstitutionService } from './institution.service';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Permission } from 'src/permissions/permission.enum';
+import { Permission } from '../permissions/permission.enum';
 import { AuthGuard } from '@nestjs/passport';
-import { RequirePermissions } from 'src/decorator/permissions.decorator';
-import { CreateAnnouncementDto } from 'src/dto/createAnnouncement.dto';
-import { CreateInstitutionRequestDto } from 'src/dto/create-institution-request.dto';
+import { RequirePermissions } from '../decorator/permissions.decorator';
+import { CreateAnnouncementDto } from '../dto/createAnnouncement.dto';
+import { CreateInstitutionRequestDto } from '../dto/create-institution-request.dto';
 import type { Express } from 'express'; 
 
 @Controller('institutions')

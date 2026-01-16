@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequestWithUser } from '../interfaces/requestwithUser.interface';
 import { StudentNotificationsService } from './student-notifications.service';
 import { AuthGuard } from '@nestjs/passport';
 
