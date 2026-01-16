@@ -20,6 +20,7 @@ import { CreateAnnouncementDto } from 'src/dto/createAnnouncement.dto';
 import { NotificationsGateway } from 'src/student-notifications/notifications.gateway';
 // import { StudentNotificationDto } from 'src/dto/student-notification';
 import { CreateInstitutionRequestDto } from 'src/dto/create-institution-request.dto';
+import type { Express } from 'express'; 
 
 function addHours(date: Date, hours: number): Date {
   const newDate = new Date(date);

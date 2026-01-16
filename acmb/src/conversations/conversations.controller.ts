@@ -28,6 +28,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MessageAttachment } from 'src/dto/message-attachment.dto';
 import { EditMessageDto } from 'src/dto/edit-message.dto';
+import type { Express } from 'express'; 
 
 @Controller('conversations')
 @UseGuards(JwtAuthGuard)

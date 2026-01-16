@@ -23,6 +23,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RequirePermissions } from 'src/decorator/permissions.decorator';
 import { CreateAnnouncementDto } from 'src/dto/createAnnouncement.dto';
 import { CreateInstitutionRequestDto } from 'src/dto/create-institution-request.dto';
+import type { Express } from 'express'; 
 
 @Controller('institutions')
 @UseGuards(AuthGuard('jwt'))

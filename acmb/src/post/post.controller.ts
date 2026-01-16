@@ -32,6 +32,7 @@ import { UpdatePostDto } from 'src/dto/update-post.dto';
 import { PostType } from 'generated/prisma';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FlagPostDto } from 'src/dto/flag-post.dto';
+import type { Express } from 'express'; 
 
 
 @Controller('post')

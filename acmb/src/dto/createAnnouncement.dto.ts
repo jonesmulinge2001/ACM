@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
+import type { Express } from 'express'; 
 export class CreateAnnouncementDto {
   @IsString()
   @IsNotEmpty()

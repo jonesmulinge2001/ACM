@@ -11,6 +11,7 @@ import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
 } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+import type { Express } from 'express'; 
 
 @Injectable()
 export class ProfileService {

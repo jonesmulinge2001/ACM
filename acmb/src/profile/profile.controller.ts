@@ -25,6 +25,7 @@ import {
   import { AuthGuard } from '@nestjs/passport';
   import { FileInterceptor } from '@nestjs/platform-express';
   import { RequirePermissions } from 'src/decorator/permissions.decorator';
+  import type { Express } from 'express'; 
 
   interface AuthUser {
     id: string;

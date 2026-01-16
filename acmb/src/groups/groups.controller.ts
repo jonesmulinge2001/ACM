@@ -48,6 +48,7 @@ import { CommentGroupResourceDto } from 'src/dto/comment-group-resource.dto';
 import { UpdateGroupResourceCommentDto } from 'src/dto/update-group-resource-comment.dto';
 import { EditMessageDto } from 'src/dto/edit-message.dto';
 import { MessageAttachment } from 'src/dto/message-attachment.dto';
+import type { Express } from 'express'; 
 
 @Controller('groups')
 @UseGuards(JwtAuthGuard)

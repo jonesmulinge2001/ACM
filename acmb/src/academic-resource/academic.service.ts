@@ -1,11 +1,6 @@
 /* eslint-disable prettier/prettier */
  
 /* eslint-disable prettier/prettier */
- 
- 
- 
- 
- 
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import {
@@ -14,6 +9,7 @@ import {
 } from 'src/shared/cloudinary/cloudinary/cloudinary.service';
 import { PrismaClient } from 'generated/prisma';
 import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
+import type { Express } from 'express'; 
 
 @Injectable()
 export class AcademicResourceService {
