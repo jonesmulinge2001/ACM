@@ -35,6 +35,7 @@ import { InstitutionService } from './institution/institution.service';
 import { StudentNotificationsModule } from './student-notifications/student-notifications.module';
 import { ManageGroupsModule } from './admin/manage-groups/manage-groups.module';
 import { SearchModule } from './search/search.module';
+import { StudyRequestsModule } from './study-requests/study-requests.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { SearchModule } from './search/search.module';
     StudentNotificationsModule,
     ManageGroupsModule,
     SearchModule,
+    StudyRequestsModule,
   ],
   controllers: [
     AppController,

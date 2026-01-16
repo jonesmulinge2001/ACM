@@ -66,6 +66,14 @@ model User {
   groupResourceComments     GroupResourceComment[]
   groupResourceCommentLikes GroupResourceCommentLike[]
 
+    // Study network relations
+  studyRequestsSent     StudyRequest[] @relation("StudyRequestSender")
+  studyRequestsReceived StudyRequest[] @relation("StudyRequestReceiver")
+
+  studyLinksAsStudent1 StudyLink[] @relation("StudyLinkStudent1")
+  studyLinksAsStudent2 StudyLink[] @relation("StudyLinkStudent2")
+
+
   activityLogs        ResourceActivityLog[]
   //Add opposite relations
   userSuspensions     UserSuspension[]      @relation("UserSuspensions")
@@ -580,13 +588,49 @@ model ConversationMessage {
   content        String?
   attachments    Json? // array of { url, type }
   createdAt      DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+ updatedAt DateTime @updatedAt @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   sender       User         @relation(fields: [senderId], references: [id])
 
   @@index([conversationId, createdAt])
 }
+
+model StudyRequest {
+  id         String             @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     StudyRequestStatus @default(PENDING)
+  createdAt  DateTime           @default(now())
+  respondedAt DateTime?
+
+  // Relations
+  sender   User @relation("StudyRequestSender", fields: [senderId], references: [id])
+  receiver User @relation("StudyRequestReceiver", fields: [receiverId], references: [id])
+
+  // Prevent duplicate pending requests
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId])
+}
+
+model StudyLink {
+  id         String   @id @default(uuid())
+  student1Id String
+  student2Id String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  student1 User @relation("StudyLinkStudent1", fields: [student1Id], references: [id])
+  student2 User @relation("StudyLinkStudent2", fields: [student2Id], references: [id])
+
+  // Prevent duplicate links (A-B == B-A enforced in code)
+  @@unique([student1Id, student2Id])
+  @@index([student1Id])
+  @@index([student2Id])
+}
+
+
 
 enum GroupRole {
   OWNER
@@ -668,3 +712,11 @@ enum NotificationStatus {
   UNREAD
   READ
 }
+
+enum StudyRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELED
+}
+
