@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUrl } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateInstitutionRequestDto {
   @IsNotEmpty()
@@ -7,17 +7,8 @@ export class CreateInstitutionRequestDto {
   name: string;
 
   @IsOptional()
-  description?: string;
-
-  @IsEmail()
-  officialEmail: string;
-
-  @IsNotEmpty()
   @IsString()
-  officialDomain: string;
-
-  @IsUrl()
-  websiteUrl: string;
+  description?: string;
 
   // files will be handled via Multer, so we don't include them here
 }

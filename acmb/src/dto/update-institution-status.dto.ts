@@ -1,12 +1,14 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { InstitutionStatus } from 'generated/prisma';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateInstitutionStatusDto {
-  @IsEnum(InstitutionStatus)
-  status: InstitutionStatus;
+export class UpdateInstitutionDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-  @IsNotEmpty()
-  adminId: string; // super admin performing the action
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  // For now, we do not handle logo uploads here — Multer handles files separately
 }
