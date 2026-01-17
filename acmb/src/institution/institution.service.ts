@@ -161,16 +161,19 @@ export class InstitutionService {
   /** Get all institutions for dropdowns */
   async getAllInstitutions() {
     try {
-      return this.prisma.institution.findMany({
+      return await this.prisma.institution.findMany({
         select: {
           id: true,
           name: true,
-          description: true,
           logoUrl: true,
+          description: true,
+          websiteUrl: true,
+          officialEmail: true,
           createdAt: true,
-          _count: { select: { profiles: true } },
         },
-        orderBy: { name: 'asc' },
+        orderBy: {
+          name: 'asc',
+        },
       });
     } catch (error) {
       console.error('Error fetching institutions:', error);
@@ -179,6 +182,7 @@ export class InstitutionService {
       );
     }
   }
+  
 
   /** Get simple analytics for the institution */
   async getAnalytics(institutionId: string) {

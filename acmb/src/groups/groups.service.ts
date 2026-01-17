@@ -1,4 +1,9 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
  
 /* eslint-disable prettier/prettier */
 
@@ -271,8 +276,8 @@ export class GroupsService {
           fileType: resource.fileType,
           createdAt: resource.createdAt,
           groupId: resource.groupId,
-          likesCount: resource.likesCount,
-          commentsCount: resource.commentsCount,
+          likesCount: resource.likesCount ?? 0,
+          commentsCount: resource.commentsCount ?? 0,
           sharedBy: {
             id: resource.sharedBy.id,
             name: resource.sharedBy.name,
