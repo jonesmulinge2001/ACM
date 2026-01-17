@@ -1,8 +1,4 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
@@ -138,7 +134,6 @@ export class ManageGroupsService {
       where: { id: groupId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(),
       },
     });
 
@@ -166,7 +161,6 @@ export class ManageGroupsService {
       where: { id: groupId },
       data: {
         isDeleted: false,
-        deletedAt: null,
       },
     });
 

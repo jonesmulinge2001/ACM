@@ -167,8 +167,6 @@ export class InstitutionService {
           name: true,
           logoUrl: true,
           description: true,
-          websiteUrl: true,
-          officialEmail: true,
           createdAt: true,
         },
         orderBy: {
