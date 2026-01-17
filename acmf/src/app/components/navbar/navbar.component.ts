@@ -9,7 +9,6 @@ import { StudentNotificationService } from '../../services/student-notification.
 import { NotificationSocketService } from '../../services/notification-socket.service';
 import { Subscription } from 'rxjs';
 import { NotificationCenterComponent } from '../notification-center/notification-center.component';
-import { SearchResultsComponent } from '../search-results/search-results.component';
 import { GlobalSearchService } from '../../services/global-search.service';
 import { GlobalSearchResult } from '../../interfaces';
 import { Subject, debounceTime, switchMap } from 'rxjs';
@@ -24,7 +23,7 @@ import { isPlatformBrowser } from '@angular/common';
     FormsModule,
     RouterModule, 
     NotificationCenterComponent,
-    SearchResultsComponent,
+    
     
   ],
   templateUrl: './navbar.component.html',
