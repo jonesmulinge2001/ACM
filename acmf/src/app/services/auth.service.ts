@@ -168,7 +168,7 @@ export class AuthService {
         });
       },
       error: (err) => {
-        this.toastr.error(err.error?.message || 'Login failed');
+        this.toastr.error('Login failed');
         this.loadingSubject.next(false);
       },
     });
