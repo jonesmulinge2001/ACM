@@ -42,7 +42,7 @@ export class MailerService {
 
     private initializeTransportner(): void {
         const smtConfig = {
-            host: this.configService.get<string>('SMT_HOST','smtp.gmail.com'),
+            host: this.configService.get<string>('SMTP_HOST','smtp.gmail.com'),
             port: this.configService.get<number>('SMTP_PORT', 587),
             secure: this.configService.get<boolean>('SMTP_SECURE', false),
             auth: {

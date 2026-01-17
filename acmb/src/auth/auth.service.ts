@@ -17,7 +17,6 @@ import * as bcrypt from 'bcryptjs';
 import { LoginUserDto } from '../dto/login.user';
 import { RegisterUserDto } from '../dto/register.user.dto';
 
-
 @Injectable()
 export class AuthService {
   private prisma: PrismaClient;
@@ -28,6 +27,7 @@ export class AuthService {
     this.prisma = new PrismaClient();
   }
 
+  // register new user
   async register(data: RegisterUserDto) {
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -67,18 +67,17 @@ export class AuthService {
       },
     });
 
-    try {
-      await this.mailerService.sendEmail({
+    // Send email asynchronously without blocking
+    this.mailerService
+      .sendEmail({
         to: user.email,
         subject: 'Verify Your Email - Academeet',
         html: `<p>Hi ${user.name},</p>
-               <p>Your Email verification code is:</p>
-               <h2>${verificationCode}</h2>
-               <p>Please enter this code on the verification page to activate your account.</p>`,
-      });
-    } catch (emailError) {
-      console.warn(`Failed to send verification email: ${emailError}`);
-    }
+         <p>Your Email verification code is:</p>
+         <h2>${verificationCode}</h2>
+         <p>Please enter this code on the verification page to activate your account.</p>`,
+      })
+      .catch((err) => console.error('Email failed to send:', err));
 
     return user;
   }
