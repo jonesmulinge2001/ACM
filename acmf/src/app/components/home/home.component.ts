@@ -1,5 +1,5 @@
 import { Router, RouterModule } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Comment, Post, Profile } from '../../interfaces';
 import { PostService } from '../../services/post.service';
 import { ToastrService } from 'ngx-toastr';
@@ -14,7 +14,7 @@ import { NumberShortPipe } from '../../pipes/number-short.pipe';
 import { EditPostComponent } from '../edit-post/edit-post.component';
 import { LikeService } from '../../services/like.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-import { forkJoin, timer } from 'rxjs';
+import { forkJoin, timer, filter } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FlagPostModalComponent } from '../flag-modal-component/flag-modal-component.component';
 import { ElementRef, HostListener } from '@angular/core';
@@ -62,6 +62,13 @@ export class HomeComponent implements OnInit {
   showEditModal = false;
   selectedPostForEdit?: Post | null;
 
+  // edit a comment
+  editedComment: string = '';
+  editingCommentId: string | null = null;
+
+  // delete a comment
+  commentToDelete: Comment | null = null;
+
   posts: Post[] = [];
   nextCursor?: string | null = undefined;
   isLoading = false;
@@ -74,6 +81,8 @@ export class HomeComponent implements OnInit {
   showFlagModal = false;
   selectedPostToFlag?: Post;
 
+  menuOpen: Record<string, boolean> = {};
+
   constructor(
     private postService: PostService,
     private toastr: ToastrService,
@@ -82,7 +91,8 @@ export class HomeComponent implements OnInit {
     private commentService: CommentService,
     private likeService: LikeService,
     private eRef: ElementRef,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -509,7 +519,97 @@ export class HomeComponent implements OnInit {
   }
   
 
+  isMyComment(comment: Comment) {
+    return comment.userId === this.loggedInUserId;
+  }
 
+ // ------------------ MENU HANDLERS ------------------
+ toggleMenu(id: string) {
+  this.menuOpen[id] = !this.menuOpen[id];
+  this.cdr.markForCheck();
+ }
 
+ closeAllMenus() {
+  this.menuOpen = {};
+  this.cdr.markForCheck();
+ }
+
+   // ------------------ EDIT MODAL ------------------
+   openEditCommnetModal(comment: Comment) {
+    if(!this.isMyComment(comment)) return;
+    this.closeAllMenus();
+    this.editedComment = comment.body;
+    this.editingCommentId = comment.id;
+    this.showEditModal = true;
+    this.cdr.markForCheck();
+   }
+
+   cancelEdit() {
+    this.showEditModal = false;
+    this.editedComment = '';
+    this.editingCommentId = null;
+    this.cdr.markForCheck();
+   }
+
+   saveEdit() {
+    if (!this.editingCommentId || !this.editedComment.trim()) return;
+    const updatedContent = this.editedComment.trim();
+  
+    this.commentService.editComment(this.editingCommentId, updatedContent).subscribe({
+      next: (res) => {
+        // Loop through all comment arrays in posts
+        Object.keys(this.comments).forEach(postId => {
+          const idx = this.comments[postId].findIndex(c => c.id === this.editingCommentId);
+          if (idx > -1) {
+            this.comments[postId][idx] = { ...res };
+          }
+        });
+        this.cancelEdit();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Edit failed', err);
+        this.cancelEdit();
+      },
+    });
+  }
+  
+
+     // ------------------ DELETE COMMENT MODAL ------------------
+     openDeleteCommentModal(comment: Comment) {
+      if(!this.isMyComment(comment)) return;
+      this.closeAllMenus();
+      this.commentToDelete = comment;
+      this.showDeleteModal = true;
+      this.cdr.markForCheck();
+     }
+
+     cancelDelete() {
+      this.showDeleteModal = false;
+      this.commentToDelete = null;
+      this.cdr.markForCheck();
+     }
+
+     conformDelete() {
+      if (!this.commentToDelete) return;
+    
+      this.commentService.deleteComment(this.commentToDelete.id).subscribe({
+        next: () => {
+          Object.keys(this.comments).forEach(postId => {
+            this.comments[postId] = this.comments[postId].filter(
+              c => c.id !== this.commentToDelete?.id
+            );
+          });
+          this.showDeleteModal = false;
+          this.commentToDelete = null;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.cancelDelete();
+        }
+      });
+    }
+    
   
 }
