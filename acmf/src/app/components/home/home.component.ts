@@ -71,6 +71,7 @@ export class HomeComponent implements OnInit {
   showCommentDeleteModal = false;
 
   posts: Post[] = [];
+  post: Post | null = null;
   nextCursor?: string | null = undefined;
   isLoading = false;
   limit = 10; 
@@ -81,6 +82,7 @@ export class HomeComponent implements OnInit {
 
   showFlagModal = false;
   selectedPostToFlag?: Post;
+  showMoreOptions = false;
 
   menuOpen: Record<string, boolean> = {};
 
@@ -571,6 +573,7 @@ export class HomeComponent implements OnInit {
       error: (err) => {
         console.error('Edit failed', err);
         this.cancelEdit();
+        this.cdr.detectChanges(); 
       },
     });
   }
@@ -603,6 +606,7 @@ export class HomeComponent implements OnInit {
           });
           this.showCommentDeleteModal = false;
           this.commentToDelete = null;
+          this.cdr.detectChanges(); 
           this.cdr.markForCheck();
         },
         error: (err) => {
@@ -612,5 +616,33 @@ export class HomeComponent implements OnInit {
       });
     }
     
+
+    sharePost() {
+      if (!this.post) return;
+  
+      const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: this.post.title,
+          text: this.post.body?.substring(0, 100),
+          url: shareUrl,
+        });
+      } else {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Link copied to clipboard!');
+        });
+      }
+    }
+  
+    copyPostLink() {
+      if (!this.post) return;
+  
+      const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Link copied to clipboard!');
+        this.showMoreOptions = false;
+      });
+    }
   
 }
