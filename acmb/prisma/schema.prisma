@@ -9,54 +9,54 @@ datasource db {
 }
 
 model User {
-  id                       String                    @id @default(uuid())
-  email                    String                    @unique
-  password                 String
-  name                     String
-  role                     UserRole                  @default(STUDENT)
-  phone                    String?                   @unique
-  status                   AccountStatus             @default(ACTIVE)
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
-  isVerified               Boolean                   @default(false)
-  resetToken               String?
-  resetTokenExpiresAt      DateTime?
-  verifyToken              String
-  verifyTokenExpiresAt     DateTime?
-  isDeleted                Boolean                   @default(false)
-  deletedAt                DateTime?
-  lastLogin                DateTime?
-  resourceFlagsReported    AcademicResourceFlag[]    @relation("AcademicResourceFlagsReported")
-  resourceFlagsReviewed    AcademicResourceFlag[]    @relation("AcademicResourceFlagsReviewed")
-  comments                 Comment[]
-  commentLikes             CommentLike[]
-  messages                 ConversationMessage[]
-  participants             ConversationParticipant[]
-  following                Follow[]                  @relation("following")
-  followers                Follow[]                  @relation("followers")
-  groupsCreated            Group[]                   @relation("GroupCreator")
-  groupMemberships         GroupMember[]
-  groupMessages            GroupMessage[]
-  groupResources GroupResource[] @relation("SharedResources")
-  groupResourceComments    GroupResourceComment[]
-  groupResourceCommentLikes GroupResourceCommentLike[] 
-  groupResourceLikes    GroupResourceLike[]
-  createdInstitutionAdmins InstitutionAdmin[]        @relation("CreatedInstitutionAdmins")
-  institutionAdmins        InstitutionAdmin[]
-  announcements            InstitutionAnnouncement[]
-  interactions             Interaction[]
-  likes                    Like[]
-  notifications            Notification[]            @relation("UserNotifications")
-  posts                    Post[]
-  reportedFlags            PostFlag[]
-  profile                  Profile?
-  profileViewsReceived     ProfileView[]             @relation("Viewed")
-  profileViewsMade         ProfileView[]             @relation("Viewer")
-  requests                 Request[]
-  activityLogs             ResourceActivityLog[]
-  adminSuspensions         UserSuspension[]          @relation("AdminSuspensions")
-  restoredSuspensions      UserSuspension[]          @relation("UserSuspensionRestorer")
-  userSuspensions          UserSuspension[]          @relation("UserSuspensions")
+  id                        String                     @id @default(uuid())
+  email                     String                     @unique
+  password                  String
+  name                      String
+  role                      UserRole                   @default(STUDENT)
+  phone                     String?                    @unique
+  status                    AccountStatus              @default(ACTIVE)
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  isVerified                Boolean                    @default(false)
+  resetToken                String?
+  resetTokenExpiresAt       DateTime?
+  verifyToken               String
+  verifyTokenExpiresAt      DateTime?
+  isDeleted                 Boolean                    @default(false)
+  deletedAt                 DateTime?
+  lastLogin                 DateTime?
+  resourceFlagsReported     AcademicResourceFlag[]     @relation("AcademicResourceFlagsReported")
+  resourceFlagsReviewed     AcademicResourceFlag[]     @relation("AcademicResourceFlagsReviewed")
+  comments                  Comment[]
+  commentLikes              CommentLike[]
+  messages                  ConversationMessage[]
+  participants              ConversationParticipant[]
+  following                 Follow[]                   @relation("following")
+  followers                 Follow[]                   @relation("followers")
+  groupsCreated             Group[]                    @relation("GroupCreator")
+  groupMemberships          GroupMember[]
+  groupMessages             GroupMessage[]
+  groupResources            GroupResource[]            @relation("SharedResources")
+  groupResourceComments     GroupResourceComment[]
+  groupResourceCommentLikes GroupResourceCommentLike[]
+  groupResourceLikes        GroupResourceLike[]
+  createdInstitutionAdmins  InstitutionAdmin[]         @relation("CreatedInstitutionAdmins")
+  institutionAdmins         InstitutionAdmin[]
+  announcements             InstitutionAnnouncement[]
+  interactions              Interaction[]
+  likes                     Like[]
+  notifications             Notification[]             @relation("UserNotifications")
+  posts                     Post[]
+  reportedFlags             PostFlag[]
+  profile                   Profile?
+  profileViewsReceived      ProfileView[]              @relation("Viewed")
+  profileViewsMade          ProfileView[]              @relation("Viewer")
+  requests                  Request[]
+  activityLogs              ResourceActivityLog[]
+  adminSuspensions          UserSuspension[]           @relation("AdminSuspensions")
+  restoredSuspensions       UserSuspension[]           @relation("UserSuspensionRestorer")
+  userSuspensions           UserSuspension[]           @relation("UserSuspensions")
 }
 
 model Institution {
@@ -160,21 +160,16 @@ model Notification {
   userId    String
   type      String
   entityId  String?
-
-  actorIds  String[]   // aggregation lives here
-  count     Int        @default(1)
-
-  seen      Boolean    @default(false)
-
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  user   User @relation("UserNotifications", fields: [userId], references: [id])
+  actorIds  String[]
+  count     Int      @default(1)
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation("UserNotifications", fields: [userId], references: [id])
 
   @@index([userId, seen])
   @@index([userId, type, entityId])
 }
-
 
 model Follow {
   id          String @id @default(uuid())
@@ -372,8 +367,8 @@ model Group {
   visibility  GroupVisibility @default(PUBLIC)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  isDeleted   Boolean  @default(false)
   creatorId   String
+  isDeleted   Boolean         @default(false)
   creator     User            @relation("GroupCreator", fields: [creatorId], references: [id])
   members     GroupMember[]
   messages    GroupMessage[]
@@ -395,75 +390,69 @@ model GroupMember {
 }
 
 model GroupMessage {
-  id        String   @id @default(uuid())
-  groupId   String
-  userId    String
-  content   String
-  replyToId String?
+  id          String         @id @default(uuid())
+  content     String
+  createdAt   DateTime       @default(now())
+  groupId     String
+  userId      String
+  isDeleted   Boolean        @default(false)
+  updatedAt   DateTime?
+  replyToId   String?
   attachments Json?
-  isDeleted Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-
-  user    User  @relation(fields: [userId], references: [id])
-  group   Group @relation(fields: [groupId], references: [id])
-  replyTo GroupMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
-  replies GroupMessage[] @relation("MessageReplies")
+  group       Group          @relation(fields: [groupId], references: [id])
+  replyTo     GroupMessage?  @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies     GroupMessage[] @relation("MessageReplies")
+  user        User           @relation(fields: [userId], references: [id])
 }
 
 model GroupResource {
-  id           String   @id @default(uuid())
-  content      String?
-  resourceUrl  String?
-  originalName String?
-  fileType     String?
-  groupId      String
-  sharedById   String
-  isDeleted    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-
-  group   Group @relation(fields: [groupId], references: [id])
-  sharedBy User @relation("SharedResources", fields: [sharedById], references: [id])
-  
-  likesCount    Int      @default(0)
-  commentsCount Int      @default(0)
-  likes    GroupResourceLike[]
-  comments GroupResourceComment[]
+  id            String                 @id @default(uuid())
+  resourceUrl   String?
+  createdAt     DateTime               @default(now())
+  groupId       String
+  sharedById    String
+  commentsCount Int                    @default(0)
+  likesCount    Int                    @default(0)
+  content       String?
+  fileType      String?
+  originalName  String?
+  isDeleted     Boolean                @default(false)
+  group         Group                  @relation(fields: [groupId], references: [id])
+  sharedBy      User                   @relation("SharedResources", fields: [sharedById], references: [id])
+  comments      GroupResourceComment[]
+  likes         GroupResourceLike[]
 }
 
 model GroupResourceLike {
-  id          String @id @default(uuid())
-  userId      String
-  resourceId  String
-  createdAt   DateTime @default(now())
-
-  user     User          @relation(fields: [userId], references: [id])
-  resource GroupResource @relation(fields: [resourceId], references: [id])
+  id         String        @id @default(uuid())
+  userId     String
+  resourceId String
+  createdAt  DateTime      @default(now())
+  resource   GroupResource @relation(fields: [resourceId], references: [id])
+  user       User          @relation(fields: [userId], references: [id])
 
   @@unique([userId, resourceId])
 }
 
 model GroupResourceComment {
-  id              String   @id @default(uuid())
-  content         String
-  createdAt       DateTime @default(now())
-  updatedAt      DateTime     @updatedAt
-  userId          String
-  resourceId String
-
-  user          User          @relation(fields: [userId], references: [id])
-  likes GroupResourceCommentLike[] 
-  groupResource GroupResource @relation(fields: [resourceId], references: [id])
+  id            String                     @id @default(uuid())
+  userId        String
+  resourceId    String
+  content       String
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  groupResource GroupResource              @relation(fields: [resourceId], references: [id])
+  user          User                       @relation(fields: [userId], references: [id])
+  likes         GroupResourceCommentLike[]
 }
 
 model GroupResourceCommentLike {
-  id        String @id @default(uuid())
+  id        String               @id @default(uuid())
   userId    String
   commentId String
-  createdAt DateTime @default(now())
-
-  user    User                 @relation(fields: [userId], references: [id])
-  comment GroupResourceComment @relation(fields: [commentId], references: [id])
+  createdAt DateTime             @default(now())
+  comment   GroupResourceComment @relation(fields: [commentId], references: [id])
+  user      User                 @relation(fields: [userId], references: [id])
 
   @@unique([userId, commentId])
 }
