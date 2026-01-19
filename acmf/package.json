@@ -30,6 +30,7 @@
     "pdfjs-dist": "^5.4.296",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.1",
+    "sweetalert2": "^11.26.17",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

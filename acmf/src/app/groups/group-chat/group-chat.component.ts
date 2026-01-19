@@ -61,12 +61,12 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   menuOpen: Record<string, boolean> = {};
 
   // Delete modal
-  showDeleteModal = false;
+  showDeleteModal: boolean = false;
   messageToDelete: GroupMessage | null = null;
 
   // Edit modal
   showEditModal = false;
-  editedMessage = '';
+  editedMessage: string = '';
   editingMessageId: string | null = null;
 
   // Reply
@@ -184,9 +184,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.markForCheck();
   }
   
-  
 
-  /** Cancel pending attachment (before sending) */
   /** Cancel all pending attachments (before sending) */
   cancelAllAttachments() {
     this.pendingAttachments.forEach(att => {
@@ -218,7 +216,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
       uploading: attachments.length ? true : undefined,
       progress: 0,
       mediaType: undefined, // optional, not needed if multiple attachments
-      mediaUrl: undefined,  // don't join URLs, instead use attachments[]
+      mediaUrl: undefined,
       replyTo: this.replyingTo || undefined,
       attachments: attachments.map(a => ({
         fileName: a.file.name,

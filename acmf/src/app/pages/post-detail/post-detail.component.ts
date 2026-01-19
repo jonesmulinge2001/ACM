@@ -29,7 +29,7 @@ import { LikeService } from '../../services/like.service';
         <!-- Loading state -->
         <div *ngIf="loading" class="loading-container">
           <div class="loading-spinner"></div>
-          <p>Loading post...</p>
+          <p>Loading...</p>
         </div>
 
         <!-- Error state -->
@@ -972,7 +972,6 @@ export class PostDetailComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       if (user?.id) {
         this.currentUserId = user.id;
-        // You might want to load the user's profile image here
         this.currentUserProfileImage = user.profileImage || 'assets/default-avatar.png';
       }
     });
