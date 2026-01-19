@@ -37,7 +37,10 @@ model User {
   groupsCreated            Group[]                   @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupMessages            GroupMessage[]
-  groupResources           GroupResource[]
+  groupResources GroupResource[] @relation("SharedResources")
+  groupResourceComments    GroupResourceComment[]
+  groupResourceCommentLikes GroupResourceCommentLike[] 
+  groupResourceLikes    GroupResourceLike[]
   createdInstitutionAdmins InstitutionAdmin[]        @relation("CreatedInstitutionAdmins")
   institutionAdmins        InstitutionAdmin[]
   announcements            InstitutionAnnouncement[]
@@ -54,15 +57,6 @@ model User {
   adminSuspensions         UserSuspension[]          @relation("AdminSuspensions")
   restoredSuspensions      UserSuspension[]          @relation("UserSuspensionRestorer")
   userSuspensions          UserSuspension[]          @relation("UserSuspensions")
-  groupResourceLikes        GroupResourceLike[]
-  groupResourceComments     GroupResourceComment[]
-  groupResourceCommentLikes GroupResourceCommentLike[]
-  studyRequestsSent     StudyRequest[] @relation("StudyRequestSender")
-  studyRequestsReceived StudyRequest[] @relation("StudyRequestReceiver")
-  studyLinksAsStudent1  StudyLink[]    @relation("StudyPartner1")
-  studyLinksAsStudent2  StudyLink[]    @relation("StudyPartner2")
-
-
 }
 
 model Institution {
@@ -374,7 +368,7 @@ model Group {
   visibility  GroupVisibility @default(PUBLIC)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  isDeleted Boolean @default(false)
+  isDeleted   Boolean  @default(false)
   creatorId   String
   creator     User            @relation("GroupCreator", fields: [creatorId], references: [id])
   members     GroupMember[]
@@ -398,41 +392,75 @@ model GroupMember {
 
 model GroupMessage {
   id        String   @id @default(uuid())
-  content    String
-  replyToId  String?
-  isDeleted  Boolean   @default(false)
-  updatedAt  DateTime  @updatedAt
-  attachments Json? 
-  createdAt DateTime @default(now())
   groupId   String
   userId    String
-  group     Group    @relation(fields: [groupId], references: [id])
-  replyTo   GroupMessage?  @relation("Replies", fields: [replyToId], references: [id])
-  replies   GroupMessage[] @relation("Replies")
-  user      User           @relation(fields: [userId], references: [id])
+  content   String
+  replyToId String?
+  attachments Json?
+  isDeleted Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
+  user    User  @relation(fields: [userId], references: [id])
+  group   Group @relation(fields: [groupId], references: [id])
+  replyTo GroupMessage? @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies GroupMessage[] @relation("MessageReplies")
 }
 
 model GroupResource {
-  id          String   @id @default(uuid())
-  resourceUrl String?
-  content       String?
+  id           String   @id @default(uuid())
+  content      String?
+  resourceUrl  String?
+  originalName String?
+  fileType     String?
+  groupId      String
   sharedById   String
-  originalName  String?
-  fileType      String?
-  isDeleted     Boolean @default(false)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
-  createdAt   DateTime @default(now())
-  groupId     String
-  group       Group    @relation(fields: [groupId], references: [id])
-  sharedBy    User     @relation(fields: [sharedById], references: [id])
+  group   Group @relation(fields: [groupId], references: [id])
+  sharedBy User @relation("SharedResources", fields: [sharedById], references: [id])
+  
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
   likes    GroupResourceLike[]
   comments GroupResourceComment[]
+}
 
-  likesCount    Int? @default(0)
-  commentsCount Int? @default(0) 
+model GroupResourceLike {
+  id          String @id @default(uuid())
+  userId      String
+  resourceId  String
+  createdAt   DateTime @default(now())
 
+  user     User          @relation(fields: [userId], references: [id])
+  resource GroupResource @relation(fields: [resourceId], references: [id])
 
+  @@unique([userId, resourceId])
+}
+
+model GroupResourceComment {
+  id              String   @id @default(uuid())
+  content         String
+  createdAt       DateTime @default(now())
+  userId          String
+  resourceId String
+
+  user          User          @relation(fields: [userId], references: [id])
+  likes GroupResourceCommentLike[] 
+  groupResource GroupResource @relation(fields: [resourceId], references: [id])
+}
+
+model GroupResourceCommentLike {
+  id        String @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User                 @relation(fields: [userId], references: [id])
+  comment GroupResourceComment @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, commentId])
 }
 
 model Conversation {
@@ -467,78 +495,11 @@ model ConversationMessage {
   content        String?
   attachments    Json?
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt 
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   sender         User         @relation(fields: [senderId], references: [id])
 
   @@index([conversationId, createdAt])
 }
-
-model GroupResourceLike {
-  id         String @id @default(uuid())
-  userId     String
-  resourceId String
-  user       User @relation(fields: [userId], references: [id])
-  resource   GroupResource @relation(fields: [resourceId], references: [id])
-  createdAt DateTime @default(now())
-  @@unique([userId, resourceId])
-}
-
-model GroupResourceComment {
-  id         String @id @default(uuid())
-  content    String
-  userId     String
-  resourceId String
-  user       User @relation(fields: [userId], references: [id])
-  resource   GroupResource @relation(fields: [resourceId], references: [id])
-  likes GroupResourceCommentLike[]
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt  
-
-}
-
-model GroupResourceCommentLike {
-  id        String @id @default(uuid())
-  userId    String
-  commentId String
-  user      User @relation(fields: [userId], references: [id])
-  comment   GroupResourceComment @relation(fields: [commentId], references: [id])
-  createdAt DateTime @default(now()) 
-  @@unique([userId, commentId])
-}
-
-model StudyRequest {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  status      RequestStatus
-  createdAt   DateTime @default(now())
-  senderId    String
-  receiverId  String
-  sender      User     @relation("StudyRequestSender", fields: [senderId], references: [id])
-  receiver    User     @relation("StudyRequestReceiver", fields: [receiverId], references: [id])
-  studyLink   StudyLink? @relation(fields: [studyLinkId], references: [id])
-  studyLinkId String?   @unique
-
-  @@index([senderId])
-  @@index([receiverId])
-}
-
-
-model StudyLink {
-  id             String        @id @default(uuid())
-  student1Id     String
-  student2Id     String
-  student1       User          @relation("StudyPartner1", fields: [student1Id], references: [id])
-  student2       User          @relation("StudyPartner2", fields: [student2Id], references: [id])
-  createdAt      DateTime      @default(now())
-  studyRequest   StudyRequest? @relation
-  studyRequestId String?       @unique
-
-  @@unique([student1Id, student2Id])
-}
-
 
 enum GroupRole {
   OWNER

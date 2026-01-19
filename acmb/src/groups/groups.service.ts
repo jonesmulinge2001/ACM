@@ -800,14 +800,21 @@ export class GroupsService {
   async likeComment(userId: string, commentId: string) {
     const comment = await this.prisma.groupResourceComment.findUnique({
       where: { id: commentId },
-      include: { likes: true, resource: true },
+      include: {
+        likes: true,
+        groupResource: {
+          select: {
+            groupId: true,
+          },
+        },
+      },
     });
 
     if (!comment) throw new NotFoundException('Comment not found');
 
     // Ensure user is a group member
     const membership = await this.prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId: comment.resource.groupId, userId } },
+      where: { groupId_userId: { groupId: comment.groupResource.groupId, userId } },
     });
     if (!membership) throw new ForbiddenException('You are not a group member');
 

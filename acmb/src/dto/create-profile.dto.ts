@@ -34,6 +34,4 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   coverPhoto?: string;
-
-  
 }
