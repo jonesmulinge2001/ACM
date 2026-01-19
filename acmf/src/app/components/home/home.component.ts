@@ -18,6 +18,8 @@ import { forkJoin, timer, filter } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FlagPostModalComponent } from '../flag-modal-component/flag-modal-component.component';
 import { ElementRef, HostListener } from '@angular/core';
+import Swal from 'sweetalert2';
+
 
 @Component({
   standalone: true,
@@ -637,12 +639,23 @@ export class HomeComponent implements OnInit {
   
     copyPostLink() {
       if (!this.post) return;
-  
+    
       const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
+    
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Link copied to clipboard!');
+        Swal.fire({
+          icon: 'success',
+          title: 'Link copied!',
+          text: 'Post link has been copied to clipboard.',
+          timer: 1500,
+          showConfirmButton: false,
+          position: 'top-end',
+          toast: true,
+        });
+    
         this.showMoreOptions = false;
       });
     }
+    
   
 }
