@@ -18,7 +18,6 @@ import {
   AcademeetUploadType,
 } from '../shared/cloudinary/cloudinary/cloudinary.service';
 import { CreateAnnouncementDto } from '../dto/createAnnouncement.dto';
-import { NotificationsGateway } from '../student-notifications/notifications.gateway';
 import { CreateInstitutionRequestDto } from '../dto/create-institution-request.dto';
 import type { Express } from 'express';
 
@@ -28,7 +27,6 @@ export class InstitutionService {
 
   constructor(
     private readonly cloudinary: AcademeetCloudinaryService,
-    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   /** Create a new institution with optional logo upload */

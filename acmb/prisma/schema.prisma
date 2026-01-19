@@ -156,21 +156,25 @@ model UserSuspension {
 }
 
 model Notification {
-  id          String             @id @default(uuid())
-  recipientId String
-  type        NotificationType
-  referenceId String?
-  message     String
-  status      NotificationStatus @default(UNREAD)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  readAt      DateTime?
-  recipient   User               @relation("UserNotifications", fields: [recipientId], references: [id])
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  entityId  String?
 
-  @@index([recipientId])
-  @@index([status])
-  @@index([createdAt])
+  actorIds  String[]   // aggregation lives here
+  count     Int        @default(1)
+
+  seen      Boolean    @default(false)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user   User @relation("UserNotifications", fields: [userId], references: [id])
+
+  @@index([userId, seen])
+  @@index([userId, type, entityId])
 }
+
 
 model Follow {
   id          String @id @default(uuid())
@@ -443,6 +447,7 @@ model GroupResourceComment {
   id              String   @id @default(uuid())
   content         String
   createdAt       DateTime @default(now())
+  updatedAt      DateTime     @updatedAt
   userId          String
   resourceId String
 
@@ -495,6 +500,7 @@ model ConversationMessage {
   content        String?
   attachments    Json?
   createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   sender         User         @relation(fields: [senderId], references: [id])
 
@@ -566,14 +572,6 @@ enum ResourceAction {
   FLAG_REVIEWED
   APPROVE
   UNPUBLISH
-}
-
-enum NotificationType {
-  ANNOUNCEMENT
-  POST
-  COMMENT
-  MESSAGE
-  SYSTEM
 }
 
 enum NotificationStatus {

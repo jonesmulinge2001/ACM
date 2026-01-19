@@ -24,7 +24,6 @@ import { AcademicRsourceModule } from './admin/academic-rsource/academic-rsource
 import { GroupsModule } from './groups/groups.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { InstitutionModule } from './institution/institution.module';
-import { StudentNotificationsModule } from './student-notifications/student-notifications.module';
 import { ManageGroupsModule } from './admin/manage-groups/manage-groups.module';
 import { SearchModule } from './search/search.module';
 
@@ -52,7 +51,6 @@ import { SearchModule } from './search/search.module';
     GroupsModule,
     ConversationsModule,
     InstitutionModule,
-    StudentNotificationsModule,
     ManageGroupsModule,
     SearchModule,
   ],
