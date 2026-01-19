@@ -346,7 +346,7 @@
         
             <p class="text-sm text-gray-700 leading-relaxed mt-0.5 ml-7">
               {{ comment.body }}
-            </p>>
+            </p>
 
             <!-- Like + Reply -->
             <div class="flex gap-5 mt-2 text-xs font-medium ml-4">
@@ -534,7 +534,7 @@
   (closeModal)="onCloseFlagModal()"
 ></app-flag-post-modal>
 
-<!-- Delete Confirmation Modal -->
+<!-- Post Delete Confirmation Modal -->
 <div
   *ngIf="showDeleteModal"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fadeIn"
@@ -608,7 +608,7 @@
 
 <!-- Delete Comment Modal -->
 <div
-  *ngIf="showDeleteModal && commentToDelete"
+  *ngIf="showCommentDeleteModal && commentToDelete"
   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
 >
   <div class="bg-white rounded-xl w-11/12 max-w-sm p-5 shadow-lg text-center">

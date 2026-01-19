@@ -68,6 +68,7 @@ export class HomeComponent implements OnInit {
 
   // delete a comment
   commentToDelete: Comment | null = null;
+  showCommentDeleteModal = false;
 
   posts: Post[] = [];
   nextCursor?: string | null = undefined;
@@ -580,12 +581,12 @@ export class HomeComponent implements OnInit {
       if(!this.isMyComment(comment)) return;
       this.closeAllMenus();
       this.commentToDelete = comment;
-      this.showDeleteModal = true;
+      this.showCommentDeleteModal = true;
       this.cdr.markForCheck();
      }
 
      cancelDelete() {
-      this.showDeleteModal = false;
+      this.showCommentDeleteModal = false;
       this.commentToDelete = null;
       this.cdr.markForCheck();
      }
@@ -600,7 +601,7 @@ export class HomeComponent implements OnInit {
               c => c.id !== this.commentToDelete?.id
             );
           });
-          this.showDeleteModal = false;
+          this.showCommentDeleteModal = false;
           this.commentToDelete = null;
           this.cdr.markForCheck();
         },
