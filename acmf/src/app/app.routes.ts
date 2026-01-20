@@ -26,14 +26,8 @@ import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 import { AdminPostsComponent } from './admin/admin-posts/admin-posts.component';
 import { GroupListComponent } from './groups/group-list/group-list.component';
 import { GroupDetailComponent } from './groups/group-detail/group-detail.component';
-import { AdminAnnouncementFeedComponent } from './InstitutionAdmin/announcement-feed/announcement-feed.component';
-import { CreateAnnouncementComponent } from './InstitutionAdmin/create-announcement/create-announcement.component';
 import { InstitutionAdminLayoutComponent } from './layouts/institution-admin-layout/institution-admin-layout.component';
-import { AnalyticsComponent } from './InstitutionAdmin/analytics/analytics.component';
-import { InstitutionDashboardComponent } from './InstitutionAdmin/institution-dashboard/institution-dashboard.component';
 
-import { NotificationCenterComponent } from './components/notification-center/notification-center.component';
-import { AnnouncementDetailComponent } from './components/announcement-detail/announcement-detail.component';
 import { AuthGuard } from './auth.guard';
 import { CreateGroupComponent } from './groups/grou-formation/grou-formation.component';
 import { ManageGroupsComponent } from './admin/manage-groups/manage-groups.component';
@@ -73,11 +67,6 @@ export const routes: Routes = [
       { path: 'groups/:id', component: GroupDetailComponent },
       { path: 'fund-me', component: FundMeComponent },
       { path: 'search', component: SearchResultsComponent },
-
-
-      // Notifications + Announcements under StudentLayout
-      { path: 'notifications', component: NotificationCenterComponent },
-      { path: 'announcements/:id', component: AnnouncementDetailComponent },
     ]
   },
 
@@ -97,16 +86,12 @@ export const routes: Routes = [
   },
 
   // ==== Institution Admin routes ====
-  {
-    path: 'institution-admin',
-    canActivate: [AuthGuard],
-    component: InstitutionAdminLayoutComponent,
-    children: [
-      { path: 'announcements', component: AdminAnnouncementFeedComponent },
-      { path: 'announcements/create-announcement', component: CreateAnnouncementComponent },
-      { path: 'analytics', component: AnalyticsComponent },
-      { path: 'dashboard-overview', component: InstitutionDashboardComponent },
-    ]
-  },
+  // {
+  //   path: 'institution-admin',
+  //   canActivate: [AuthGuard],
+  //   component: InstitutionAdminLayoutComponent,
+  //   children: [
+  //   ]
+  // },
 ];
   

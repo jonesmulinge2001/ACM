@@ -615,29 +615,29 @@ export interface DmReadEvent {
   lastReadAt: string;
 }
 
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  fileUrls?: string[];
-  createdAt: string;
-  updatedAt: string;
+// export interface Announcement {
+//   id: string;
+//   title: string;
+//   content: string;
+//   fileUrls?: string[];
+//   createdAt: string;
+//   updatedAt: string;
 
-  createdBy: {
-    id: string;
-    email: string;
-    profile: {
-      name: string;
-      profileImage?: string;
-    };
-  };
+//   createdBy: {
+//     id: string;
+//     email: string;
+//     profile: {
+//       name: string;
+//       profileImage?: string;
+//     };
+//   };
 
-  institution: {
-    id: string;
-    name: string;
-    logoUrl?: string;
-  };
-}
+//   institution: {
+//     id: string;
+//     name: string;
+//     logoUrl?: string;
+//   };
+// }
 
 export interface InstitutionAnalytics {
   studentCount: number;
@@ -668,27 +668,6 @@ export interface RegisterInstitutionRequest {
 
 
 export type InstitutionStatusFilter = 'ALL' | 'PENDING_REVIEW' | 'APPROVED';
-
-export interface StudentNotification {
-  id: string;
-  recipientId: string;
-  type: string;
-  referenceId: string | null;
-  message: string;
-  status: 'UNREAD' | 'READ' | string;
-  createdAt: string; // ISO timestamp
-  updatedAt: string; // ISO timestamp
-  readAt?: string | null;
-}
-
-export interface AnnouncementSummary {
-  id: string;
-  title: string;
-  content?: string;
-  institution?: { id: string; name?: string };
-  fileUrls?: string[];
-  createdAt?: string;
-}
 
 export interface FlaggedPost {
   id: string;
@@ -733,4 +712,39 @@ export interface GlobalSearchResult {
   profiles: Profile[];
   posts: Post[];
   resources: AcademicResource[];
+}
+
+
+export type NotificationType =
+  | 'FOLLOWED'
+  | 'POST_LIKED'
+  | 'POST_COMMENTED'
+  | 'MESSAGE_SENT';
+
+export interface NotificationItem {
+  id: string;                  // UUID of the notification
+  type: NotificationType;
+  entityId?: string | null;    // e.g., postId, messageId, null for follow
+  actorIds: string[];          // IDs of users who triggered this
+  actorNames: string[];        // Names of users for display
+  count: number;               // For aggregatable events (like multiple likes)
+  seen: boolean;               // True if the user has seen this
+  message: string;             // Pre-generated string like "Jonathan liked your post"
+  createdAt: string;           // ISO timestamp
+}
+
+
+export interface NotificationListResponse {
+  notifications: NotificationItem[];
+  unreadCount: number;
+}
+
+
+export interface NotificationEventPayload {
+  type: NotificationType
+  actorId: string;
+  actorName: string; 
+  recipientId: string;
+  entityId?: string;
+  createdAt: string;
 }

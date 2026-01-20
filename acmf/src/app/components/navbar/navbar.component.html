@@ -1,3 +1,4 @@
+<!-- Main Navbar -->
 <div
   class="fixed top-0 left-0 right-0 z-55 bg-white shadow-sm px-4 py-3 h-16 flex items-center justify-between"
 >
@@ -14,29 +15,28 @@
   <!-- Search Bar (hidden on small screens) -->
   <div class="search-container relative flex-1 max-w-xl mx-6">
     <div
-    class="hidden sm:flex items-center w-[380px] px-4 py-2.5 rounded-full
-           bg-white/70 backdrop-blur-md
-           border border-gray-200 shadow-sm
-           transition-all duration-200
-           hover:shadow-md
-           focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-400"
-  >
-    <span class="material-icons text-gray-400 mr-3 text-[20px]">
-      search
-    </span>
-  
-    <input
-      type="search"
-      [(ngModel)]="searchQuery"
-      (input)="onSearchQueryChange($any($event.target).value)"
-      (focus)="searchPanelOpen = true"
-      placeholder="Search students, posts, resources..."
-      class="flex-1 bg-transparent outline-none text-sm text-gray-800
-             placeholder-gray-400"
-    />
-  </div>
-  
-
+      class="hidden sm:flex items-center w-[380px] px-4 py-2.5 rounded-full
+             bg-white/70 backdrop-blur-md
+             border border-gray-200 shadow-sm
+             transition-all duration-200
+             hover:shadow-md
+             focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-400"
+    >
+      <span class="material-icons text-gray-400 mr-3 text-[20px]">
+        search
+      </span>
+    
+      <input
+        type="search"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchQueryChange($any($event.target).value)"
+        (focus)="searchPanelOpen = true"
+        placeholder="Search students, posts, resources..."
+        class="flex-1 bg-transparent outline-none text-sm text-gray-800
+               placeholder-gray-400"
+      />
+    </div>
+    
     <!-- Search Results Dropdown -->
     <div
       *ngIf="searchPanelOpen && searchQuery.trim()"
@@ -160,45 +160,31 @@
   <div class="flex items-center space-x-4">
     <!-- Mobile Search Button -->
     <button
-      routerLink="/search"
       (click)="toggleSearchPanel()"
-      class="material-icons text-gray-500 text-2xl cursor-pointer"
+      class="material-icons text-gray-500 text-2xl cursor-pointer sm:hidden"
     >
       search
     </button>
 
-    <!-- Notifications -->
-    <div class="notification-container relative">
-      <button
-        (click)="toggleNotifPanel()"
-        class="relative p-2 rounded-full hover:bg-gray-100"
-      >
-        <span class="material-icons text-gray-600 text-2xl">notifications</span>
-        <span
-          *ngIf="unreadCount > 0"
-          class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
-        >
-          {{ unreadCount }}
-        </span>
-      </button>
-
-      <div *ngIf="notifPanelOpen" class="absolute right-0 mt-2 z-50">
-        <app-notification-center
-          (markAllNAsRead)="onNotificationsRead()"
-        ></app-notification-center>
-      </div>
-    </div>
+    <!-- Notifications Component -->
+    <app-notification></app-notification>
 
     <!-- Chat -->
-    <span class="material-icons text-gray-500 text-2xl cursor-pointer"
-      >chat</span
+    <button
+      routerLink="/messages"
+      class="material-icons text-gray-500 text-2xl cursor-pointer hover:text-blue-600 transition-colors"
     >
+      chat
+    </button>
 
     <!-- User Profile Dropdown -->
     <ng-container *ngIf="isLoggedIn">
-      <div class="relative select-none" (click)="toggleMenu()">
+      <div class="profile-dropdown-container relative select-none">
         <!-- Profile Trigger -->
-        <div class="flex items-center space-x-2 cursor-pointer group">
+        <div 
+          class="flex items-center space-x-2 cursor-pointer group"
+          (click)="toggleMenu()"
+        >
           <img
             [src]="userImage"
             class="w-8 h-8 rounded-full object-cover border border-gray-200 group-hover:border-blue-500 transition"
@@ -210,7 +196,8 @@
             {{ userName }}
           </span>
           <span
-            class="material-icons text-gray-600 text-sm sm:inline hidden group-hover:text-blue-600"
+            class="material-icons text-gray-600 text-sm sm:inline hidden group-hover:text-blue-600 transition-transform duration-200"
+            [class.rotate-180]="menuOpen"
           >
             expand_more
           </span>
@@ -224,14 +211,14 @@
           <!-- View Profile -->
           <button
             (click)="viewProfile()"
-            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
+            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <!-- User Image with hover effect -->
             <img
               *ngIf="userImage; else defaultIcon"
               [src]="userImage"
               alt="User"
-              class="w-6 h-6 rounded-full mr-2 object-cover border border-gray-300 transition-transform duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+              class="w-6 h-6 rounded-full mr-2 object-cover border border-gray-300"
             />
 
             <!-- Fallback icon -->
@@ -244,10 +231,22 @@
             My Profile
           </button>
 
+          <!-- Settings -->
+          <button
+            routerLink="/settings"
+            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <span class="material-icons text-gray-500 text-lg mr-2">settings</span>
+            Settings
+          </button>
+
+          <!-- Divider -->
+          <div class="border-t border-gray-100 my-2"></div>
+
           <!-- Logout -->
           <button
             (click)="openLogoutModal()"
-            class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+            class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
           >
             <span class="material-icons text-red-500 text-lg mr-2">logout</span>
             Logout
@@ -383,10 +382,12 @@
 <!-- Logout Confirmation Modal -->
 <div
   *ngIf="logoutModalOpen"
-  class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 animate-fadeIn"
+  class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-70"
+  (click)="logoutModalOpen = false"
 >
   <div
-    class="bg-white rounded-2xl shadow-2xl p-6 w-80 max-w-sm relative animate-scaleIn"
+    class="bg-white rounded-2xl shadow-2xl p-6 w-80 max-w-sm relative"
+    (click)="$event.stopPropagation()"
   >
     <!-- Header -->
     <div class="flex items-center mb-4">

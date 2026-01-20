@@ -226,11 +226,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
     if (!this.newMessage.trim() && this.selectedAttachments.length === 0)
       return;
     if (!this.conversation) return;
-
+  
     const convoId = this.conversation.id;
     const content = this.newMessage.trim();
     const files = this.selectedAttachments.map((a) => a.file);
-
+  
     // 1. Optimistic UI message
     const tempMsg: ConversationMessage = {
       id: 'temp-' + Date.now(),
@@ -250,14 +250,21 @@ export class DmChatComponent implements OnInit, OnDestroy {
         profileImage: localStorage.getItem('profileImage') || undefined,
       },
     };
-
+  
     this.messages = [...this.messages, tempMsg];
     this.newMessage = '';
     this.selectedAttachments = [];
     this.cdr.markForCheck();
     this.scrollToBottom();
-
-    // 2. Upload + save via service (still needed for DB + attachments)
+  
+    // 2. Emit via socket immediately for real-time
+    this.socket.sendMessage({
+      conversationId: convoId,
+      content,
+      // You might need to handle attachments differently for socket
+    });
+  
+    // 3. Upload + save via service (for DB + attachments)
     this.sub.add(
       this.convos
         .sendMessageWithFiles(convoId, content, files, (progress) => {
@@ -279,8 +286,8 @@ export class DmChatComponent implements OnInit, OnDestroy {
           },
         })
     );
-
-    // 3. Stop typing notification
+  
+    // 4. Stop typing notification
     this.socket.sendTyping(convoId, false);
   }
 

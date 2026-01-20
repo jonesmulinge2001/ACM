@@ -3,17 +3,16 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ToastrService } from 'ngx-toastr';
-import { Profile, StudentNotification } from '../../interfaces';
+import { Profile } from '../../interfaces';
 import { CommonModule } from '@angular/common';
-import { StudentNotificationService } from '../../services/student-notification.service';
-import { NotificationSocketService } from '../../services/notification-socket.service';
 import { Subscription } from 'rxjs';
-import { NotificationCenterComponent } from '../notification-center/notification-center.component';
 import { GlobalSearchService } from '../../services/global-search.service';
 import { GlobalSearchResult } from '../../interfaces';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common'; 
+import { NotificationService } from '../../services/notification.service';
+import { NotificationComponent } from '../notifications/notifications.component';
 
 @Component({
   selector: 'app-navbar',
@@ -21,10 +20,8 @@ import { isPlatformBrowser } from '@angular/common';
   imports: [
     CommonModule, 
     FormsModule,
-    RouterModule, 
-    NotificationCenterComponent,
-    
-    
+    RouterModule,
+    NotificationComponent,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
@@ -35,7 +32,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   userImage = '';
   menuOpen = false;
   unreadCount = 0;
-  notifPanelOpen = false;
   logoutModalOpen = false;
   searchQuery = '';
   searchResults: GlobalSearchResult = { profiles: [], posts: [], resources: [] };
@@ -46,15 +42,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   
   private socketSub?: Subscription;
   private searchSubject = new Subject<string>();
+  private notificationSub?: Subscription;
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private profileService: ProfileService,
     private toastr: ToastrService,
-    private notifService: StudentNotificationService,
-    private notifSocket: NotificationSocketService,
     private searchService: GlobalSearchService,
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -100,26 +96,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
         error: () => this.toastr.error('Error loading profile'),
       });
 
-      // Load initial notifications count
-      this.notifService.getUnread().subscribe({
-        next: (unread: StudentNotification[]) => {
-          this.unreadCount = unread.length;
-        },
-      });
-
-      // Real-time updates
-      this.socketSub = this.notifSocket
-        .onNewNotification()
-        .subscribe((notif) => {
-          if (notif.status === 'UNREAD') {
-            this.unreadCount++;
-          }
-        });
+      // Subscribe to notification unread count
+      this.notificationSub = this.notificationService.unreadCount$.subscribe(
+        count => {
+          this.unreadCount = count;
+        }
+      );
     }
   }
 
   ngOnDestroy(): void {
     this.socketSub?.unsubscribe();
+    this.notificationSub?.unsubscribe();
+    document.removeEventListener('click', this.closeMenuOnOutsideClick.bind(this));
   }
 
   // Search methods
@@ -160,10 +149,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.menuOpen = !this.menuOpen;
   }
 
-  toggleNotifPanel(): void {
-    this.notifPanelOpen = !this.notifPanelOpen;
-  }
-
   viewProfile(): void {
     this.menuOpen = false;
     this.router.navigate(['/my-profile']);
@@ -178,15 +163,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.searchPanelOpen = false;
     }
     
-    // Close notification panel if clicking outside
-    const isInsideNotif = target.closest('.notification-container');
-    if (!isInsideNotif && this.notifPanelOpen) {
-      this.notifPanelOpen = false;
-    }
-    
     // Close menu if clicking outside
-    const isInsideMenu = target.closest('.relative');
-    if (!isInsideMenu) {
+    const isInsideMenu = target.closest('.profile-dropdown-container');
+    if (!isInsideMenu && this.menuOpen) {
       this.menuOpen = false;
     }
   }
@@ -202,9 +181,5 @@ export class NavbarComponent implements OnInit, OnDestroy {
     localStorage.removeItem('role');
     this.logoutModalOpen = false;
     this.router.navigate(['/login']);
-  }
-
-  onNotificationsRead() {
-    this.unreadCount = 0;
   }
 }
