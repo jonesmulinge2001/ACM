@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GroupsService } from '../../services/group.service';
 import { GroupResource } from '../../interfaces';
@@ -26,7 +26,8 @@ export class GroupResourcesComponent implements OnInit {
 
   constructor(
     private groupsService: GroupsService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -37,12 +38,14 @@ export class GroupResourcesComponent implements OnInit {
           catchError((err) => {
             console.error('Failed to load resources', err);
             this.loading = false;
+            this.cdr.detectChanges();
             return of([]);
           })
         )
         .subscribe((data) => {
           this.resources = data.filter((r) => !!r.resourceUrl);
           this.loading = false;
+          this.cdr.detectChanges();
           this.generatePreviews();
         });
     }
@@ -54,16 +57,18 @@ export class GroupResourcesComponent implements OnInit {
 
   /** Generate PDF previews for all PDF files */
   async generatePreviews() {
-    for (const res of this.resources) {
-      const ext = this.getFileExtension(res.resourceUrl);
-      if (ext === 'pdf') {
+    const previewPromises = this.resources
+      .filter(res => this.getFileExtension(res.resourceUrl) === 'pdf')
+      .map(async (res) => {
         try {
           res.previewImage = await this.generatePdfThumbnail(res.resourceUrl);
         } catch (err) {
-          console.error('Failed to generate PDF preview', err);
+          console.error('Failed to generate PDF preview for', res.originalName, err);
         }
-      }
-    }
+      });
+
+    await Promise.all(previewPromises);
+    this.cdr.detectChanges(); // Trigger change detection after all previews
   }
 
   /** Create a base64 image preview from the first PDF page */
@@ -135,8 +140,21 @@ export class GroupResourcesComponent implements OnInit {
 
   /** Check if a file is a video */
   isVideo(res: GroupResource): boolean {
+    // First check the fileType property from backend
+    if (res.fileType && res.fileType.toLowerCase() === 'video') {
+      return true;
+    }
+    
+    // Fallback to URL extension
     const videoTypes = ['mp4', 'mov', 'webm', 'avi', 'mkv'];
     const ext = this.getFileExtension(res.resourceUrl);
-    return videoTypes.includes(ext);
+    return videoTypes.includes(ext?.toLowerCase() || '');
+  }
+
+  // Optional: Add image error handling
+  handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    // You could show a fallback icon here
   }
 }

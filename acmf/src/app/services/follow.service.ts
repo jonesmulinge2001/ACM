@@ -46,14 +46,14 @@ export class FollowService {
   }
 
   getProfileViewers(userId: string): Observable<ProfileView[]> {
-    return this.http.get<ProfileView[]>(`http://localhost:3000/profile-views/${userId}/recent`, {
+    return this.http.get<ProfileView[]>(`${this.followurl}/${userId}/recent`, {
       headers: this.getAuthHeaders()
     });
   }
   
   getFollowStats(userId: string): Observable<{ followers: number; following: number}> {
     return this.http.get<{ followers: number; following: number}>(
-      `http://localhost:3000/follow/${userId}/stats`, {
+      `${this.followurl}/${userId}/stats`, {
         headers: this.getAuthHeaders(),
       }
     );

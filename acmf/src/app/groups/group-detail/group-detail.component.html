@@ -69,80 +69,178 @@
     </div>
 
     <!-- Tabs -->
-    <div
-      class="flex w-full gap-1 p-1 bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden"
-    >
-      <!-- Feed -->
+    <div class="flex w-full border-b border-gray-200">
+      <!-- Feed Tab -->
       <button
         (click)="activeTab = 'feed'"
-        [ngClass]="
-          activeTab === 'feed'
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-            : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-        "
-        class="flex-1 min-w-0 flex items-center justify-center gap-0 sm:gap-1 px-1 sm:px-2 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300"
+        class="flex-1 min-w-0 flex items-center justify-center px-2 py-3 sm:py-4 relative group transition-all duration-200"
+        [class.text-blue-700]="activeTab === 'feed'"
+        [class.text-gray-600]="activeTab !== 'feed'"
       >
-        <span class="material-icons text-[14px]">dynamic_feed</span>
-        <span class="hidden sm:inline truncate">Feed</span>
+        <div class="flex flex-col items-center gap-1 sm:gap-2">
+          <!-- Icon Container -->
+          <div
+            class="p-2 rounded-lg transition-all duration-200"
+            [class]="
+              activeTab === 'feed'
+                ? 'bg-blue-50 text-blue-700'
+                : 'group-hover:bg-gray-100 text-gray-500 group-hover:text-gray-700'
+            "
+          >
+            <span class="material-icons text-[18px] sm:text-[20px]"
+              >dynamic_feed</span
+            >
+          </div>
+
+          <!-- Label -->
+          <span class="text-xs sm:text-sm font-medium truncate">Feed</span>
+
+          <!-- Active Indicator -->
+          <div
+            class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300"
+            [class]="
+              activeTab === 'feed'
+                ? 'bg-blue-700 scale-100'
+                : 'bg-transparent scale-0 group-hover:bg-gray-300 group-hover:scale-100'
+            "
+          ></div>
+        </div>
       </button>
 
-      <!-- Chat -->
+      <!-- Chat Tab -->
       <button
         (click)="activeTab = 'chat'"
-        [ngClass]="
-          activeTab === 'chat'
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-            : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-        "
-        class="flex-1 min-w-0 flex items-center justify-center gap-0 sm:gap-1 px-1 sm:px-2 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300"
+        class="flex-1 min-w-0 flex items-center justify-center px-2 py-3 sm:py-4 relative group transition-all duration-200"
+        [class.text-blue-700]="activeTab === 'chat'"
+        [class.text-gray-600]="activeTab !== 'chat'"
       >
-        <span class="material-icons text-[14px]">chat</span>
-        <span class="hidden sm:inline truncate">Chat</span>
+        <div class="flex flex-col items-center gap-1 sm:gap-2">
+          <!-- Icon Container -->
+          <div
+            class="p-2 rounded-lg transition-all duration-200"
+            [class]="
+              activeTab === 'chat'
+                ? 'bg-blue-50 text-blue-700'
+                : 'group-hover:bg-gray-100 text-gray-500 group-hover:text-gray-700'
+            "
+          >
+            <span class="material-icons text-[18px] sm:text-[20px]">chat</span>
+          </div>
+
+          <!-- Label -->
+          <span class="text-xs sm:text-sm font-medium truncate">Chat</span>
+
+          <!-- Active Indicator -->
+          <div
+            class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300"
+            [class]="
+              activeTab === 'chat'
+                ? 'bg-blue-700 scale-100'
+                : 'bg-transparent scale-0 group-hover:bg-gray-300 group-hover:scale-100'
+            "
+          ></div>
+        </div>
       </button>
 
-      <!-- Members -->
+      <!-- Members Tab -->
       <button
         (click)="activeTab = 'members'"
-        [ngClass]="
-          activeTab === 'members'
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-            : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-        "
-        class="flex-1 min-w-0 flex items-center justify-center gap-0 sm:gap-1 px-1 sm:px-2 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300"
+        class="flex-1 min-w-0 flex items-center justify-center px-2 py-3 sm:py-4 relative group transition-all duration-200"
+        [class.text-blue-700]="activeTab === 'members'"
+        [class.text-gray-600]="activeTab !== 'members'"
       >
-        <span class="material-icons text-[14px]">group</span>
-        <span class="hidden sm:inline truncate">Members</span>
-        <span
-          class="hidden sm:inline px-1 py-0.5 rounded-full text-[8px] font-bold"
-          [ngClass]="activeTab === 'members' ? 'bg-white/20' : 'bg-gray-200'"
-        >
-          {{ group.members?.length || 0 }}
-        </span>
+        <div class="flex flex-col items-center gap-1 sm:gap-2">
+          <!-- Icon Container -->
+          <div
+            class="p-2 rounded-lg transition-all duration-200 relative"
+            [class]="
+              activeTab === 'members'
+                ? 'bg-blue-50 text-blue-700'
+                : 'group-hover:bg-gray-100 text-gray-500 group-hover:text-gray-700'
+            "
+          >
+            <span class="material-icons text-[18px] sm:text-[20px]">group</span>
+
+            <!-- Badge -->
+            <div
+              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full text-[10px] font-bold"
+              [class]="
+                activeTab === 'members'
+                  ? 'bg-blue-700 text-white'
+                  : 'bg-gray-300 text-gray-700 group-hover:bg-gray-400'
+              "
+            >
+              {{ group.members?.length || 0 }}
+            </div>
+          </div>
+
+          <!-- Label -->
+          <span class="text-xs sm:text-sm font-medium truncate">Members</span>
+
+          <!-- Active Indicator -->
+          <div
+            class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300"
+            [class]="
+              activeTab === 'members'
+                ? 'bg-blue-700 scale-100'
+                : 'bg-transparent scale-0 group-hover:bg-gray-300 group-hover:scale-100'
+            "
+          ></div>
+        </div>
       </button>
 
-      <!-- Resources -->
+      <!-- Resources Tab -->
       <button
         (click)="activeTab = 'resources'"
-        [ngClass]="
-          activeTab === 'resources'
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-            : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-        "
-        class="flex-1 min-w-0 flex items-center justify-center gap-0 sm:gap-1 px-1 sm:px-2 py-1 text-[10px] font-semibold rounded-xl transition-all duration-300"
+        class="flex-1 min-w-0 flex items-center justify-center px-2 py-3 sm:py-4 relative group transition-all duration-200"
+        [class.text-blue-700]="activeTab === 'resources'"
+        [class.text-gray-600]="activeTab !== 'resources'"
       >
-        <span class="material-icons text-[14px]">folder</span>
-        <span class="hidden sm:inline truncate">Resources</span>
-        <span
-          class="hidden sm:inline px-1 py-0.5 rounded-full text-[8px] font-bold"
-          [ngClass]="activeTab === 'resources' ? 'bg-white/20' : 'bg-gray-200'"
-        >
-          {{ group.resources?.length || 0 }}
-        </span>
+        <div class="flex flex-col items-center gap-1 sm:gap-2">
+          <!-- Icon Container -->
+          <div
+            class="p-2 rounded-lg transition-all duration-200 relative"
+            [class]="
+              activeTab === 'resources'
+                ? 'bg-blue-50 text-blue-700'
+                : 'group-hover:bg-gray-100 text-gray-500 group-hover:text-gray-700'
+            "
+          >
+            <span class="material-icons text-[18px] sm:text-[20px]"
+              >folder</span
+            >
+
+            <!-- Badge -->
+            <div
+              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full text-[10px] font-bold"
+              [class]="
+                activeTab === 'resources'
+                  ? 'bg-blue-700 text-white'
+                  : 'bg-gray-300 text-gray-700 group-hover:bg-gray-400'
+              "
+            >
+              {{ group.resources?.length || 0 }}
+            </div>
+          </div>
+
+          <!-- Label -->
+          <span class="text-xs sm:text-sm font-medium truncate">Resources</span>
+
+          <!-- Active Indicator -->
+          <div
+            class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300"
+            [class]="
+              activeTab === 'resources'
+                ? 'bg-blue-700 scale-100'
+                : 'bg-transparent scale-0 group-hover:bg-gray-300 group-hover:scale-100'
+            "
+          ></div>
+        </div>
       </button>
     </div>
 
     <!-- Tab Content -->
-    <div class="p-6 w-full">
+    <div class="w-full">
       <!-- FEED -->
       <ng-container *ngIf="activeTab === 'feed'">
         <!-- Composer & Feed -->

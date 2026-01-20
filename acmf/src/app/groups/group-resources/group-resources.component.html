@@ -24,11 +24,13 @@
         class="border border-gray-200 rounded-xl bg-white hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden"
       >
         <!-- Image Files -->
+        <!-- Image Files -->
         <ng-container
           *ngIf="
-            ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(
-              (res.fileType || '').toLowerCase()
-            );
+            res.fileType === 'image' ||
+              ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(
+                getFileExtension(res.resourceUrl || '').toLowerCase()
+              );
             else nonMediaBlock
           "
         >
@@ -37,11 +39,13 @@
               [src]="res.resourceUrl"
               alt="{{ res.originalName }}"
               class="w-full max-h-56 object-contain rounded-t-xl"
+              loading="lazy"
+              (error)="handleImageError($event)"
             />
           </div>
         </ng-container>
 
-        <!-- ✅ Non-Image / Non-PDF Block -->
+        <!-- Non-Image / Non-PDF Block -->
         <ng-template #nonMediaBlock>
           <!-- Video Preview -->
           <ng-container *ngIf="isVideo(res); else pdfOrIconBlock">

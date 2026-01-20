@@ -19,7 +19,7 @@
       "@prisma/client": ["generated/prisma"],
       "src/*": ["src/*"]   
     },
-    "incremental": true,
+    "incremental": false,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -27,6 +27,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*", "socket-test.js"],
+ "include": ["src/**/*"],
   "exclude": ["generated/prisma"]
 }

@@ -639,20 +639,10 @@ export class HomeComponent implements OnInit {
   
     copyPostLink() {
       if (!this.post) return;
-    
+  
       const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
-    
       navigator.clipboard.writeText(shareUrl).then(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Link copied!',
-          text: 'Post link has been copied to clipboard.',
-          timer: 1500,
-          showConfirmButton: false,
-          position: 'top-end',
-          toast: true,
-        });
-    
+        alert('Link copied to clipboard!');
         this.showMoreOptions = false;
       });
     }

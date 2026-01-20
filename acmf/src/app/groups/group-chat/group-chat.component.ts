@@ -74,6 +74,11 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Attachments
   pendingAttachments: Attachment[] = [];
+  //property to track which messages are expanded
+  expandedMessages: Set<string> = new Set();
+
+  //to track which messages need readmore (calculated per message)
+  messageNeedsReadmore: Record<string, boolean> = {};
 
   constructor(
     private socket: SocketService,
@@ -392,4 +397,40 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.pendingAttachments.splice(index, 1);
     this.cdr.markForCheck();
   }
+
+  // Method to toggle readmore/readless
+toggleReadMore(messageId: string): void {
+  if (this.expandedMessages.has(messageId)) {
+    this.expandedMessages.delete(messageId);
+  } else {
+    this.expandedMessages.add(messageId);
+  }
+  this.cdr.markForCheck();
+}
+
+// Method to check if content should be truncated
+shouldTruncate(message: GroupMessageUI): boolean {
+  // Check if message has content and if it's long enough to truncate
+  if (!message.content) return false;
+  
+  // Simple character count check - you can adjust this threshold
+  return message.content.length > 150;
+}
+
+// Check if message is currently expanded
+isExpanded(messageId: string): boolean {
+  return this.expandedMessages.has(messageId);
+}
+
+// Get truncated text (for preview)
+getTruncatedText(text: string, maxLength: number = 150): string {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  
+  // Find the last space before maxLength to avoid cutting words
+  const lastSpaceIndex = text.lastIndexOf(' ', maxLength);
+  const cutIndex = lastSpaceIndex > maxLength * 0.7 ? lastSpaceIndex : maxLength;
+  
+  return text.substring(0, cutIndex) + '...';
+}
 }

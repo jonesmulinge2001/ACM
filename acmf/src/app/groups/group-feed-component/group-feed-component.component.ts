@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -55,7 +55,9 @@ export class GroupFeedComponent implements OnInit {
     private route: ActivatedRoute,
     private groupsService: GroupsService,
     private profileService: ProfileService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone 
   ) {}
 
   ngOnInit(): void {
@@ -105,44 +107,30 @@ export class GroupFeedComponent implements OnInit {
         }));
 
         this.loading = false;
+        this.cdr.detectChanges(); 
       },
       error: () => {
         this.errorMessage = 'Could not load feed';
         this.loading = false;
+        this.cdr.detectChanges(); 
       },
     });
   }
 
   private detectFileType(fileTypeOrName?: string): 'image' | 'video' | 'doc' {
     if (!fileTypeOrName) return 'doc';
-    const val = fileTypeOrName.toLowerCase();
-
-    // Map common extensions
-    const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    const videoExt = ['mp4', 'mov', 'webm', 'ogg'];
-    const docExt = [
-      'pdf',
-      'doc',
-      'docx',
-      'ppt',
-      'pptx',
-      'xls',
-      'xlsx',
-      'txt',
-      'zip',
-      'rar',
-    ];
-
-    if (imageExt.includes(val)) return 'image';
-    if (videoExt.includes(val)) return 'video';
-    if (docExt.includes(val)) return 'doc';
-
-    // fallback by URL if raw Cloudinary URL
-    if (val.includes('/image/upload/')) return 'image';
-    if (val.includes('/video/upload/')) return 'video';
-    if (val.includes('/raw/upload/')) return 'doc';
-
-    return 'doc';
+    
+    const val = fileTypeOrName.toLowerCase().trim();
+    
+    // Direct mapping from backend fileType
+    if (val === 'image') return 'image';
+    if (val === 'video') return 'video';
+    
+    // Handle file extensions (for URLs or originalName fallback)
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(val)) return 'image';
+    if (['mp4', 'mov', 'webm', 'ogg', 'avi', 'mkv'].includes(val)) return 'video';
+    
+    return 'doc'; // everything else is a document
   }
 
   toggleLike(resource: GroupResource): void {
@@ -182,6 +170,11 @@ export class GroupFeedComponent implements OnInit {
           resource.comments.push(comment);
           resource.commentsCount = (resource.commentsCount ?? 0) + 1;
           this.newComment[resource.id] = '';
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Failed to add comment', err);
+          this.cdr.detectChanges();
         },
       });
   }
@@ -202,8 +195,13 @@ export class GroupFeedComponent implements OnInit {
           const idx = resource.comments?.findIndex((c) => c.id === updated.id);
           if (idx !== undefined && idx >= 0) {
             resource.comments![idx] = updated;
+            this.cdr.detectChanges();
           }
           this.cancelEdit();
+        },
+        error: (err) => {
+          console.error('Failed to edit comment', err);
+          this.cdr.detectChanges();
         },
       });
   }
@@ -248,6 +246,11 @@ export class GroupFeedComponent implements OnInit {
 
         // Decrease the count safely
         resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to delete comment', err);
+        this.cdr.detectChanges();
       },
     });
   }
