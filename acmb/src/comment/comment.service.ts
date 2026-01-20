@@ -3,11 +3,14 @@
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
+import { NotificationEventType } from 'src/notifications/events/notification-event.type';
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
 
 @Injectable()
 export class CommentService {
+   constructor(private readonly notificationEvents: NotificationEventsService) {}
   private prisma = new PrismaClient();
 
   async commentPost(userId: string, postId: string, content: string) {
@@ -19,7 +22,7 @@ export class CommentService {
         body: content,
       },
     });
-
+  
     //>>> log the interaction
     await this.prisma.interaction.create({
       data: {
@@ -28,7 +31,28 @@ export class CommentService {
         type: 'COMMENT',
       },
     });
+  
+    // 🔔 EMIT NOTIFICATION EVENT (COMMENT)
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    });
 
+if (!post) {
+  throw new NotFoundException('Post not found');
+}
+  
+    if (post.authorId !== userId) { // skip self-comments
+      this.notificationEvents.emit({
+        type: NotificationEventType.POST_COMMENTED, // notice the type
+        actorId: userId,
+        recipientId: post.authorId,
+        entityId: postId,
+        createdAt: new Date(),
+      });
+      console.log('COMMENT EVENT EMITTED'); // debug log
+    }
+  
     // fetch enriched comment with user and profile
     const enrichedComment = await this.prisma.comment.findUnique({
       where: { id: comment.id },
@@ -47,9 +71,10 @@ export class CommentService {
         },
       },
     });
-
+  
     return enrichedComment;
   }
+  
 
   async getCommentsForPost(postId: string) {
     const comments = await this.prisma.comment.findMany({

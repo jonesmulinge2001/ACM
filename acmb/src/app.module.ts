@@ -26,6 +26,7 @@ import { ConversationsModule } from './conversations/conversations.module';
 import { InstitutionModule } from './institution/institution.module';
 import { ManageGroupsModule } from './admin/manage-groups/manage-groups.module';
 import { SearchModule } from './search/search.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SearchModule } from './search/search.module';
     InstitutionModule,
     ManageGroupsModule,
     SearchModule,
+    NotificationsModule
   ],
   providers: [AppService],
 })

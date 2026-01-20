@@ -6,9 +6,12 @@
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
+import { NotificationEventType } from 'src/notifications/events/notification-event.type';
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
 
 @Injectable()
 export class FollowService {
+  constructor(private readonly notificationEvents: NotificationEventsService) {}
   private prisma = new PrismaClient();
 
   async followUser(followerId: string, followingId: string) {
@@ -25,6 +28,16 @@ export class FollowService {
 
     if (alreadyFollowing) {
       throw new BadRequestException('You are already following this user');
+    }
+
+    // after adding the follow relationship in DB
+    if (followerId !== followingId) {
+      this.notificationEvents.emit({
+        type: NotificationEventType.FOLLOWED,
+        actorId: followerId,
+        recipientId: followingId,
+        createdAt: new Date(),
+      });
     }
 
     return this.prisma.follow.create({
@@ -49,29 +62,29 @@ export class FollowService {
       where: { followingId: userId },
       include: {
         follower: {
-          include: { 
+          include: {
             profile: {
               include: {
-                institution: true // This fetches the full institution object
-              }
-            } 
+                institution: true, // This fetches the full institution object
+              },
+            },
           },
         },
       },
     });
   }
-  
+
   async getFollowing(userId: string) {
     return this.prisma.follow.findMany({
       where: { followerId: userId },
       include: {
         following: {
-          include: { 
+          include: {
             profile: {
               include: {
-                institution: true // This fetches the full institution object
-              }
-            } 
+                institution: true, // This fetches the full institution object
+              },
+            },
           },
         },
       },

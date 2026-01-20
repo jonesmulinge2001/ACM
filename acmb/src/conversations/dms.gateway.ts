@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
- 
 
 import {
   WebSocketGateway,
@@ -35,7 +34,9 @@ class SendMessageDto {
   namespace: '/dm',
   cors: { origin: '*' },
 })
-export class DmsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class DmsGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
   private logger = new Logger(DmsGateway.name);
 
@@ -64,17 +65,42 @@ export class DmsGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       const payload = await Promise.resolve(this.jwtService.verifyToken(token));
       if (!payload?.sub) throw new Error('Invalid token');
 
-      client.data.user = { id: payload.sub, email: payload.email ?? payload.sub };
-      this.logger.log(`DM client connected: ${client.id} user:${client.data.user.id}`);
+      client.data.user = {
+        id: payload.sub,
+        email: payload.email ?? payload.sub,
+      };
+
+      // Get all conversations for this user and auto-join
+      const conversations = await this.convService[
+        'prisma'
+      ].conversationParticipant.findMany({
+        where: { userId: payload.sub },
+        select: { conversationId: true },
+      });
+
+      conversations.forEach((conv) => {
+        const room = this.roomName(conv.conversationId);
+        client.join(room);
+        this.logger.debug(`Auto-joined ${client.id} to ${room}`);
+      });
+
+      this.logger.log(
+        `DM client connected: ${client.id} user:${client.data.user.id} (joined ${conversations.length} rooms)`,
+      );
     } catch (err) {
       this.logger.warn('DM auth failed', err?.message ?? err);
-      client.emit('error', { code: 'AUTH_FAILED', message: 'Authentication failed' });
+      client.emit('error', {
+        code: 'AUTH_FAILED',
+        message: 'Authentication failed',
+      });
       client.disconnect(true);
     }
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`DM client disconnected ${client.id} user:${client.data?.user?.id ?? 'unknown'}`);
+    this.logger.log(
+      `DM client disconnected ${client.id} user:${client.data?.user?.id ?? 'unknown'}`,
+    );
   }
 
   private roomName(conversationId: string) {
@@ -88,12 +114,21 @@ export class DmsGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   ) {
     const user = client.data.user;
     if (!user) return client.emit('error', { message: 'Not authenticated' });
-    if (!data?.conversationId) return client.emit('error', { message: 'conversationId required' });
+    if (!data?.conversationId)
+      return client.emit('error', { message: 'conversationId required' });
 
-    const participant = await this.convService['prisma'].conversationParticipant.findUnique({
-      where: { conversationId_userId: { conversationId: data.conversationId, userId: user.id } as any },
+    const participant = await this.convService[
+      'prisma'
+    ].conversationParticipant.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId: data.conversationId,
+          userId: user.id,
+        } as any,
+      },
     });
-    if (!participant) return client.emit('error', { message: 'Not a participant' });
+    if (!participant)
+      return client.emit('error', { message: 'Not a participant' });
 
     const room = this.roomName(data.conversationId);
     client.join(room);
@@ -119,14 +154,29 @@ export class DmsGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     @ConnectedSocket() client: Socket,
   ) {
     const user = client.data.user;
-    if (!user) return client.emit('error', { code: 'NO_AUTH', message: 'Not authenticated' });
+    if (!user)
+      return client.emit('error', {
+        code: 'NO_AUTH',
+        message: 'Not authenticated',
+      });
 
     const allowed = await consumeToken(user.id);
-    if (!allowed) return client.emit('error', { code: 'RATE_LIMIT', message: 'Too many messages. Slow down.' });
+    if (!allowed)
+      return client.emit('error', {
+        code: 'RATE_LIMIT',
+        message: 'Too many messages. Slow down.',
+      });
 
     const dto = plainToInstance(SendMessageDto, payload);
-    const errs = validateSync(dto as object, { whitelist: true, forbidNonWhitelisted: true });
-    if (errs.length > 0) return client.emit('error', { message: 'Invalid payload', details: errs });
+    const errs = validateSync(dto as object, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    if (errs.length > 0)
+      return client.emit('error', {
+        message: 'Invalid payload',
+        details: errs,
+      });
 
     const savedMessage = await this.convService.sendMessage(user.id, {
       conversationId: dto.conversationId,

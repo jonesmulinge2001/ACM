@@ -22,12 +22,16 @@ import {
   AcademeetUploadType,
 } from '../shared/cloudinary/cloudinary/cloudinary.service';
 import type { Express } from 'express'; 
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
 
 @Injectable()
 export class PostService {
   private prisma = new PrismaClient();
 
-  constructor(private cloudinary: AcademeetCloudinaryService) {}
+  constructor(
+    private cloudinary: AcademeetCloudinaryService,
+    private notificationEvents: NotificationEventsService
+  ) {}
 
   // Create post
   async createPost(

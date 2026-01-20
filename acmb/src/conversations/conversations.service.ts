@@ -12,14 +12,15 @@ import {
 import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { MessageAttachment } from '../dto/message-attachment.dto';
 import { AcademeetCloudinaryService } from '../shared/cloudinary/cloudinary/cloudinary.service';
-
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
+import { NotificationEventType } from 'src/notifications/events/notification-event.type';
+import { NotificationEvent } from 'src/notifications/events/notification-event.interface';
 
 @Injectable()
 export class ConversationsService {
-
   constructor(
     private cloudinaryService: AcademeetCloudinaryService,
-  
+    private readonly notificationEvents: NotificationEventsService,
   ) {}
   private prisma = new PrismaClient();
 
@@ -89,16 +90,16 @@ export class ConversationsService {
     },
   ) {
     let conversationId = dto.conversationId;
-  
+
     // 1. Resolve Conversation (Auto-create if 1-on-1)
     if (!conversationId && dto.recipientId) {
       const ids = [senderId, dto.recipientId].sort();
       const key = `${ids[0]}:${ids[1]}`;
-  
+
       let conv = await this.prisma.conversation.findUnique({
         where: { oneOnOneKey: key },
       });
-  
+
       if (!conv) {
         conv = await this.prisma.conversation.create({
           data: {
@@ -112,23 +113,23 @@ export class ConversationsService {
           },
         });
       }
-  
+
       conversationId = conv.id;
     }
-  
+
     if (!conversationId) {
       throw new BadRequestException('conversationId or recipientId required');
     }
-  
+
     // 2. Security check
     await this.ensureParticipant(conversationId, senderId);
-  
+
     // 3. Normalize attachments for Prisma JSON
     const attachments =
       dto.attachments && dto.attachments.length > 0
         ? (dto.attachments as unknown as Prisma.InputJsonValue)
         : Prisma.JsonNull;
-  
+
     // 4. Create message
     const saved = await this.prisma.conversationMessage.create({
       data: {
@@ -147,7 +148,30 @@ export class ConversationsService {
         },
       },
     });
-  
+
+// fetch participants
+const participants = await this.prisma.conversationParticipant.findMany({
+  where: { conversationId },
+  select: { userId: true },
+});
+
+const recipients = participants
+  .map(p => p.userId)
+  .filter(id => id !== senderId);
+
+for (const recipientId of recipients) {
+  const event: NotificationEvent = {
+    type: NotificationEventType.MESSAGE_SENT,
+    actorId: senderId,
+    recipientId,
+    entityId: saved.id,
+    createdAt: new Date(),
+  };
+
+  console.log('MESSAGE EVENT EMITTED', event); // 🔥 should see this now
+  this.notificationEvents.emit(event);
+}
+
     // 5. Flatten response
     return {
       id: saved.id,
@@ -163,52 +187,52 @@ export class ConversationsService {
       },
     };
   }
-  
+
   async editMessage(senderId: string, messageId: string, newContent: string) {
     // 1. find the message
     const message = await this.prisma.conversationMessage.findUnique({
-      where: { id: messageId},
+      where: { id: messageId },
     });
-    if(!message) {
+    if (!message) {
       throw new NotFoundException('Message not found');
     }
 
     // 2. ensure the user is the sender
-    if(message.senderId !== senderId){
+    if (message.senderId !== senderId) {
       throw new ForbiddenException('You can only edit your own message');
     }
 
     // 3. prevent editing deleted messages
-    if((message as any).isDeleted) {
-      throw new BadRequestException('Cannot edit a deleted message')
+    if ((message as any).isDeleted) {
+      throw new BadRequestException('Cannot edit a deleted message');
     }
 
     // 4. Update message
     return this.prisma.conversationMessage.update({
-      where: { id: messageId},
+      where: { id: messageId },
       data: {
         content: newContent,
-      }
-    })
+      },
+    });
   }
 
   // Delete Message
   async deleteMessage(senderId: string, messageId: string) {
     const message = await this.prisma.conversationMessage.findUnique({
-      where: { id: messageId}
+      where: { id: messageId },
     });
 
-    if(!message) {
+    if (!message) {
       throw new NotFoundException('Message not found');
     }
-    if(message.senderId !== senderId) {
+    if (message.senderId !== senderId) {
       throw new ForbiddenException('You can only delete your own message');
     }
     return this.prisma.conversationMessage.update({
-      where: { id: messageId},
+      where: { id: messageId },
       data: {
         content: '[message deleted]',
-      }
+      },
     });
   }
 
@@ -248,35 +272,40 @@ export class ConversationsService {
   }
 
   // Get full conversation with participants
-async getConversation(conversationId: string, userId: string) {
-  // Ensure user is a participant
-  await this.ensureParticipant(conversationId, userId);
+  async getConversation(conversationId: string, userId: string) {
+    // Ensure user is a participant
+    await this.ensureParticipant(conversationId, userId);
 
-  const convo = await this.prisma.conversation.findUnique({
-    where: { id: conversationId },
-    include: {
-      participants: {
-        include: {
-          user: { select: { id: true, name: true, profile: { select: { profileImage: true } } } },
+    const convo = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profile: { select: { profileImage: true } },
+              },
+            },
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!convo) throw new BadRequestException('Conversation not found');
+    if (!convo) throw new BadRequestException('Conversation not found');
 
-  return {
-    id: convo.id,
-    isGroup: convo.isGroup,
-    title: convo.title,
-    participants: convo.participants.map((p) => ({
-      id: p.user.id,
-      name: p.user.name,
-      profileImage: p.user.profile?.profileImage ?? null,
-    })),
-  };
-}
-
+    return {
+      id: convo.id,
+      isGroup: convo.isGroup,
+      title: convo.title,
+      participants: convo.participants.map((p) => ({
+        id: p.user.id,
+        name: p.user.name,
+        profileImage: p.user.profile?.profileImage ?? null,
+      })),
+    };
+  }
 
   // list conversations for user with last message preview & unread count
   async listConversationsForUser(userId: string) {

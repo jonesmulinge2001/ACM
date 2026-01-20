@@ -11,6 +11,7 @@ export class NotificationDecisionListener {
 
   @OnEvent('notification.event')
   async handle(event: NotificationEvent) {
+    console.log('EVENT RECEIVED', event); 
     await this.decisionService.process(event);
   }
 }

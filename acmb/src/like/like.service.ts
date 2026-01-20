@@ -1,71 +1,78 @@
 /* eslint-disable prettier/prettier */
  
 /* eslint-disable prettier/prettier */
- 
+
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
+/* eslint-disable prettier/prettier */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
+import { NotificationEventType } from 'src/notifications/events/notification-event.type';
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
 
 @Injectable()
 export class LikeService {
+  constructor(private readonly notificationEvents: NotificationEventsService) {}
   private prisma = new PrismaClient();
 
   async likePost(userId: string, postId: string) {
     try {
-      //>>> check if post exists
       const postExists = await this.prisma.post.findUnique({
-        where: { id: postId }
+        where: { id: postId },
+        select: { authorId: true },
       });
+  
       if (!postExists) {
         throw new NotFoundException('Post not found');
       }
   
-      //>>> check if existing like
       const existingLike = await this.prisma.like.findUnique({
         where: {
-          userId_postId: {
-            userId,
-            postId,
-          },
+          userId_postId: { userId, postId },
         },
       });
   
       if (existingLike) {
         if (existingLike.deleted) {
-          //>>> restore soft-deleted like
           await this.prisma.like.update({
             where: { id: existingLike.id },
             data: { deleted: false },
           });
+  
           await this.prisma.interaction.create({
-            data: {
-              userId,
-              postId,
-              type: 'LIKE'
-            }
+            data: { userId, postId, type: 'LIKE' },
           });
   
           return { message: 'Post re-liked' };
-        } else {
-          throw new BadRequestException('You already liked this post');
         }
+  
+        throw new BadRequestException('You already liked this post');
       }
   
       const like = await this.prisma.like.create({
-        data: {
-          userId,
-          postId
-        },
+        data: { userId, postId },
       });
   
+      // EMIT NOTIFICATION EVENT (LIKE)
+      if (postExists.authorId !== userId) { // do not notify self
+        this.notificationEvents.emit({
+          type: NotificationEventType.POST_LIKED,
+          actorId: userId, // the liker
+          recipientId: postExists.authorId, // the post author
+          entityId: postId, 
+          createdAt: new Date(), // required by NotificationEvent interface
+        });
+        console.log('EVENT EMITTED');
+      }
+  
       await this.prisma.interaction.create({
-        data: {
-          userId,
-          postId,
-          type: 'LIKE'
-        }
+        data: { userId, postId, type: 'LIKE' },
       });
   
       return like;
@@ -83,24 +90,24 @@ export class LikeService {
         userId,
         postId,
         deleted: false,
-      }
+      },
     });
-    if(!existingLike) {
+    if (!existingLike) {
       throw new BadRequestException('Like not found or already unliked');
     }
     await this.prisma.like.update({
-      where: { id: existingLike.id},
-      data: { deleted: true},
+      where: { id: existingLike.id },
+      data: { deleted: true },
     });
 
     await this.prisma.interaction.deleteMany({
       where: {
         userId,
         postId,
-        type: 'LIKE'
-      }
+        type: 'LIKE',
+      },
     });
-    return { message: 'Post unliked'};
+    return { message: 'Post unliked' };
   }
 
   async getPostLikesWithTotal(postId: string) {

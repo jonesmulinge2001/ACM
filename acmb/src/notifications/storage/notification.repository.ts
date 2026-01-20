@@ -1,9 +1,10 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+ 
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { NotificationEvent } from '../events/notification-event.interface';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from 'generated/prisma/client';
+
 
 @Injectable()
 export class NotificationRepository {

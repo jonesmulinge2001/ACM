@@ -1,11 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Patch, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { RequestWithUser } from '../../interfaces/requestwithUser.interface';
+import { JwtAuthGuard } from 'src/guards/jwt/jwtAuth.guard';
 
-/**
- * Assume AuthGuard injects req.user.id
- */
+@UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}

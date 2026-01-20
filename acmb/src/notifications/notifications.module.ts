@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+ 
+ 
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationEventsService } from './events/notification-events.service';
@@ -10,9 +10,12 @@ import { NotificationStorageService } from './storage/notification-storage.servi
 import { NotificationRepository } from './storage/notification.repository';
 import { NotificationRealtimeService } from './realtime/notification-realtime.service';
 import { NotificationGateway } from './realtime/notification.gateway';
+import { NotificationController } from './api/notification.controller';
+import { NotificationService } from './api/notification.service';
 
 @Module({
   imports: [EventEmitterModule.forRoot()],
+  controllers: [NotificationController],
   providers: [
     NotificationEventsService,
     NotificationDecisionListener,
@@ -21,6 +24,7 @@ import { NotificationGateway } from './realtime/notification.gateway';
     NotificationStorageService,
     NotificationGateway,
     NotificationRealtimeService,
+    NotificationService
   ],
   exports: [NotificationEventsService],
 })
