@@ -13,8 +13,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
-import { NotificationEventType } from 'src/notifications/events/notification-event.type';
-import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
+import { NotificationEventType } from '../notifications/events/notification-event.type';
+import { NotificationEventsService } from '../notifications/events/notification-events.service';
 
 @Injectable()
 export class LikeService {

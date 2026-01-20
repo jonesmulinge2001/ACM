@@ -12,9 +12,9 @@ import {
 import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { MessageAttachment } from '../dto/message-attachment.dto';
 import { AcademeetCloudinaryService } from '../shared/cloudinary/cloudinary/cloudinary.service';
-import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
-import { NotificationEventType } from 'src/notifications/events/notification-event.type';
-import { NotificationEvent } from 'src/notifications/events/notification-event.interface';
+import { NotificationEventsService } from '../notifications/events/notification-events.service';
+import { NotificationEventType } from '../notifications/events/notification-event.type';
+import { NotificationEvent } from '../notifications/events/notification-event.interface';
 
 @Injectable()
 export class ConversationsService {

@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { LikeService } from './like.service';
 import { LikeController } from './like.controller';
-import { NotificationsModule } from 'src/notifications/notifications.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [NotificationsModule],

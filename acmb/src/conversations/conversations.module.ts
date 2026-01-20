@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { ConversationsController } from './conversations.controller';
 import { CloudinaryModule } from '../shared/cloudinary/cloudinary/cloudinary.module';
-import { NotificationsModule } from 'src/notifications/notifications.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   providers: [ConversationsService, CloudinaryModule],
