@@ -175,6 +175,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.logoutModalOpen = true;
   }
 
+  navigateToProfile(profileId: string) {
+    this.router.navigate(['/profile', profileId]);
+  }
+
+  navigateToPost(postId: string) {
+    this.router.navigate(['/posts', postId]);
+  }
+
+  navigateToResource(resourceId: string) {
+    // TODO: specific resource detail
+    this.router.navigate(['/resources']); 
+  }
+
   logOut(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('userid');

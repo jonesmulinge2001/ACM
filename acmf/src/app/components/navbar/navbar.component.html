@@ -64,6 +64,7 @@
                 *ngFor="let p of searchResults.profiles"
                 (click)="onSearchItemClick()"
                 class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                (click)="p.id ? navigateToProfile(p.id) : null"
               >
                 <img
                   [src]="p.profileImage || 'https://via.placeholder.com/40'"
@@ -89,6 +90,7 @@
                 *ngFor="let post of searchResults.posts"
                 (click)="onSearchItemClick()"
                 class="p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                (click)="post.id ? navigateToPost(post.id) : null"
               >
                 <p class="font-medium text-sm">{{ post.title }}</p>
                 <p class="text-sm text-gray-600 mt-1" *ngIf="post.body">
@@ -110,6 +112,7 @@
                 *ngFor="let r of searchResults.resources"
                 (click)="onSearchItemClick()"
                 class="p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                (click)="r.id ? navigateToPost(r.id) : null"
               >
                 <p class="font-medium text-sm">{{ r.title }}</p>
                 <p class="text-xs text-gray-500 mt-1">
