@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { NotificationItem, NotificationEventPayload } from '../interfaces';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  private apiUrl = 'http://localhost:3000/notifications';
+  // private apiUrl = 'http://localhost:3000/notifications';
+  private apiUrl = `${environment.apiBase}/notifications`
   private socket!: Socket;
 
   private _notifications = new BehaviorSubject<NotificationItem[]>([]);
@@ -69,7 +71,7 @@ export class NotificationService {
   /** Initialize Socket.IO */
   private initSocket(): void {
     const token = localStorage.getItem('token') ?? '';
-    this.socket = io('http://localhost:3000', { auth: { token } });
+    this.socket = io(`${environment.apiBase}`, { auth: { token } });
 
     this.socket.on('connect', () =>
       console.log('Notifications socket connected', this.socket.id)
