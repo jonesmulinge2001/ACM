@@ -60,7 +60,7 @@
           </div>
         </div>
   
-        <!-- Tabs - LinkedIn Inspired -->
+        <!-- Tabs -->
         <div class="mt-6">
           <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-1 overflow-x-auto">
@@ -243,6 +243,7 @@
               <div
                 *ngFor="let profile of results.profiles"
                 class="p-6 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                (click)="profile.id ? navigateToProfile(profile.id) : null"
               >
                 <div class="flex items-start space-x-4">
                   <div class="relative">
@@ -352,9 +353,10 @@
               <div
                 *ngFor="let post of results.posts"
                 class="p-6 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                (click)="post.id ? navigateToPost(post.id) : null"
               >
                 <div class="flex items-start space-x-4">
-                  <!-- Fix: Check if author exists before accessing properties -->
+                  <!-- Check if author exists before accessing properties -->
                   <img
                     [src]="
                       post?.author?.profileImage ||
@@ -391,12 +393,9 @@
                           class="flex items-center text-sm text-gray-500 mt-1 space-x-3"
                         >
                           <span>{{ post.createdAt | date : "MMM d, y" }}</span>
-                          <span>•</span>
                           <span class="flex items-center">
-                            <span class="material-icons text-gray-400 text-sm mr-1">
-                              schedule
-                            </span>
-                            {{ post.readTime || "3 min read" }}
+                           
+                            {{ post.readTime }}
                           </span>
                         </div>
                       </div>
@@ -423,7 +422,7 @@
                       <img
                         [src]="post.fileUrl"
                         [alt]="post.title"
-                        class="w-full max-w-md h-48 object-cover rounded-lg"
+                        class="w-full max-w-md h-full object-cover rounded-lg"
                       />
                     </div>
   
@@ -431,7 +430,7 @@
                       class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100"
                     >
                       <div class="flex items-center space-x-4">
-                        <button
+                        <!-- <button
                           class="flex items-center text-sm text-gray-600 hover:text-blue-600"
                         >
                           <span class="material-icons text-base mr-1.5">
@@ -446,15 +445,15 @@
                             comment
                           </span>
                           {{ post.comments || 0 }}
-                        </button>
-                        <button
+                        </button> -->
+                        <!-- <button
                           class="flex items-center text-sm text-gray-600 hover:text-blue-600"
                         >
                           <span class="material-icons text-base mr-1.5">
                             share
                           </span>
                           Share
-                        </button>
+                        </button> -->
                       </div>
                       <div class="flex items-center space-x-2">
                         <!-- Post type badge -->

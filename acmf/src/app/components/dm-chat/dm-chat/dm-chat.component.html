@@ -1,4 +1,3 @@
-<!-- Overlay for mobile -->
 <div
   class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 sm:hidden"
   (click)="close.emit()"
@@ -8,7 +7,7 @@
 
 <!-- Chat Panel -->
 <div
-  class="fixed right-0 h-full w-full max-w-md bg-white flex flex-col z-50 sm:max-w-sm sm:right-4 sm:bottom-4 sm:rounded-none bottom-[var(--mobile-bottom-nav-height)] sm:bottom-4 transform transition-transform duration-300"
+  class="fixed bottom-0 right-0 h-full w-full max-w-md sm:max-w-sm bg-white rounded-t-3xl shadow-2xl flex flex-col z-50 sm:rounded-none sm:w-[420px] sm:right-4 sm:bottom-4 transform transition-transform duration-300"
   [class.translate-y-full]="!isChatVisible"
   [class.translate-y-0]="isChatVisible"
   (click)="$event.stopPropagation()"

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GlobalSearchService } from '../../services/global-search.service';
 import { GlobalSearchResult } from '../../interfaces';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,8 @@ export class SearchResultsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private searchService: GlobalSearchService
+    private searchService: GlobalSearchService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -90,5 +91,18 @@ export class SearchResultsComponent implements OnInit {
       this.results.posts.length +
       this.results.resources.length
     );
+  }
+
+  navigateToProfile(profileId: string) {
+    this.router.navigate(['/profile', profileId]);
+  }
+
+  navigateToPost(postId: string) {
+    this.router.navigate(['/posts', postId]);
+  }
+
+  navigateToResource(resourceId: string) {
+    // TODO: specific resource detail
+    this.router.navigate(['/resources']); 
   }
 }
