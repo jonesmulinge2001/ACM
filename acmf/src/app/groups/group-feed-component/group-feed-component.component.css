@@ -22,4 +22,30 @@
   .animate-scaleIn { animation: scaleIn 0.25s ease-out; }
   .animate-slideUp { animation: slideUp 0.35s ease-out; }
   .animate-bounce-slow { animation: bounceSlow 1.8s infinite ease-in-out; }
+
+  /* Add to your component's CSS file or global styles */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* LinkedIn-like transitions */
+.transition-colors {
+  transition: all 0.15s ease;
+}
+
+/* Custom material icons fill for liked state */
+.material-icons.fill-blue-600 {
+  fill: #2563eb;
+}
   

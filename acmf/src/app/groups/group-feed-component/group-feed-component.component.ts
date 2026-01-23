@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, Input, NgZone, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  NgZone,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -6,12 +12,12 @@ import { GroupResource, GroupResourceComment, Profile } from '../../interfaces';
 import { GroupsService } from '../../services/group.service';
 import { ProfileService } from '../../services/profile.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { environment } from '../../../environments/environment';
+import { TimeagoModule } from 'ngx-timeago';
 
 @Component({
   selector: 'app-group-feed',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TimeagoModule],
   templateUrl: './group-feed-component.component.html',
 })
 export class GroupFeedComponent implements OnInit {
@@ -19,9 +25,17 @@ export class GroupFeedComponent implements OnInit {
 
   feed: GroupResource[] = [];
   newComment: Record<string, string> = {};
-  editingComment: { id: string; content: string } | null = null;
 
-  commentToDelete: { resource: GroupResource; commentId: string } | null = null;
+  // Store comments separately like home component
+  comments: { [resourceId: string]: GroupResourceComment[] } = {};
+  commentCounts: { [resourceId: string]: number } = {};
+
+  // Comment editing (home component pattern)
+  editedComment: string = '';
+  editingCommentId: string | null = null;
+  commentEditingInProgress = false;
+
+  commentToDelete: { resourceId: string; commentId: string } | null = null;
   isDeleteCommentModalOpen = false;
 
   editingPost: {
@@ -57,7 +71,7 @@ export class GroupFeedComponent implements OnInit {
     private profileService: ProfileService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone 
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +106,11 @@ export class GroupFeedComponent implements OnInit {
     return resource.id;
   }
 
+  // Add trackBy for comments
+  trackByCommentId(index: number, comment: GroupResourceComment): string {
+    return comment.id;
+  }
+
   loadFeed(): void {
     this.loading = true;
 
@@ -99,37 +118,50 @@ export class GroupFeedComponent implements OnInit {
       next: (data: GroupResource[]) => {
         this.feed = (data || []).map((r) => ({
           ...r,
-          comments: r.comments ?? [],
           resourceUrl: r.resourceUrl,
           fileType: this.detectFileType(
             r.fileType || r.originalName || r.resourceUrl || ''
           ),
         }));
 
+        // Initialize comments from API response
+        data.forEach((resource) => {
+          if (resource.comments) {
+            this.comments[resource.id] = resource.comments;
+            this.commentCounts[resource.id] =
+              resource.commentsCount || resource.comments.length;
+          } else {
+            this.comments[resource.id] = [];
+            this.commentCounts[resource.id] = 0;
+          }
+        });
+
         this.loading = false;
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Could not load feed';
         this.loading = false;
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges();
       },
     });
   }
 
   private detectFileType(fileTypeOrName?: string): 'image' | 'video' | 'doc' {
     if (!fileTypeOrName) return 'doc';
-    
+
     const val = fileTypeOrName.toLowerCase().trim();
-    
+
     // Direct mapping from backend fileType
     if (val === 'image') return 'image';
     if (val === 'video') return 'video';
-    
+
     // Handle file extensions (for URLs or originalName fallback)
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(val)) return 'image';
-    if (['mp4', 'mov', 'webm', 'ogg', 'avi', 'mkv'].includes(val)) return 'video';
-    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(val))
+      return 'image';
+    if (['mp4', 'mov', 'webm', 'ogg', 'avi', 'mkv'].includes(val))
+      return 'video';
+
     return 'doc'; // everything else is a document
   }
 
@@ -166,10 +198,22 @@ export class GroupFeedComponent implements OnInit {
       .addFeedComment(this.groupId, resource.id, content)
       .subscribe({
         next: (comment: GroupResourceComment) => {
-          resource.comments = resource.comments ?? [];
-          resource.comments.push(comment);
-          resource.commentsCount = (resource.commentsCount ?? 0) + 1;
+          // Add to comments array like home component
+          if (!this.comments[resource.id]) {
+            this.comments[resource.id] = [];
+          }
+
+          this.comments[resource.id].push(comment);
+          this.commentCounts[resource.id] =
+            (this.commentCounts[resource.id] || 0) + 1;
+
+          // Create new array reference to trigger change detection
+          this.comments[resource.id] = [...this.comments[resource.id]];
+
+          // Clear the input
           this.newComment[resource.id] = '';
+
+          // Force change detection
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -179,35 +223,67 @@ export class GroupFeedComponent implements OnInit {
       });
   }
 
+  // ------------------ EDIT COMMENT HANDLERS (Home Component Pattern) ------------------
   startEdit(comment: GroupResourceComment): void {
-    this.editingComment = { id: comment.id, content: comment.content };
+    this.editingCommentId = comment.id;
+    this.editedComment = comment.content;
+    this.cdr.markForCheck();
   }
 
-  saveEdit(resource: GroupResource): void {
-    if (!this.editingComment) return;
-    const content = this.editingComment.content.trim();
-    if (!content) return;
+  // Helper method to update comments in all resources
+  private updateCommentInAllResources(
+    updatedComment: GroupResourceComment
+  ): void {
+    // Loop through all resources
+    Object.keys(this.comments).forEach((resourceId) => {
+      const idx = this.comments[resourceId].findIndex(
+        (c) => c.id === updatedComment.id
+      );
+      if (idx > -1) {
+        // Update the comment
+        this.comments[resourceId][idx] = {
+          ...this.comments[resourceId][idx],
+          ...updatedComment,
+        };
+        // Create new array reference
+        this.comments[resourceId] = [...this.comments[resourceId]];
+      }
+    });
+  }
+
+  saveEdit(): void {
+    if (!this.editingCommentId || !this.editedComment.trim()) return;
+
+    this.commentEditingInProgress = true;
+    const updatedContent = this.editedComment.trim();
 
     this.groupsService
-      .editFeedComment(this.editingComment.id, content)
+      .editFeedComment(this.editingCommentId, updatedContent)
       .subscribe({
-        next: (updated: GroupResourceComment) => {
-          const idx = resource.comments?.findIndex((c) => c.id === updated.id);
-          if (idx !== undefined && idx >= 0) {
-            resource.comments![idx] = updated;
-            this.cdr.detectChanges();
-          }
+        next: (updatedComment: GroupResourceComment) => {
+          // Update the comment in all resources
+          this.updateCommentInAllResources(updatedComment);
+
+          // Reset editing state
           this.cancelEdit();
+
+          // Force change detection
+          this.cdr.detectChanges();
+          this.commentEditingInProgress = false;
         },
         error: (err) => {
           console.error('Failed to edit comment', err);
+          this.commentEditingInProgress = false;
           this.cdr.detectChanges();
         },
       });
   }
 
   cancelEdit(): void {
-    this.editingComment = null;
+    this.editingCommentId = null;
+    this.editedComment = '';
+    this.commentEditingInProgress = false;
+    this.cdr.markForCheck();
   }
 
   openDeleteModal(resource: GroupResource): void {
@@ -223,29 +299,42 @@ export class GroupFeedComponent implements OnInit {
   confirmDeletePost(): void {
     if (!this.postToDelete) return;
 
-    this.groupsService
-      .deleteGroupResource(this.groupId, this.postToDelete.id)
-      .subscribe({
-        next: () => {
-          this.feed = this.feed.filter((r) => r.id !== this.postToDelete!.id);
-          this.closeDeleteModal();
-        },
-        error: () => {
-          this.errorMessage = 'Failed to delete post';
-          this.closeDeleteModal();
-        },
-      });
+    const postId = this.postToDelete.id; // This is safe because we checked above
+
+    this.groupsService.deleteGroupResource(this.groupId, postId).subscribe({
+      next: () => {
+        // Remove from feed
+        this.feed = this.feed.filter((r) => r.id !== postId);
+
+        // Also remove comments for this resource
+        delete this.comments[postId];
+        delete this.commentCounts[postId];
+
+        this.closeDeleteModal();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete post';
+        this.closeDeleteModal();
+      },
+    });
   }
 
-  deleteComment(resource: GroupResource, commentId: string): void {
+  deleteComment(resourceId: string, commentId: string): void {
     this.groupsService.deleteFeedComment(commentId).subscribe({
       next: () => {
         // Remove the deleted comment from local list
-        resource.comments =
-          resource.comments?.filter((c) => c.id !== commentId) ?? [];
-
-        // Decrease the count safely
-        resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
+        if (this.comments[resourceId]) {
+          this.comments[resourceId] = this.comments[resourceId].filter(
+            (c) => c.id !== commentId
+          );
+          // Update count
+          this.commentCounts[resourceId] = Math.max(
+            (this.commentCounts[resourceId] || 1) - 1,
+            0
+          );
+          // Create new array reference
+          this.comments[resourceId] = [...this.comments[resourceId]];
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -257,6 +346,7 @@ export class GroupFeedComponent implements OnInit {
 
   toggleComments(resourceId: string) {
     this.commentSectionOpen[resourceId] = !this.commentSectionOpen[resourceId];
+    this.cdr.detectChanges();
   }
 
   toggleCommentLike(comment: GroupResourceComment): void {
@@ -314,7 +404,7 @@ export class GroupFeedComponent implements OnInit {
         const normalized = Array.isArray(newResource)
           ? newResource.map((r) => ({
               ...r,
-              resourceUrl: r.resourceUrl, // use full URL from backend
+              resourceUrl: r.resourceUrl,
               fileType: this.detectFileType(
                 r.fileType || r.originalName || r.resourceUrl
               ),
@@ -331,9 +421,19 @@ export class GroupFeedComponent implements OnInit {
 
         // Add to feed
         if (Array.isArray(normalized)) {
-          this.feed.unshift(...normalized);
+          normalized.forEach((resource) => {
+            this.feed.unshift(resource);
+            // Initialize comments for new resource
+            this.comments[resource.id] = resource.comments || [];
+            this.commentCounts[resource.id] =
+              resource.commentsCount || resource.comments?.length || 0;
+          });
         } else {
           this.feed.unshift(normalized);
+          // Initialize comments for new resource
+          this.comments[normalized.id] = normalized.comments || [];
+          this.commentCounts[normalized.id] =
+            normalized.commentsCount || normalized.comments?.length || 0;
         }
 
         // Reset form
@@ -344,6 +444,7 @@ export class GroupFeedComponent implements OnInit {
         this.fileIcon = null;
         this.creatingPost = false;
         this.errorMessage = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to create post';
@@ -357,7 +458,7 @@ export class GroupFeedComponent implements OnInit {
       id: resource.id,
       content: resource.content,
       file: null,
-      previewUrl: resource.resourceUrl || '', // never null
+      previewUrl: resource.resourceUrl || '',
       fileType: this.detectFileType(
         resource.fileType || resource.originalName || resource.resourceUrl || ''
       ),
@@ -394,6 +495,7 @@ export class GroupFeedComponent implements OnInit {
           const index = this.feed.findIndex((f) => f.id === updated.id);
           if (index !== -1) {
             this.feed[index] = updated;
+            this.cdr.detectChanges();
           }
           this.cancelPostEdit();
         },
@@ -407,28 +509,39 @@ export class GroupFeedComponent implements OnInit {
     this.editingPost = null;
   }
 
-  openDeleteCommentModal(resource: GroupResource, commentId: string): void {
-    this.commentToDelete = { resource, commentId };
+  openDeleteCommentModal(resourceId: string, commentId: string): void {
+    this.commentToDelete = { resourceId, commentId };
     this.isDeleteCommentModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeDeleteCommentModal(): void {
     this.commentToDelete = null;
     this.isDeleteCommentModalOpen = false;
+    this.cdr.markForCheck();
   }
 
   confirmDeleteComment(): void {
     if (!this.commentToDelete) return;
 
-    const { resource, commentId } = this.commentToDelete;
+    const { resourceId, commentId } = this.commentToDelete;
 
     this.groupsService.deleteFeedComment(commentId).subscribe({
       next: () => {
         // remove deleted comment from local array
-        resource.comments =
-          resource.comments?.filter((c) => c.id !== commentId) ?? [];
-        resource.commentsCount = Math.max((resource.commentsCount ?? 1) - 1, 0);
+        if (this.comments[resourceId]) {
+          this.comments[resourceId] = this.comments[resourceId].filter(
+            (c) => c.id !== commentId
+          );
+          this.commentCounts[resourceId] = Math.max(
+            (this.commentCounts[resourceId] ?? 1) - 1,
+            0
+          );
+          // Create new array reference
+          this.comments[resourceId] = [...this.comments[resourceId]];
+        }
         this.closeDeleteCommentModal();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Failed to delete comment';
@@ -451,7 +564,43 @@ export class GroupFeedComponent implements OnInit {
     return 'insert_drive_file';
   }
 
-  toggleMenu(resourceId: string): void {
-    this.menuOpen[resourceId] = !this.menuOpen[resourceId];
+  toggleMenu(id: string): void {
+    this.menuOpen[id] = !this.menuOpen[id];
+    this.cdr.markForCheck();
+  }
+
+  closeAllMenus(): void {
+    this.menuOpen = {};
+    this.cdr.markForCheck();
+  }
+
+  isMyComment(comment: GroupResourceComment): boolean {
+    return comment.user.id === this.currentUserId;
+  }
+
+  formatTimeAgo(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'just now';
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+
+    const years = Math.floor(days / 365);
+    return `${years}y ago`;
   }
 }

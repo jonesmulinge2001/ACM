@@ -20,7 +20,6 @@ import { FlagPostModalComponent } from '../flag-modal-component/flag-modal-compo
 import { ElementRef, HostListener } from '@angular/core';
 import Swal from 'sweetalert2';
 
-
 @Component({
   standalone: true,
   selector: 'app-home',
@@ -76,7 +75,7 @@ export class HomeComponent implements OnInit {
   post: Post | null = null;
   nextCursor?: string | null = undefined;
   isLoading = false;
-  limit = 10; 
+  limit = 10;
 
   likingInProgress = new Set<string>();
 
@@ -85,6 +84,8 @@ export class HomeComponent implements OnInit {
   showFlagModal = false;
   selectedPostToFlag?: Post;
   showMoreOptions = false;
+
+  showCommentEditModal = false;
 
   menuOpen: Record<string, boolean> = {};
 
@@ -518,134 +519,169 @@ export class HomeComponent implements OnInit {
     });
   }
 
-
   goToPost(id: string) {
     this.router.navigate(['/posts', id]);
   }
-  
 
   isMyComment(comment: Comment) {
     return comment.userId === this.loggedInUserId;
   }
 
- // ------------------ MENU HANDLERS ------------------
- toggleMenu(id: string) {
-  this.menuOpen[id] = !this.menuOpen[id];
-  this.cdr.markForCheck();
- }
+  // ------------------ MENU HANDLERS ------------------
+  toggleMenu(id: string) {
+    this.menuOpen[id] = !this.menuOpen[id];
+    this.cdr.markForCheck();
+  }
 
- closeAllMenus() {
-  this.menuOpen = {};
-  this.cdr.markForCheck();
- }
+  closeAllMenus() {
+    this.menuOpen = {};
+    this.cdr.markForCheck();
+  }
 
-   // ------------------ EDIT MODAL ------------------
-   openEditCommnetModal(comment: Comment) {
-    if(!this.isMyComment(comment)) return;
+  // ------------------ EDIT MODAL ------------------
+  // Update the openEditCommentModal method
+  openEditCommentModal(comment: Comment) {
+    if (!this.isMyComment(comment)) return;
     this.closeAllMenus();
     this.editedComment = comment.body;
     this.editingCommentId = comment.id;
-    this.showEditModal = true;
+    this.showCommentEditModal = true; // Use separate modal
     this.cdr.markForCheck();
-   }
-
-   cancelEdit() {
-    this.showEditModal = false;
-    this.editedComment = '';
+  }
+  // Also update the cancelEdit method to properly reset everything
+  cancelEdit() {
+    this.showCommentEditModal = false;
     this.editingCommentId = null;
+    this.editedComment = '';
     this.cdr.markForCheck();
-   }
+  }
 
-   saveEdit() {
+  // In your component class, add a method to find and update comments
+  private updateCommentInLists(
+    commentId: string,
+    updatedComment: Comment
+  ): void {
+    // Update in main comments
+    Object.keys(this.comments).forEach((postId) => {
+      const commentIndex = this.comments[postId].findIndex(
+        (c) => c.id === commentId
+      );
+      if (commentIndex > -1) {
+        this.comments[postId][commentIndex] = {
+          ...this.comments[postId][commentIndex],
+          ...updatedComment,
+          body: updatedComment.body,
+        };
+        return; // Found and updated
+      }
+    });
+
+    // Update in replies
+    Object.keys(this.replies).forEach((parentCommentId) => {
+      const replyIndex = this.replies[parentCommentId].findIndex(
+        (r) => r.id === commentId
+      );
+      if (replyIndex > -1) {
+        this.replies[parentCommentId][replyIndex] = {
+          ...this.replies[parentCommentId][replyIndex],
+          ...updatedComment,
+          body: updatedComment.body,
+        };
+      }
+    });
+  }
+
+  // Update the saveEdit() method
+  saveEdit() {
     if (!this.editingCommentId || !this.editedComment.trim()) return;
     const updatedContent = this.editedComment.trim();
-  
-    this.commentService.editComment(this.editingCommentId, updatedContent).subscribe({
-      next: (res) => {
-        // Loop through all comment arrays in posts
-        Object.keys(this.comments).forEach(postId => {
-          const idx = this.comments[postId].findIndex(c => c.id === this.editingCommentId);
-          if (idx > -1) {
-            this.comments[postId][idx] = { ...res };
-          }
+
+    this.commentService
+      .editComment(this.editingCommentId, updatedContent)
+      .subscribe({
+        next: (res) => {
+          // Use the new update method
+          this.updateCommentInLists(this.editingCommentId!, res);
+
+          // Close edit modal and reset
+          this.showEditModal = false;
+          this.editingCommentId = null;
+          this.editedComment = '';
+
+          // Force change detection
+          this.cdr.detectChanges();
+          this.toastr.success('Comment updated successfully');
+        },
+        error: (err) => {
+          console.error('Edit failed', err);
+          this.toastr.error('Failed to update comment');
+          this.cancelEdit();
+        },
+      });
+  }
+
+  // ------------------ DELETE COMMENT MODAL ------------------
+  openDeleteCommentModal(comment: Comment) {
+    if (!this.isMyComment(comment)) return;
+    this.closeAllMenus();
+    this.commentToDelete = comment;
+    this.showCommentDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelDelete() {
+    this.showCommentDeleteModal = false;
+    this.commentToDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  conformDelete() {
+    if (!this.commentToDelete) return;
+
+    this.commentService.deleteComment(this.commentToDelete.id).subscribe({
+      next: () => {
+        Object.keys(this.comments).forEach((postId) => {
+          this.comments[postId] = this.comments[postId].filter(
+            (c) => c.id !== this.commentToDelete?.id
+          );
         });
-        this.cancelEdit();
+        this.showCommentDeleteModal = false;
+        this.commentToDelete = null;
+        this.cdr.detectChanges();
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Edit failed', err);
-        this.cancelEdit();
-        this.cdr.detectChanges(); 
+        console.error('Delete failed', err);
+        this.cancelDelete();
       },
     });
   }
-  
 
-     // ------------------ DELETE COMMENT MODAL ------------------
-     openDeleteCommentModal(comment: Comment) {
-      if(!this.isMyComment(comment)) return;
-      this.closeAllMenus();
-      this.commentToDelete = comment;
-      this.showCommentDeleteModal = true;
-      this.cdr.markForCheck();
-     }
+  sharePost() {
+    if (!this.post) return;
 
-     cancelDelete() {
-      this.showCommentDeleteModal = false;
-      this.commentToDelete = null;
-      this.cdr.markForCheck();
-     }
+    const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
 
-     conformDelete() {
-      if (!this.commentToDelete) return;
-    
-      this.commentService.deleteComment(this.commentToDelete.id).subscribe({
-        next: () => {
-          Object.keys(this.comments).forEach(postId => {
-            this.comments[postId] = this.comments[postId].filter(
-              c => c.id !== this.commentToDelete?.id
-            );
-          });
-          this.showCommentDeleteModal = false;
-          this.commentToDelete = null;
-          this.cdr.detectChanges(); 
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error('Delete failed', err);
-          this.cancelDelete();
-        }
+    if (navigator.share) {
+      navigator.share({
+        title: this.post.title,
+        text: this.post.body?.substring(0, 100),
+        url: shareUrl,
       });
-    }
-    
-
-    sharePost() {
-      if (!this.post) return;
-  
-      const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
-      
-      if (navigator.share) {
-        navigator.share({
-          title: this.post.title,
-          text: this.post.body?.substring(0, 100),
-          url: shareUrl,
-        });
-      } else {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert('Link copied to clipboard!');
-        });
-      }
-    }
-  
-    copyPostLink() {
-      if (!this.post) return;
-  
-      const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
+    } else {
       navigator.clipboard.writeText(shareUrl).then(() => {
         alert('Link copied to clipboard!');
-        this.showMoreOptions = false;
       });
     }
-    
-  
+  }
+
+  copyPostLink() {
+    if (!this.post) return;
+
+    const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Link copied to clipboard!');
+      this.showMoreOptions = false;
+    });
+  }
 }
