@@ -578,6 +578,11 @@ export class GroupFeedComponent implements OnInit {
     return comment.user.id === this.currentUserId;
   }
 
+  formatCount(count: number, singular: string, plural: string): string {
+    const value = count || 0;
+    return `${value} ${value === 1 ? singular : plural}...`;
+  }
+
   formatTimeAgo(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();

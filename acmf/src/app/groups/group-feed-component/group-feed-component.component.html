@@ -389,7 +389,7 @@
               resource.isLikedByCurrentUser ? "thumb_up" : "thumb_up_off_alt"
             }}</span
           >
-          <span>{{ resource.likesCount || 0 }}</span>
+          <span>{{ formatCount(resource.likesCount, 'like', 'likes') }}</span>
         </button>
 
         <button
@@ -397,11 +397,10 @@
           class="flex items-center gap-1 sm:gap-2 hover:text-indigo-600 transition"
         >
           <span class="material-icons">chat_bubble_outline</span>
-          <span>{{ resource.commentsCount || 0 }}</span>
+          <span>{{ formatCount(resource.commentsCount, 'comment', 'comments') }}</span>
         </button>
       </div>
 
-      <!-- Comments Section -->
       <!-- Comments Section -->
       <div
         *ngIf="commentSectionOpen[resource.id]"
@@ -657,7 +656,7 @@
                   [disabled]="!newComment[resource.id]?.trim()"
                   class="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Post
+                  Comment
                 </button>
               </div>
             </div>
