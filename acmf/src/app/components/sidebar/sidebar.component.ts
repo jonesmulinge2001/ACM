@@ -16,7 +16,8 @@ export class SidebarComponent implements OnInit {
     { label: 'Feed', link: '/home', icon: 'dynamic_feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
-    { label: 'Resources', link: '/resources', icon: 'work' },
+    // { label: 'Resources', link: '/resources', icon: 'work' },
+    { label: 'UniTok', link: '/resources', icon: 'video_library' },
     // { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
     // { label: 'Fund Me', link: '/fund-me', icon: 'volunteer_activism' },
     { label: 'Groups', link: '/groups', icon: 'handshake' },
@@ -27,7 +28,7 @@ export class SidebarComponent implements OnInit {
       Feed: 'from-pink-500 to-red-500',
       Network: 'from-indigo-500 to-purple-500',
       Create: 'from-green-500 to-emerald-500',
-      Resources: 'from-blue-500 to-cyan-500',
+      UniTok: 'from-blue-500 to-cyan-500',
       Opportunities: 'from-yellow-500 to-orange-500',
       'Fund Me': 'from-black via-red-600 to-green-600', 
     };
