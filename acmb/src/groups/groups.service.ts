@@ -1,18 +1,11 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
- 
 /* eslint-disable prettier/prettier */
-
 /* eslint-disable prettier/prettier */
-
 /* eslint-disable prettier/prettier */
-
 /* eslint-disable prettier/prettier */
-
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
@@ -42,7 +35,7 @@ import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
 } from '../shared/cloudinary/cloudinary/cloudinary.service';
-import type { Express } from 'express'; 
+import type { Express } from 'express';
 
 @Injectable()
 export class GroupsService {
@@ -115,7 +108,8 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
     });
-    if (!group) throw new NotFoundException(`Group with id (${groupId}) not found`);
+    if (!group)
+      throw new NotFoundException(`Group with id (${groupId}) not found`);
     return group;
   }
 
@@ -176,7 +170,9 @@ export class GroupsService {
       });
     } catch (err: any) {
       if (err.code === 'p2002')
-        throw new BadRequestException('This user is already a member the group');
+        throw new BadRequestException(
+          'This user is already a member the group',
+        );
       throw err;
     }
   }
@@ -731,62 +727,62 @@ export class GroupsService {
   }
 
   // Comment on Resource
-async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
-  const resource = await this.prisma.groupResource.findUnique({
-    where: { id: dto.resourceId },
-  });
-  if (!resource) throw new NotFoundException('Resource not found');
+  async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
+    const resource = await this.prisma.groupResource.findUnique({
+      where: { id: dto.resourceId },
+    });
+    if (!resource) throw new NotFoundException('Resource not found');
 
-  const membership = await this.prisma.groupMember.findUnique({
-    where: { groupId_userId: { groupId: resource.groupId, userId } },
-  });
-  if (!membership) throw new ForbiddenException('Not a group member');
+    const membership = await this.prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId: resource.groupId, userId } },
+    });
+    if (!membership) throw new ForbiddenException('Not a group member');
 
-  // Create the comment and include user data
-  const comment = await this.prisma.groupResourceComment.create({
-    data: {
-      userId,
-      resourceId: dto.resourceId,
-      content: dto.content,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          profile: {
-            select: {
-              profileImage: true,
-              institution: {
-                select: {
-                  id: true,
-                  name: true,
+    // Create the comment and include user data
+    const comment = await this.prisma.groupResourceComment.create({
+      data: {
+        userId,
+        resourceId: dto.resourceId,
+        content: dto.content,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: {
+                profileImage: true,
+                institution: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  return {
-    id: comment.id,
-    userId: comment.userId,
-    resourceId: comment.resourceId,
-    content: comment.content,
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    user: {
-      id: comment.user.id,
-      name: comment.user.name,
-      profile: {
-        profileImage: comment.user.profile?.profileImage || null,
-        institution: comment.user.profile?.institution || null,
+    return {
+      id: comment.id,
+      userId: comment.userId,
+      resourceId: comment.resourceId,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      user: {
+        id: comment.user.id,
+        name: comment.user.name,
+        profile: {
+          profileImage: comment.user.profile?.profileImage || null,
+          institution: comment.user.profile?.institution || null,
+        },
       },
-    },
-  };
-}
+    };
+  }
 
   // edit comment
   async editComment(userId: string, commentId: string, newContent: string) {
@@ -794,16 +790,16 @@ async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
     const comment = await this.prisma.groupResourceComment.findUnique({
       where: { id: commentId },
     });
-  
+
     // Validate comment existence
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
-  
+
     if (comment.userId !== userId) {
       throw new ForbiddenException('You can only edit your own comment');
     }
-  
+
     // Update content and return with user data
     const updatedComment = await this.prisma.groupResourceComment.update({
       where: { id: commentId },
@@ -828,7 +824,7 @@ async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
         },
       },
     });
-  
+
     return {
       id: updatedComment.id,
       userId: updatedComment.userId,
@@ -887,7 +883,9 @@ async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
 
     // Ensure user is a group member
     const membership = await this.prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId: comment.groupResource.groupId, userId } },
+      where: {
+        groupId_userId: { groupId: comment.groupResource.groupId, userId },
+      },
     });
     if (!membership) throw new ForbiddenException('You are not a group member');
 
@@ -896,7 +894,8 @@ async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
         data: { userId, commentId },
       });
     } catch (err: any) {
-      if (err.code === 'P2002') throw new BadRequestException('You already liked this comment');
+      if (err.code === 'P2002')
+        throw new BadRequestException('You already liked this comment');
       throw err;
     }
 
@@ -963,40 +962,40 @@ async commentOnResource(userId: string, dto: CommentGroupResourceDto) {
       },
     });
 
-// In getGroupFeed method, update the return mapping:
-return resources.map((r) => ({
-  id: r.id,
-  content: r.content,
-  createdAt: r.createdAt,
-  groupId: r.groupId,
-  resourceUrl: r.resourceUrl,
-  originalName: r.originalName,
-  fileType: r.fileType,
-  sharedBy: {
-    id: r.sharedBy.id,
-    name: r.sharedBy.name,
-    profileImage: r.sharedBy.profile?.profileImage || null,
-  },
-  likesCount: r.likes.length,
-  commentsCount: r.comments.length,
-  isLiked: r.likes.some((like) => like.userId === userId),
-  comments: r.comments.map(c => ({
-    id: c.id,
-    userId: c.userId,
-    resourceId: c.resourceId,
-    content: c.content,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-    user: {
-      id: c.user.id,
-      name: c.user.name,
-      profile: {
-        profileImage: c.user.profile?.profileImage || null,
-        institution: c.user.profile?.institution?.name || null,
+    // In getGroupFeed method, update the return mapping:
+    return resources.map((r) => ({
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      groupId: r.groupId,
+      resourceUrl: r.resourceUrl,
+      originalName: r.originalName,
+      fileType: r.fileType,
+      sharedBy: {
+        id: r.sharedBy.id,
+        name: r.sharedBy.name,
+        profileImage: r.sharedBy.profile?.profileImage || null,
       },
-    },
-  })),
-}));
+      likesCount: r.likes.length,
+      commentsCount: r.comments.length,
+      isLiked: r.likes.some((like) => like.userId === userId),
+      comments: r.comments.map((c) => ({
+        id: c.id,
+        userId: c.userId,
+        resourceId: c.resourceId,
+        content: c.content,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        user: {
+          id: c.user.id,
+          name: c.user.name,
+          profile: {
+            profileImage: c.user.profile?.profileImage || null,
+            // institution: c.user.profile?.institution?.name || null,
+          },
+        },
+      })),
+    }));
   }
 
   //  Fetch only posts with files (resources)
