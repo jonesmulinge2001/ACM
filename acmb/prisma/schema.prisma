@@ -30,6 +30,7 @@ model User {
   resourceFlagsReviewed     AcademicResourceFlag[]     @relation("AcademicResourceFlagsReviewed")
   comments                  Comment[]
   commentLikes              CommentLike[]
+  uniTokVideos              UniTokVideo[]
   messages                  ConversationMessage[]
   participants              ConversationParticipant[]
   following                 Follow[]                   @relation("following")
@@ -43,6 +44,8 @@ model User {
   groupResourceLikes        GroupResourceLike[]
   createdInstitutionAdmins  InstitutionAdmin[]         @relation("CreatedInstitutionAdmins")
   institutionAdmins         InstitutionAdmin[]
+  uniTokLikes   UniTokVideoLike[]
+  uniTokComments UniTokComment[]
   announcements             InstitutionAnnouncement[]
   interactions              Interaction[]
   likes                     Like[]
@@ -495,6 +498,70 @@ model ConversationMessage {
 
   @@index([conversationId, createdAt])
 }
+
+model UniTokVideo {
+  id          String   @id @default(uuid())
+
+  // Relations
+  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId   String
+
+  // Core content
+  title       String   @db.VarChar(150)
+  description String?
+  videoUrl    String
+
+  // Metadata
+  tags        String[] @default([])
+
+  // Engagement
+  commentsCount  Int      @default(0)
+  likesCount  Int      @default(0)
+
+  comments    UniTokComment[]
+  likes       UniTokVideoLike[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([creatorId])
+  @@index([createdAt])
+}
+
+model UniTokVideoLike {
+  id        String      @id @default(uuid())
+
+  video     UniTokVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId  String
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+
+  createdAt DateTime    @default(now())
+
+  @@unique([videoId, userId])
+  @@index([videoId])
+  @@index([userId])
+}
+
+model UniTokComment {
+  id        String      @id @default(uuid())
+
+  video     UniTokVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId  String
+
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+
+  content   String
+  isDeleted Boolean? @default(false)
+
+  createdAt DateTime    @default(now())
+
+  @@index([videoId])
+  @@index([authorId])
+}
+
 
 enum GroupRole {
   OWNER

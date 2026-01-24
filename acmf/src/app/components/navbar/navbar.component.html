@@ -15,28 +15,22 @@
   <!-- Search Bar (hidden on small screens) -->
   <div class="search-container relative flex-1 max-w-xl mx-6">
     <div
-      class="hidden sm:flex items-center w-[380px] px-4 py-2.5 rounded-full
-             bg-white/70 backdrop-blur-md
-             border border-gray-200 shadow-sm
-             transition-all duration-200
-             hover:shadow-md
-             focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-400"
+      class="hidden sm:flex items-center w-[380px] px-4 py-2.5 rounded-full bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-400"
     >
       <span class="material-icons text-gray-400 mr-3 text-[20px]">
         search
       </span>
-    
+
       <input
         type="search"
         [(ngModel)]="searchQuery"
         (input)="onSearchQueryChange($any($event.target).value)"
         (focus)="searchPanelOpen = true"
         placeholder="Search students, posts, resources..."
-        class="flex-1 bg-transparent outline-none text-sm text-gray-800
-               placeholder-gray-400"
+        class="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
       />
     </div>
-    
+
     <!-- Search Results Dropdown -->
     <div
       *ngIf="searchPanelOpen && searchQuery.trim()"
@@ -185,7 +179,7 @@
     <ng-container *ngIf="isLoggedIn">
       <div class="profile-dropdown-container relative select-none">
         <!-- Profile Trigger -->
-        <div 
+        <div
           class="flex items-center space-x-2 cursor-pointer group"
           (click)="toggleMenu()"
         >
@@ -236,11 +230,14 @@
           </button>
 
           <!-- Settings -->
+          <!-- Settings -->
           <button
-            routerLink="/settings"
+            (click)="toggleSettingsPanel()"
             class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
           >
-            <span class="material-icons text-gray-500 text-lg mr-2">settings</span>
+            <span class="material-icons text-gray-500 text-lg mr-2"
+              >settings</span
+            >
             Settings
           </button>
 
@@ -255,6 +252,12 @@
             <span class="material-icons text-red-500 text-lg mr-2">logout</span>
             Logout
           </button>
+
+          <!-- Inside Navbar dropdown -->
+          <app-settings-panel
+            *ngIf="settingsPanelOpen"
+            (close)="closeSettingsPanel()"
+          ></app-settings-panel>
         </div>
       </div>
     </ng-container>

@@ -20,13 +20,16 @@ import { AcademicResourceModule } from './academic-resource/academic-resource.mo
 import { DashboardOverviewModule } from './admin/dashboard-overview/dashboard-overview.module';
 import { UserManagementModule } from './admin/user-management/user-management.module';
 import { PostManagementModule } from './admin/post-management/post-management.module';
-import { AcademicRsourceModule } from './admin/academic-rsource/academic-rsource.module';
 import { GroupsModule } from './groups/groups.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { InstitutionModule } from './institution/institution.module';
 import { ManageGroupsModule } from './admin/manage-groups/manage-groups.module';
 import { SearchModule } from './search/search.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AcademicResourceAdminModule } from './admin/academic-rsource/academic-rsource.module';
+import { VideosModule } from './uniTok/videos/videos.module';
+import { VideoLikeModule } from './uniTok/video-like/video-like.module';
+import { VideoCommentModule } from './uniTok/video-comment/video-comment.module';
 
 @Module({
   imports: [
@@ -48,14 +51,18 @@ import { NotificationsModule } from './notifications/notifications.module';
     DashboardOverviewModule,
     UserManagementModule,
     PostManagementModule,
-    AcademicRsourceModule,
+    AcademicResourceAdminModule,
     GroupsModule,
     ConversationsModule,
     InstitutionModule,
     ManageGroupsModule,
     SearchModule,
-    NotificationsModule
+    NotificationsModule,
+    VideosModule,
+    VideoLikeModule,
+    VideoCommentModule
   ],
   providers: [AppService],
+  controllers: [],
 })
 export class AppModule {}

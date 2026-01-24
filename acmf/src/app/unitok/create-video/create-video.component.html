@@ -1,0 +1,101 @@
+<div [formGroup]="videoForm" class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg space-y-6">
+    <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+      <span class="material-icons">videocam</span> Upload Video
+    </h2>
+  
+    <!-- Video Upload / Preview -->
+    <div
+      class="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400"
+      (click)="fileInput.click()"
+    >
+      <input
+        type="file"
+        #fileInput
+        accept="video/*"
+        class="hidden"
+        (change)="onFileSelected($event)"
+      />
+      <div *ngIf="!videoPreviewUrl" class="flex flex-col items-center gap-2">
+        <span class="material-icons text-4xl text-indigo-500">upload</span>
+        <p class="text-sm text-slate-500">Drop your video here or click to browse</p>
+        <button type="button" class="px-4 py-2 bg-indigo-500 text-white rounded-md">Choose Video</button>
+      </div>
+      <video
+        *ngIf="videoPreviewUrl"
+        [src]="videoPreviewUrl"
+        controls
+        class="w-full rounded-lg mt-2"
+      ></video>
+    </div>
+    <div *ngIf="videoForm.get('videoFile')?.touched && videoForm.get('videoFile')?.invalid" class="text-red-500 text-sm">
+      Please upload a video file.
+    </div>
+  
+    <!-- Title -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700">Video Title</label>
+      <input
+        type="text"
+        formControlName="title"
+        placeholder="e.g., How to Apply for HELB Step-by-Step"
+        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
+      />
+      <div *ngIf="videoForm.get('title')?.touched && videoForm.get('title')?.invalid" class="text-red-500 text-sm mt-1">
+        Title is required (min 3 characters).
+      </div>
+    </div>
+  
+    <!-- Description -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700">Description</label>
+      <textarea
+        formControlName="description"
+        placeholder="Describe what your video covers and why it's helpful..."
+        rows="3"
+        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
+      ></textarea>
+      <div *ngIf="videoForm.get('description')?.touched && videoForm.get('description')?.invalid" class="text-red-500 text-sm mt-1">
+        Description cannot exceed 500 characters.
+      </div>
+    </div>
+  
+    <!-- Tags -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700">Tags (Select up to 5)</label>
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button
+          type="button"
+          *ngFor="let tag of tags"
+          (click)="toggleTag(tag)"
+          [class.bg-indigo-500]="selectedTags.includes(tag)"
+          [class.text-white]="selectedTags.includes(tag)"
+          class="border border-slate-300 rounded-full px-3 py-1 text-sm hover:bg-indigo-100 transition"
+        >
+          #{{ tag }}
+        </button>
+      </div>
+    </div>
+  
+    <!-- Error -->
+    <div *ngIf="error" class="text-red-500 text-sm">{{ error }}</div>
+  
+    <!-- Actions -->
+    <div class="flex justify-end gap-2 mt-4">
+      <button
+        type="button"
+        (click)="cancel()"
+        class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 transition"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="submit()"
+        [disabled]="isSubmitting"
+        class="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-50 transition"
+      >
+        Upload Video
+      </button>
+    </div>
+  </div>
+  

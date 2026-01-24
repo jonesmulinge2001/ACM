@@ -7,4 +7,4 @@ import { AcademicResourceController } from './academic-resource.controller';
   providers: [AcademicResourceService],
   controllers: [AcademicResourceController]
 })
-export class AcademicRsourceModule {}
+export class AcademicResourceAdminModule {}

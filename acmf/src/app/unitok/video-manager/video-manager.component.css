@@ -1,0 +1,73 @@
+/* video-manager.component.css */
+
+/* TikTok Style Layout */
+:host {
+    display: block;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Ensure videos take full viewport */
+  article {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    flex-shrink: 0;
+  }
+  
+  /* Smooth snap scrolling */
+  .snap-y {
+    scroll-snap-type: y mandatory;
+  }
+  
+  .snap-start {
+    scroll-snap-align: start;
+  }
+  
+  /* Smooth scrolling behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Video container styling */
+  video {
+    background: #000;
+  }
+  
+  /* Comments panel animation */
+  .transform {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .translate-x-0 {
+    transform: translateX(0);
+  }
+  
+  .translate-x-full {
+    transform: translateX(100%);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .absolute.bottom-32 {
+      bottom: 6rem;
+    }
+    
+    .absolute.right-4 {
+      right: 1rem;
+    }
+    
+    .absolute.left-4 {
+      left: 1rem;
+    }
+  }

@@ -13,16 +13,18 @@ import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common'; 
 import { NotificationService } from '../../services/notification.service';
 import { NotificationComponent } from '../notifications/notifications.component';
+import { SettingsPanelComponent } from "../../settings/settings-panel/settings-panel.component";
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     RouterModule,
     NotificationComponent,
-  ],
+    SettingsPanelComponent
+],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -43,6 +45,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private socketSub?: Subscription;
   private searchSubject = new Subject<string>();
   private notificationSub?: Subscription;
+
+  settingsPanelOpen: boolean = false;
 
   constructor(
     private router: Router,
@@ -186,6 +190,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   navigateToResource(resourceId: string) {
     // TODO: specific resource detail
     this.router.navigate(['/resources']); 
+  }
+
+  toggleSettingsPanel() {
+    this.settingsPanelOpen = !this.settingsPanelOpen;
+  }
+
+  closeSettingsPanel() {
+    this.settingsPanelOpen = false;
   }
 
   logOut(): void {

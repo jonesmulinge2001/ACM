@@ -1,0 +1,20 @@
+<div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Theme</h3>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Pick how Academeet looks for you</p>
+  
+    <div class="flex flex-col sm:flex-row gap-2">
+      <button
+        *ngFor="let t of themes"
+        (click)="changeTheme(t.value)"
+        class="flex-1 px-4 py-2 rounded-lg border transition flex items-center justify-center gap-2"
+        [ngClass]="{
+          'bg-blue-600 text-white border-blue-600': selectedTheme === t.value,
+          'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200': selectedTheme !== t.value
+        }"
+      >
+        <span>{{ t.label }}</span>
+        <span *ngIf="selectedTheme === t.value" class="text-xs text-blue-200 dark:text-blue-300 font-medium">Active</span>
+      </button>
+    </div>
+  </div>
+  

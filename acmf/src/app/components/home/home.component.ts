@@ -399,7 +399,9 @@ export class HomeComponent implements OnInit {
   // ✅ Detects outside click to close all menus
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
-    if (!this.eRef.nativeElement.contains(event.target)) {
+    const target = event.target as HTMLElement;
+    const clickedInsideDropdown = target.closest('.post-dropdown');
+    if (!clickedInsideDropdown) {
       this.actionMenuOpen = {};
     }
   }

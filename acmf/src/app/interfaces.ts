@@ -748,3 +748,76 @@ export interface NotificationEventPayload {
   entityId?: string;
   createdAt: string;
 }
+
+// theme
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+export interface CreateVideoDto {
+  title: string;
+  description: string;
+  tags: string[];
+  videoUrl: string;
+}
+
+export interface UpdateVideoDto {
+  title?: string;
+  description?: string;
+  tags?: string[];
+  videoUrl?: string;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  videoUrl: string;
+  likesCount: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    profileImage?: string;
+  };
+}
+
+export interface VideoLikeResponse {
+  id: string;
+  videoId: string;
+  userId: string;
+  createdAt: string;
+}
+
+export interface LikeStatusResponse {
+  hasLiked: boolean;
+}
+
+export interface VideoComment {
+  id: string;
+  videoId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    id: string;
+    name: string;
+    profileImage?: string | null;
+    institution?: { name: string } | null;
+  };
+}
+
+export interface VideoCommentResponse {
+  total: number;
+  comments: VideoComment[];
+}
+
+export interface CreateVideoCommentRequest {
+  content: string;
+}
+
+export interface UpdateVideoCommentRequest {
+  content: string;
+}
+

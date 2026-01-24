@@ -17,7 +17,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Network', link: '/network', icon: 'diversity_3' },
     { label: 'Create', link: '/create', icon: 'add_circle' },
     // { label: 'Resources', link: '/resources', icon: 'work' },
-    { label: 'UniTok', link: '/resources', icon: 'video_library' },
+    { label: 'UniTok', link: '/videos', icon: 'video_library' },
     // { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
     // { label: 'Fund Me', link: '/fund-me', icon: 'volunteer_activism' },
     { label: 'Groups', link: '/groups', icon: 'handshake' },

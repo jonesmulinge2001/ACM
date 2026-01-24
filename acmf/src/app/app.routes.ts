@@ -34,6 +34,7 @@ import { ManageGroupsComponent } from './admin/manage-groups/manage-groups.compo
 import { SuperAdminInstitutionsComponent } from './admin/institution-management/institution-management.component';
 import { FundMeComponent } from './components/fund-me/fund-me.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
+import { VideoManagerComponent } from './unitok/video-manager/video-manager.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -58,7 +59,8 @@ export const routes: Routes = [
       { path: 'update-profile', component: UpdateProfileComponent },
       { path: 'profile/:id', component: StudentProfileComponent },
       { path: 'network', component: NetworkComponent },
-      { path: 'resources', component: ResourcesComponent },
+      // { path: 'resources', component: ResourcesComponent },
+      { path: 'videos', component: VideoManagerComponent },
       { path: 'create', component: PostComponent },
       { path: 'upload-academic-resource', component: ResourceUploadModalComponent },
       { path: 'opportunities', component: OpportunitiesComponent },
