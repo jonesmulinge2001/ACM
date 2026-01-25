@@ -218,7 +218,7 @@ import { LikeService } from '../../services/like.service';
               </svg>
               <span>Share</span>
             </button>
-            <button class="action-btn" (click)="toggleBookmark()">
+            <!-- <button class="action-btn" (click)="toggleBookmark()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" 
                    [attr.stroke]="isBookmarked ? 'none' : 'currentColor'" 
                    stroke-width="2"
@@ -226,7 +226,7 @@ import { LikeService } from '../../services/like.service';
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
               </svg>
               <span>{{ isBookmarked ? 'Saved' : 'Save' }}</span>
-            </button>
+            </button> -->
           </div>
 
           <!-- Comments section -->

@@ -15,7 +15,6 @@
         students and learn everything you need to know about campus life.
       </p>
 
-
       <!-- Navigation to Video Feed -->
       <div class="mt-16">
         <button
@@ -269,7 +268,6 @@
                       <!-- User Avatar -->
                       <div class="flex-shrink-0">
                         <div
-                        
                           class="w-12 h-12 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#a855f7] flex items-center justify-center shadow-md"
                         >
                           <span class="material-icons text-white text-lg"
@@ -362,9 +360,8 @@
 
                 <!-- Comment Input (Fixed Bottom) -->
                 <div
-                class="sticky bottom-16 md:bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4"
-              >
-              
+                  class="sticky bottom-16 md:bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4"
+                >
                   <form
                     [formGroup]="commentForm"
                     (ngSubmit)="createCommentForVideo(video.id)"

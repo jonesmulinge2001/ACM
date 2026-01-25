@@ -116,6 +116,8 @@ export class NotificationService {
         seen: false,
         message: this.buildMessage(event.type, [event.actorName]),
         createdAt: event.createdAt,
+
+        actionUrl: this.buildFallbackActionUrl(event),
       };
       this._notifications.next([newNotification, ...current]);
     }
@@ -125,6 +127,21 @@ export class NotificationService {
       this._notifications.value.filter((n) => !n.seen).length
     );
   }
+
+  private buildFallbackActionUrl(event: NotificationEventPayload): string {
+    switch (event.type) {
+      case 'POST_LIKED':
+      case 'POST_COMMENTED':
+        return `/posts/${event.entityId}`;
+      case 'FOLLOWED':
+        return `/profile/${event.actorId}`;
+      case 'MESSAGE_SENT':
+        return `${environment.apiBase}/conversations/${event.actorId}`;
+      default:
+        return '/notifications';
+    }
+  }
+  
 
   /** Format notification message (LinkedIn style) */
   private buildMessage(

@@ -731,6 +731,9 @@ export interface NotificationItem {
   seen: boolean;               // True if the user has seen this
   message: string;             // Pre-generated string like "Jonathan liked your post"
   createdAt: string;           // ISO timestamp
+
+  actionUrl?: string;
+  actionMeta?: Record<string, any>;
 }
 
 

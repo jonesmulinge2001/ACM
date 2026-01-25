@@ -76,17 +76,28 @@ export class NotificationService {
           message = 'You have a new notification';
       }
   
+      const action = this.resolveNotificationAction(
+        n.type,
+        n.entityId,
+        n.actorIds,
+      );
+      
       return {
         id: n.id,
         type: n.type,
         entityId: n.entityId,
         actorIds: n.actorIds,
-        actorNames, // include names for frontend
+        actorNames,
         count: n.count,
         seen: n.seen,
         createdAt: n.createdAt,
-        message, // friendly aggregated message
+        message,
+      
+        // Add actionUrl and actionMeta to the returned object
+        actionUrl: action.actionUrl,
+        actionMeta: action.actionMeta,
       };
+      
     });
   
     return mapped;
@@ -125,4 +136,44 @@ export class NotificationService {
       },
     });
   }
+
+  private resolveNotificationAction(
+    type: string,
+    entityId: string | null,
+    actorIds: string[],
+  ) {
+    switch (type) {
+      case 'POST_LIKED':
+      case 'POST_COMMENTED':
+        return {
+          actionUrl: `/posts/${entityId}`,
+          actionMeta: {
+            postId: entityId,
+          },
+        };
+  
+      case 'MESSAGE_SENT':
+        return {
+          actionUrl: `/conversations/${actorIds[0]}`,
+          actionMeta: {
+            chatWithUserId: actorIds[0],
+          },
+        };
+  
+      case 'FOLLOWED':
+        return {
+          actionUrl: `/profile/${actorIds[0]}`,
+          actionMeta: {
+            userId: actorIds[0],
+          },
+        };
+  
+      default:
+        return {
+          actionUrl: `/notifications`,
+          actionMeta: null,
+        };
+    }
+  }
+  
 }

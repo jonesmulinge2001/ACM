@@ -1,7 +1,7 @@
 // notification.component.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationItem } from '../../interfaces';
 import { NotificationService } from '../../services/notification.service';
@@ -550,7 +550,12 @@ export class NotificationComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
   private clickListener!: (event: MouseEvent) => void;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private router: Router
+  ) {}
+
+  
 
   ngOnInit() {
     // Subscribe to notifications
@@ -660,23 +665,14 @@ export class NotificationComponent implements OnInit, OnDestroy {
   }
 
   navigateToContent(notification: NotificationItem) {
-    // Implement your navigation logic here
-    switch (notification.type) {
-      case 'POST_LIKED':
-      case 'POST_COMMENTED':
-        // Navigate to post
-        console.log('Navigating to post:', notification.entityId);
-        break;
-      case 'FOLLOWED':
-        // Navigate to user profile
-        console.log('Navigating to profile:', notification.actorIds[0]);
-        break;
-      case 'MESSAGE_SENT':
-        // Navigate to messages
-        console.log('Navigating to messages');
-        break;
+    if (notification.actionUrl) {
+      this.router.navigateByUrl(notification.actionUrl);
+    } else {
+      // Safe fallback
+      this.router.navigateByUrl('/notifications');
     }
   }
+  
 
   markAsRead(notificationId: string, event: Event) {
     event.stopPropagation();

@@ -67,7 +67,7 @@ export const routes: Routes = [
       { path: 'groups/create', component: CreateGroupComponent }, 
       { path: 'groups', component: GroupListComponent },
       { path: 'groups/:id', component: GroupDetailComponent },
-      { path: 'fund-me', component: FundMeComponent },
+      // { path: 'fund-me', component: FundMeComponent },
       { path: 'search', component: SearchResultsComponent },
     ]
   },
@@ -86,14 +86,5 @@ export const routes: Routes = [
       { path: 'institution-management', component: SuperAdminInstitutionsComponent },
     ]
   },
-
-  // ==== Institution Admin routes ====
-  // {
-  //   path: 'institution-admin',
-  //   canActivate: [AuthGuard],
-  //   component: InstitutionAdminLayoutComponent,
-  //   children: [
-  //   ]
-  // },
 ];
   
