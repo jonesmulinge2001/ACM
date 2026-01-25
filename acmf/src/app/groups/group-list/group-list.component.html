@@ -1,55 +1,80 @@
-<div class="fixed inset-0 sm:relative sm:inset-auto max-w-6xl mx-auto sm:p-6 bg-gray-50 min-h-screen flex flex-col z-50 sm:z-0">
-  
-  <div class="sticky top-0 z-20 flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-0 sm:mb-8 gap-4 bg-gray-50/80 backdrop-blur-md border-b sm:border-0 border-gray-200">
-    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Explore Study Groups</h2>
+<div class="fixed inset-0 sm:relative sm:inset-auto max-w-6xl mx-auto bg-gray-100 min-h-screen flex flex-col z-50 sm:z-0">
+
+  <!-- HEADER -->
+  <div
+    class="sticky top-0 z-20 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-4 sm:px-0 sm:py-6 bg-gray-100 border-b border-gray-200"
+  >
+    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900">
+      Explore student communities
+    </h2>
+
     <a
       routerLink="/groups/create"
-      class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow active:scale-95 transition-transform"
+      class="mt-3 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition"
     >
-      <span class="material-icons">add</span>
-      Create Group
+      <span class="material-icons text-[18px]">add</span>
+      Create community
     </a>
   </div>
 
-  <div class="flex-1 overflow-y-auto p-4 sm:p-0">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 sm:pb-0">
+  <!-- CONTENT -->
+  <div class="flex-1 overflow-y-auto px-4 sm:px-0 py-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-20 sm:pb-0">
+
       <ng-container *ngIf="groups$ | async as groups">
         <div
           *ngFor="let g of groups"
-          class="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col border border-gray-100/60"
+          class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition flex flex-col"
         >
-          <div class="relative overflow-hidden h-40 sm:h-48 bg-gray-100 flex items-center justify-center">
+
+          <!-- COVER IMAGE (NO CROPPING) -->
+          <div
+            class="w-full bg-gray-50 flex items-center justify-center aspect-[16/9] overflow-hidden border-b border-gray-200"
+          >
             <img
               *ngIf="g.coverImage"
               [src]="g.coverImage"
-              alt="Group Cover"
-              class="w-full h-full object-contain"
+              alt="Group cover"
+              class="max-h-full max-w-full object-contain"
             />
+
+            <span
+              *ngIf="!g.coverImage"
+              class="text-sm text-gray-400"
+            >
+              No cover image
+            </span>
           </div>
 
-          <div class="p-5 sm:p-6 space-y-3 flex-1 flex flex-col">
-            <h3 class="text-lg sm:text-xl font-bold text-gray-900 truncate">
+          <!-- BODY -->
+          <div class="p-5 flex flex-col flex-1">
+            <h3 class="text-base font-semibold text-gray-900 leading-snug">
               {{ g.name }}
             </h3>
-            <p class="text-sm text-gray-600 line-clamp-2">{{ g.description }}</p>
 
-            <div class="flex justify-between items-center mt-auto pt-4 flex-wrap gap-2">
-              <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
-                <span class="material-icons text-[14px]">group</span>
-                <span>{{ g._count?.members ?? g.members?.length }} members</span>
+            <p class="mt-1 text-sm text-gray-600 line-clamp-2">
+              {{ g.description }}
+            </p>
+
+            <!-- FOOTER -->
+            <div class="mt-auto pt-4 flex items-center justify-between">
+              <div class="flex items-center gap-1.5 text-xs text-gray-500">
+                <span class="material-icons text-[16px]">group</span>
+                {{ g._count?.members ?? g.members?.length }} members
               </div>
 
               <a
                 [routerLink]="['/groups', g.id]"
-                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium text-sm shadow active:scale-95 transition-transform"
+                class="text-sm font-medium text-blue-600 hover:text-blue-700"
               >
-                Open
-                <span class="material-icons text-[18px]">arrow_forward</span>
+                View community →
               </a>
             </div>
           </div>
+
         </div>
       </ng-container>
+
     </div>
   </div>
 </div>

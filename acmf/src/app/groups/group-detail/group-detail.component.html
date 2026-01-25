@@ -1,72 +1,89 @@
 <div class="bg-white rounded-lg shadow overflow-hidden">
   <ng-container *ngIf="group$ | async as group">
     <!-- Cover + Header -->
-    <div class="relative">
-      <!-- Cover Image -->
-      <img
-        *ngIf="group.coverImage"
-        [src]="group.coverImage"
-        class="w-full h-48 object-cover"
-      />
+<!-- COVER IMAGE ONLY -->
+<!-- <div class="bg-gray-100 border-b border-gray-200">
+  <div class="w-full aspect-[16/5] flex items-center justify-center overflow-hidden">
+    <img
+      *ngIf="group.coverImage"
+      [src]="group.coverImage"
+      alt="Group cover"
+      class="max-w-full max-h-full object-contain"
+    />
+  </div>
+</div> -->
 
-      <!-- Group Info Overlay -->
-      <div class="absolute bottom-0 left-0 p-4 flex items-center space-x-4">
-        <!-- Group Avatar -->
+<!-- GROUP DETAILS -->
+<div class="bg-white px-6 py-5 border-b border-gray-200">
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+
+    <!-- LEFT: INFO -->
+    <div class="flex items-start gap-4">
+      <!-- Avatar -->
+      <div class="bg-gray-100 rounded-lg p-1">
         <img
           *ngIf="group.coverImage"
           [src]="group.coverImage"
-          class="w-20 h-20 rounded-lg border-4 border-white object-cover"
+          alt="Group avatar"
+          class="w-20 h-full object-contain rounded-md"
         />
+      </div>
 
-        <!-- Title + description -->
-        <div>
-          <h1 class="text-2xl text-[#F0F8FF] font-semibold">
-            {{ group.name }}
-          </h1>
-          <p class="text-lg text-[#F0F8FF]">{{ group.description }}</p>
-          <div class="text-sm text-gray-500 flex space-x-2 mt-1">
-            <span>{{ group.members?.length || 0 }} members</span>
-          </div>
+      <!-- Text -->
+      <div>
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">
+          {{ group.name }}
+        </h1>
+
+        <p class="mt-1 text-sm sm:text-base text-gray-600 max-w-2xl">
+          {{ group.description }}
+        </p>
+
+        <div class="mt-2 text-sm text-gray-500">
+          {{ group.members?.length || 0 }} members
         </div>
       </div>
-
-      <!-- Action Buttons -->
-      <div class="absolute top-2 right-2 flex space-x-2">
-        <button
-          *ngIf="!joined"
-          (click)="join()"
-          class="px-3 py-1 bg-blue-600 text-white rounded-lg"
-        >
-          Join Group
-        </button>
-        <button
-          *ngIf="joined"
-          (click)="leave()"
-          class="px-3 py-1 bg-red-500 text-white rounded-lg"
-        >
-          Leave
-        </button>
-
-        <!-- Edit button (only for group admins/owners) -->
-        <ng-container *ngIf="auth.currentUser$ | async as user">
-          <button
-            *ngIf="isGroupAdminOrOwner(group, user?.userId)"
-            (click)="editing = true"
-            class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-          >
-            Edit
-          </button>
-        </ng-container>
-
-        <!-- Modal -->
-        <app-edit-group
-          *ngIf="editing && group"
-          [group]="group"
-          (updated)="onGroupUpdated($event)"
-          (cancel)="editing = false"
-        ></app-edit-group>
-      </div>
     </div>
+
+    <!-- RIGHT: ACTIONS -->
+    <div class="flex items-center gap-2">
+      <button
+        *ngIf="!joined"
+        (click)="join()"
+        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition"
+      >
+        Join
+      </button>
+
+      <button
+        *ngIf="joined"
+        (click)="leave()"
+        class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-full hover:bg-gray-300 transition"
+      >
+        Leave
+      </button>
+
+      <ng-container *ngIf="auth.currentUser$ | async as user">
+        <button
+          *ngIf="isGroupAdminOrOwner(group, user?.userId)"
+          (click)="editing = true"
+          class="px-4 py-2 bg-white border text-gray-700 text-sm font-medium rounded-full hover:bg-gray-50"
+        >
+          Edit
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <app-edit-group
+    *ngIf="editing && group"
+    [group]="group"
+    (updated)="onGroupUpdated($event)"
+    (cancel)="editing = false"
+  ></app-edit-group>
+</div>
+
 
     <!-- Tabs -->
     <div class="flex w-full border-b border-gray-200">
@@ -108,14 +125,14 @@
       </button>
 
       <!-- Chat Tab -->
-      <button
+      <!-- <button
         (click)="activeTab = 'chat'"
         class="flex-1 min-w-0 flex items-center justify-center px-2 py-3 sm:py-4 relative group transition-all duration-200"
         [class.text-blue-700]="activeTab === 'chat'"
         [class.text-gray-600]="activeTab !== 'chat'"
       >
         <div class="flex flex-col items-center gap-1 sm:gap-2">
-          <!-- Icon Container -->
+          
           <div
             class="p-2 rounded-lg transition-all duration-200"
             [class]="
@@ -127,10 +144,10 @@
             <span class="material-icons text-[18px] sm:text-[20px]">chat</span>
           </div>
 
-          <!-- Label -->
+         
           <span class="text-xs sm:text-sm font-medium truncate">Chat</span>
 
-          <!-- Active Indicator -->
+          
           <div
             class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300"
             [class]="
@@ -140,7 +157,7 @@
             "
           ></div>
         </div>
-      </button>
+      </button> -->
 
       <!-- Members Tab -->
       <button
@@ -248,7 +265,7 @@
           <app-group-feed [groupId]="group.id"></app-group-feed>
         </div>
         <div *ngIf="!joined" class="text-center text-gray-500 mt-6">
-          Join the group to view and post in the feed.
+          Join the community to view and post in the feed.
         </div>
       </ng-container>
 

@@ -1,140 +1,211 @@
-<div class="min-h-screen flex flex-col bg-gray-50 p-4 pb-32 md:pb-4 justify-center">
-    <!-- Modal / Form -->
+<div
+  class="min-h-screen flex flex-col bg-gray-50 p-4 pb-32 md:pb-4 justify-center"
+>
+  <!-- Modal / Form -->
+  <div
+    [formGroup]="videoForm"
+    class="max-w-xl w-full bg-white p-6 rounded-2xl shadow-lg space-y-6 overflow-y-auto max-h-[calc(100vh-8rem)] mx-auto"
+  >
+    <!-- Motivational Header -->
+    <div class="max-w-xl w-full mx-auto mb-8 text-center">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+        Create Your Video
+      </h1>
+      <p class="text-gray-600 text-lg">
+        Share your knowledge and help fellow students navigate university life.
+        <span class="block md:inline"
+          >Your experience could make someone's journey easier!</span
+        >
+      </p>
+    </div>
+    <!-- Header -->
+    <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+      <span class="material-icons">videocam</span> Upload Video
+    </h2>
+
+    <!-- Video Upload / Preview -->
     <div
-      [formGroup]="videoForm"
-      class="max-w-xl w-full bg-white p-6 rounded-2xl shadow-lg space-y-6 overflow-y-auto
-             max-h-[calc(100vh-8rem)] mx-auto"
+      class="border-2 border-dashed border-slate-300 rounded-xl p-4 md:p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 w-full"
+      (click)="fileInput.click()"
     >
-      <!-- Header -->
-      <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
-        <span class="material-icons">videocam</span> Upload Video
-      </h2>
-  
-      <!-- Video Upload / Preview -->
+      <input
+        type="file"
+        #fileInput
+        accept="video/*"
+        class="hidden"
+        (change)="onFileSelected($event)"
+      />
       <div
-        class="border-2 border-dashed border-slate-300 rounded-xl p-4 md:p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 w-full"
-        (click)="fileInput.click()"
+        *ngIf="!videoPreviewUrl"
+        class="flex flex-col items-center gap-2 text-center px-2"
       >
-        <input type="file" #fileInput accept="video/*" class="hidden" (change)="onFileSelected($event)" />
-        <div *ngIf="!videoPreviewUrl" class="flex flex-col items-center gap-2 text-center px-2">
-          <span class="material-icons text-4xl text-indigo-500">upload</span>
-          <p class="text-sm text-slate-500">Drop your video here or click to browse</p>
-          <button type="button" class="px-4 py-2 bg-indigo-500 text-white rounded-md">
-            Choose Video
-          </button>
-        </div>
-        <video
-          *ngIf="videoPreviewUrl"
-          [src]="videoPreviewUrl"
-          controls
-          class="w-full max-h-[400px] rounded-lg mt-2"
-        ></video>
-      </div>
-      <div *ngIf="videoForm.get('videoFile')?.touched && videoForm.get('videoFile')?.invalid" class="text-red-500 text-sm">
-        Please upload a video file.
-      </div>
-  
-      <!-- Title -->
-      <div>
-        <label class="block text-sm font-medium text-slate-700">Video Title</label>
-        <input
-          type="text"
-          formControlName="title"
-          placeholder="e.g., How to Apply for HELB Step-by-Step"
-          class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
-        />
-        <div *ngIf="videoForm.get('title')?.touched && videoForm.get('title')?.invalid" class="text-red-500 text-sm mt-1">
-          Title is required (min 3 characters).
-        </div>
-      </div>
-  
-      <!-- Description -->
-      <div>
-        <label class="block text-sm font-medium text-slate-700">Description</label>
-        <textarea
-          formControlName="description"
-          placeholder="Describe what your video covers and why it's helpful..."
-          rows="3"
-          class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
-        ></textarea>
-        <div *ngIf="videoForm.get('description')?.touched && videoForm.get('description')?.invalid" class="text-red-500 text-sm mt-1">
-          Description cannot exceed 500 characters.
-        </div>
-      </div>
-  
-      <!-- Tags -->
-      <div>
-        <label class="block text-sm font-medium text-slate-700">Tags (Select up to 5)</label>
-        <div class="flex flex-wrap gap-2 mt-2 overflow-x-auto py-2">
-          <button
-            type="button"
-            *ngFor="let tag of tags"
-            (click)="toggleTag(tag)"
-            [class.bg-indigo-500]="selectedTags.includes(tag)"
-            [class.text-white]="selectedTags.includes(tag)"
-            class="border border-slate-300 rounded-full px-3 py-1 text-sm hover:bg-indigo-100 transition flex-shrink-0"
-          >
-            #{{ tag }}
-          </button>
-        </div>
-      </div>
-  
-      <!-- Error -->
-      <div *ngIf="error" class="text-red-500 text-sm">{{ error }}</div>
-  
-      <!-- Creator Tips inside the modal -->
-      <section class="bg-[#f0f9ff] p-6 rounded-xl border border-blue-50 mt-6">
-        <div class="flex items-center gap-2 mb-4">
-          <h2 class="text-lg font-bold text-slate-900">Creator Tips</h2>
-          <span class="material-icons text-yellow-500 text-lg">lightbulb</span>
-        </div>
-  
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Keep it concise:</span>
-            <span class="text-slate-600">Aim for 1-3 minutes for maximum engagement</span>
-          </div>
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Add captions:</span>
-            <span class="text-slate-600">Make your content accessible to everyone</span>
-          </div>
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Be authentic:</span>
-            <span class="text-slate-600">Share your real experiences and mistakes</span>
-          </div>
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Use good lighting:</span>
-            <span class="text-slate-600">Natural light works best</span>
-          </div>
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Use clear audio:</span>
-            <span class="text-slate-600">Good sound quality is crucial</span>
-          </div>
-          <div class="flex flex-wrap items-baseline gap-1">
-            <span class="font-bold text-slate-800 whitespace-nowrap">Engage viewers:</span>
-            <span class="text-slate-600">Ask questions and encourage comments</span>
-          </div>
-        </div>
-      </section>
-  
-      <!-- Actions -->
-      <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-200 mb-4 md:mb-0">
+        <span class="material-icons text-4xl text-indigo-500">upload</span>
+        <p class="text-sm text-slate-500">
+          Drop your video here or click to browse
+        </p>
         <button
           type="button"
-          (click)="cancel()"
-          class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 transition"
+          class="px-4 py-2 bg-indigo-500 text-white rounded-md"
         >
-          Cancel
+          Choose Video
         </button>
+      </div>
+      <video
+        *ngIf="videoPreviewUrl"
+        [src]="videoPreviewUrl"
+        controls
+        class="w-full max-h-[400px] rounded-lg mt-2"
+      ></video>
+    </div>
+    <div
+      *ngIf="
+        videoForm.get('videoFile')?.touched &&
+        videoForm.get('videoFile')?.invalid
+      "
+      class="text-red-500 text-sm"
+    >
+      Please upload a video file.
+    </div>
+
+    <!-- Title -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700"
+        >Video Title</label
+      >
+      <input
+        type="text"
+        formControlName="title"
+        placeholder="e.g., How to Apply for HELB Step-by-Step"
+        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
+      />
+      <div
+        *ngIf="
+          videoForm.get('title')?.touched && videoForm.get('title')?.invalid
+        "
+        class="text-red-500 text-sm mt-1"
+      >
+        Title is required (min 3 characters).
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700"
+        >Description</label
+      >
+      <textarea
+        formControlName="description"
+        placeholder="Describe what your video covers and why it's helpful..."
+        rows="3"
+        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
+      ></textarea>
+      <div
+        *ngIf="
+          videoForm.get('description')?.touched &&
+          videoForm.get('description')?.invalid
+        "
+        class="text-red-500 text-sm mt-1"
+      >
+        Description cannot exceed 500 characters.
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div>
+      <label class="block text-sm font-medium text-slate-700"
+        >Tags (Select up to 5)</label
+      >
+      <div class="flex flex-wrap gap-2 mt-2 overflow-x-auto py-2">
         <button
           type="button"
-          (click)="submit()"
-          [disabled]="isSubmitting"
-          class="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-50 transition"
+          *ngFor="let tag of tags"
+          (click)="toggleTag(tag)"
+          [class.bg-indigo-500]="selectedTags.includes(tag)"
+          [class.text-white]="selectedTags.includes(tag)"
+          class="border border-slate-300 rounded-full px-3 py-1 text-sm hover:bg-indigo-100 transition flex-shrink-0"
         >
-          Upload Video
+          #{{ tag }}
         </button>
       </div>
     </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="text-red-500 text-sm">{{ error }}</div>
+
+    <!-- Creator Tips inside the modal -->
+    <section class="bg-[#f0f9ff] p-6 rounded-xl border border-blue-50 mt-6">
+      <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-lg font-bold text-slate-900">Creator Tips</h2>
+        <span class="material-icons text-yellow-500 text-lg">lightbulb</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Keep it concise:</span
+          >
+          <span class="text-slate-600"
+            >Aim for 1-3 minutes for maximum engagement</span
+          >
+        </div>
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Add captions:</span
+          >
+          <span class="text-slate-600"
+            >Make your content accessible to everyone</span
+          >
+        </div>
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Be authentic:</span
+          >
+          <span class="text-slate-600"
+            >Share your real experiences and mistakes</span
+          >
+        </div>
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Use good lighting:</span
+          >
+          <span class="text-slate-600">Natural light works best</span>
+        </div>
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Use clear audio:</span
+          >
+          <span class="text-slate-600">Good sound quality is crucial</span>
+        </div>
+        <div class="flex flex-wrap items-baseline gap-1">
+          <span class="font-bold text-slate-800 whitespace-nowrap"
+            >Engage viewers:</span
+          >
+          <span class="text-slate-600"
+            >Ask questions and encourage comments</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div
+      class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-200 mb-4 md:mb-0"
+    >
+      <button
+        type="button"
+        (click)="cancel()"
+        class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 transition"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        (click)="submit()"
+        [disabled]="isSubmitting"
+        class="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-50 transition"
+      >
+        Upload Video
+      </button>
+    </div>
   </div>
-  
+</div>
