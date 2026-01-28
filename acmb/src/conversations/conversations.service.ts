@@ -15,7 +15,7 @@ import { AcademeetCloudinaryService } from '../shared/cloudinary/cloudinary/clou
 import { NotificationEventsService } from '../notifications/events/notification-events.service';
 import { NotificationEventType } from '../notifications/events/notification-event.type';
 import { NotificationEvent } from '../notifications/events/notification-event.interface';
-import { GetRecentConversationsDto } from 'src/dto/GetRecentConversationsDto';
+import { GetRecentConversationsDto } from '../dto/GetRecentConversationsDto';
 
 @Injectable()
 export class ConversationsService {

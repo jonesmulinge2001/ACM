@@ -29,7 +29,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MessageAttachment } from '../dto/message-attachment.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import type { Express } from 'express'; 
-import { GetRecentConversationsDto } from 'src/dto/GetRecentConversationsDto';
+import { GetRecentConversationsDto } from '../dto/GetRecentConversationsDto';
 
 @Controller('conversations')
 @UseGuards(JwtAuthGuard)
