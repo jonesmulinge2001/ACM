@@ -179,48 +179,88 @@
       </span>
     </button>
 
-    <!-- Recent Conversations Dropdown -->
-    <div
-      *ngIf="recentPanelOpen"
-      class="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-xl overflow-hidden z-50"
-    >
-      <div class="p-2 font-semibold border-b">Recent Conversations</div>
+<!-- Recent Conversations Dropdown - LinkedIn Style -->
+<div
+  *ngIf="recentPanelOpen"
+  class="fixed md:absolute right-0 md:right-0 mt-2 w-full md:w-80 bg-white shadow-xl rounded-lg md:rounded-xl border border-gray-100 overflow-hidden z-50"
+>
+  <!-- Header -->
+  <div class="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-100">
+    <div class="flex items-center gap-2">
+      <span class="material-icons text-blue-600 text-xl">chat</span>
+      <h3 class="text-sm font-semibold text-gray-900">Recent Conversations</h3>
+    </div>
+    <button class="text-gray-400 hover:text-gray-600">
+      <span class="material-icons text-lg">settings</span>
+    </button>
+  </div>
 
-      <div *ngIf="recentConversations.length === 0" class="p-4 text-gray-500">
-        No recent conversations
-      </div>
+  <!-- Empty State -->
+  <div *ngIf="recentConversations.length === 0" class="p-6 text-center">
+    <span class="material-icons text-gray-300 text-4xl block mb-2">forum</span>
+    <p class="text-gray-500 text-sm">No recent conversations</p>
+  </div>
 
-      <ul class="max-h-96 overflow-y-auto">
-        <li
-          *ngFor="let convo of recentConversations"
-          (click)="openConversation(convo.id)"
-          class="flex items-center p-2 hover:bg-gray-50 cursor-pointer transition-colors"
-        >
-          <!-- profile of other participant(s) -->
-          <img *ngIf="!convo.isGroup" 
-          [src]="getOtherParticipantImage(convo)"
-          class="w-10 h-10 rounded-full object-cover mr-3"
-        />
+  <!-- Conversations List -->
+  <div class="max-h-96 overflow-y-auto">
+    <ul>
+      <li
+        *ngFor="let convo of recentConversations"
+        (click)="openConversation(convo.id)"
+        class="flex items-center p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-b-0 transition-colors duration-150"
+      >
+        <!-- Profile Image -->
+        <div class="relative flex-shrink-0 mr-3">
+          <img 
+            *ngIf="!convo.isGroup" 
+            [src]="getOtherParticipantImage(convo)"
+            class="w-10 h-10 rounded-full object-cover border border-gray-200"
+          />
+          <div *ngIf="convo.isGroup" 
+            class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center"
+          >
+            <span class="material-icons text-blue-600 text-lg">group</span>
+          </div>
+        </div>
 
-          <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-center">
-              <p class="font-medium truncate">
+        <!-- Conversation Info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start mb-1">
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900 truncate">
                 {{ getConversationDisplayName(convo) }}
               </p>
-              <span
-                *ngIf="convo.unreadCount > 0"
-                class="text-xs bg-blue-500 text-white rounded-full px-2"
-              >
-                {{ convo.unreadCount }}
-              </span>
             </div>
-            <p class="text-sm text-gray-500 truncate">
+            <span
+              *ngIf="convo.unreadCount > 0"
+              class="ml-2 bg-blue-600 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0"
+            >
+              {{ convo.unreadCount }}
+            </span>
+          </div>
+          <div class="flex items-center gap-1">
+            <p class="text-xs text-gray-600 truncate flex-1">
               {{ convo.lastMessage?.content || 'No messages yet' }}
             </p>
+            <span *ngIf="convo.lastMessage?.content" class="material-icons text-gray-400 text-sm flex-shrink-0">
+              check
+            </span>
           </div>
-        </li>
-      </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <div class="p-3 bg-gray-50 border-t border-gray-100">
+    <div class="text-center">
+      <button class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center justify-center gap-1 w-full py-2 hover:bg-blue-100 rounded-lg transition-colors">
+        <span class="material-icons text-base">open_in_new</span>
+        View all messages
+      </button>
     </div>
+  </div>
+</div>
   </div>
 
   <!-- User Profile Dropdown -->
