@@ -1,4 +1,4 @@
-import { Component, Input, input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, input, OnInit, Output } from '@angular/core';
 import { Follow, Post, Profile } from '../../interfaces';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PostService } from '../../services/post.service';
@@ -61,6 +61,10 @@ export class StudentProfileComponent implements OnInit {
   showFullBody: { [postId: string]: boolean } = {};
 
   activeChatUserId?: string;
+
+  @Output() chatOpened = new EventEmitter<void>();
+@Output() chatClosed = new EventEmitter<void>();
+
 
   constructor(
     private route: ActivatedRoute,
@@ -222,10 +226,24 @@ export class StudentProfileComponent implements OnInit {
   hasLongBody(body?: string): boolean {
     return !!body && body.split(' ').length > 8;
   }
+
+
   openInlineChat(participantId?: string) {
     if (!participantId) return;
-    // Always set the ID to open the chat
+  
     this.activeChatUserId = participantId;
+  
+    // 🔔 notify layout
+    this.chatOpened.emit();
   }
+  
+
+  closeInlineChat() {
+    this.activeChatUserId = undefined;
+  
+    // 🔔 notify layout
+    this.chatClosed.emit();
+  }
+  
   
 }

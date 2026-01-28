@@ -1,25 +1,30 @@
 <div class="flex flex-col min-h-screen">
-    <!-- Student Navbar -->
-    <header class="w-full z-10">
-      <app-navbar></app-navbar>
-    </header>
-  
-    <!-- Main Content -->
-    <div class="flex flex-1">
-      <!-- Student Sidebar -->
-      <aside class="hidden lg:block w-64 bg-white shadow-md">
-        <app-sidebar></app-sidebar>
-      </aside>
-  
-      <!-- Page Content -->
-      <main class="flex-1 p-4 pt-20 pb-20 bg-gray-50">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  
-    <!-- Mobile Sidebar -->
-    <footer class="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+  <!-- Student Navbar -->
+  <header class="w-full z-10">
+    <app-navbar
+      (chatOpened)="onChatOpened()"
+      (chatClosed)="onChatClosed()"
+    ></app-navbar>
+  </header>
+
+  <!-- Main Content -->
+  <div class="flex flex-1">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden lg:block w-64 bg-white shadow-md">
       <app-sidebar></app-sidebar>
-    </footer>
+    </aside>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-4 pt-20 pb-20 bg-gray-50">
+      <router-outlet></router-outlet>
+    </main>
   </div>
-  
+
+  <!-- Mobile Sidebar (HIDDEN when chat is open) -->
+  <footer
+    class="lg:hidden fixed bottom-0 left-0 right-0 z-50"
+    *ngIf="!isChatOpen"
+  >
+    <app-sidebar></app-sidebar>
+  </footer>
+</div>

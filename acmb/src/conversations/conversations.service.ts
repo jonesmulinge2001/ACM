@@ -15,6 +15,7 @@ import { AcademeetCloudinaryService } from '../shared/cloudinary/cloudinary/clou
 import { NotificationEventsService } from '../notifications/events/notification-events.service';
 import { NotificationEventType } from '../notifications/events/notification-event.type';
 import { NotificationEvent } from '../notifications/events/notification-event.interface';
+import { GetRecentConversationsDto } from 'src/dto/GetRecentConversationsDto';
 
 @Injectable()
 export class ConversationsService {
@@ -393,4 +394,79 @@ for (const recipientId of recipients) {
     });
     return { success: true };
   }
+
+  
+  async getRecentConversations(userId: string, dto: GetRecentConversationsDto) {
+    const participants =
+      await this.prisma.conversationParticipant.findMany({
+        where: { userId },
+        include: {
+          conversation: {
+            include: {
+              participants: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      profile: {
+                        select: { profileImage: true },
+                      },
+                    },
+                  },
+                },
+              },
+              messages: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          },
+        },
+        orderBy: {
+          conversation: { updatedAt: 'desc' },
+        },
+        take: dto.limit,
+      });
+  
+    return Promise.all(
+      participants.map(async (cp) => {
+        const convo = cp.conversation;
+        const lastMessage = convo.messages[0] ?? null;
+  
+        const unreadCount = await this.prisma.conversationMessage.count({
+          where: {
+            conversationId: convo.id,
+            senderId: { not: userId },
+            createdAt: {
+              gt: cp.lastReadAt ?? new Date(0),
+            },
+          },
+        });
+  
+        return {
+          conversationId: convo.id,
+          isGroup: convo.isGroup,
+          title: convo.title,
+          participants: convo.participants
+            .filter((p) => p.userId !== userId)
+            .map((p) => ({
+              id: p.user.id,
+              name: p.user.name,
+              profileImage: p.user.profile?.profileImage ?? null,
+            })),
+          lastMessage: lastMessage
+            ? {
+                content: lastMessage.content,
+                createdAt: lastMessage.createdAt,
+                senderId: lastMessage.senderId,
+              }
+            : null,
+          unreadCount, // ✅ now a NUMBER
+        };
+      }),
+    );
+  }
+  
+
 }

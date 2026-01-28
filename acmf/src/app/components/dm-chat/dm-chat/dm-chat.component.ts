@@ -62,7 +62,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   newMessage:string = '';
 
   participantName: string = '';
-  participantImage = '/assets/default-avatar.png';
+  participantImage: string = '';
   myId!: string;
 
   private sub = new Subscription();
@@ -144,9 +144,32 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   private setupParticipantInfo(convo: Conversation): void {
-    const other = convo.participants.find((p) => p.id !== this.myId);
-    this.participantName = other?.name || 'Recipient';
-    this.participantImage = other?.profileImage || '/assets/default-avatar.png';
+    // Debug: Log the participants to see what we're getting
+    console.log('Conversation participants:', convo.participants);
+    console.log('My ID:', this.myId);
+    
+    // Find the participant who is NOT the current user
+    const other = convo.participants.find((p) => {
+      // Compare IDs - make sure both are strings
+      return p.id.toString() !== this.myId.toString();
+    });
+    
+    console.log('Other participant found:', other);
+    
+    if (other) {
+      this.participantName = other.name || 'Unknown User';
+      this.participantImage = other.profileImage || 'https://via.placeholder.com/40';
+    } else {
+      // If no other participant found (shouldn't happen in 1:1 chat)
+      this.participantName = 'User';
+      this.participantImage = 'https://via.placeholder.com/40';
+    }
+    
+    console.log('Participant info set:', {
+      name: this.participantName,
+      image: this.participantImage
+    });
+    
     this.cdr.markForCheck();
   }
 

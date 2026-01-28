@@ -29,6 +29,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MessageAttachment } from '../dto/message-attachment.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import type { Express } from 'express'; 
+import { GetRecentConversationsDto } from 'src/dto/GetRecentConversationsDto';
 
 @Controller('conversations')
 @UseGuards(JwtAuthGuard)
@@ -154,8 +155,22 @@ export class ConversationsController {
     return this.conv.deleteMessage(req.user.id, messageId)
   }
 
+
+  @Get('recent')
+  async getRecentConversations(
+    @Req() req: RequestWithUser,
+    @Query() dto: GetRecentConversationsDto,
+  ) {
+    return this.conv.getRecentConversations(
+      req.user.id,
+      dto,
+    );
+  }
+
   @Get(':id')
   async getOne(@Req() req: RequestWithUser, @Param('id') id: string) {
     return this.conv.getConversation(id, req.user.id);
   }
+
+
 }

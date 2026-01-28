@@ -776,6 +776,7 @@ export interface Video {
   tags: string[];
   videoUrl: string;
   likesCount: number;
+  commentsCount: number
   createdAt: string;
   updatedAt: string;
   user: {
@@ -823,4 +824,3 @@ export interface CreateVideoCommentRequest {
 export interface UpdateVideoCommentRequest {
   content: string;
 }
-

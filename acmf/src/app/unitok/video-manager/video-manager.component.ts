@@ -147,15 +147,22 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
       this.markFormGroupTouched(this.commentForm);
       return;
     }
-
+  
     this.isSubmittingComment = true;
     this.commentError = null;
-
+  
     this.commentService.createComment(videoId, this.commentForm.value.content)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (newComment) => {
           this.comments.push(newComment);
+          
+          // Increment the video's comment count
+          const video = this.videos.find(v => v.id === videoId);
+          if (video) {
+            video.commentsCount = (video.commentsCount || 0) + 1;
+          }
+          
           this.commentForm.reset();
           this.isSubmittingComment = false;
         },
@@ -211,20 +218,30 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Delete comment via modal
   deleteComment(): void {
     if (!this.selectedComment) {
       return;
     }
-
+  
+    if (!this.isCommentAuthor(this.selectedComment)) {
+      this.commentError = 'You can only delete your own comments.';
+      return;
+    }
+  
     this.isDeletingComment = true;
-
+    const videoId = this.selectedComment.videoId;
+  
     this.commentService.deleteComment(this.selectedComment.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Remove the comment from the array
           this.comments = this.comments.filter(c => c.id !== this.selectedComment?.id);
+          
+          const video = this.videos.find(v => v.id === videoId);
+          if (video && video.commentsCount > 0) {
+            video.commentsCount -= 1;
+          }
+          
           this.closeDeleteModal();
           this.isDeletingComment = false;
         },
@@ -235,6 +252,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
         }
       });
   }
+  
 
   // Close edit modal
   closeEditModal(): void {
@@ -396,43 +414,49 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   }
 
   getVideoCommentsCount(videoId: string): number {
-    return this.comments.filter(c => c.videoId === videoId).length;
+    const video = this.videos.find(v => v.id === videoId);
+    return video ? video.commentsCount : 0;
   }
 
   // Check if current user is the comment author
   isCommentAuthor(comment: VideoComment): boolean {
-    // Replace this with your actual authentication logic
-    // For now, assuming all users can edit/delete all comments
-    return true;
+    const currentUserId = localStorage.getItem('userId');
+    return currentUserId === comment.authorId; 
   }
+  
 
   createVideo(): void {
     if (this.videoForm.invalid) {
       this.markFormGroupTouched(this.videoForm);
       return;
     }
-
+  
     this.isSubmittingVideo = true;
     this.videoError = null;
-
+  
     const payload: CreateVideoDto = {
       title: this.videoForm.value.title,
       description: this.videoForm.value.description,
       videoUrl: this.videoForm.value.url,
       tags: []
     };
-
+  
     this.videoService.createVideo(payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (newVideo) => {
-          this.videos.unshift(newVideo);
+          const videoWithCount = {
+            ...newVideo,
+            commentsCount: 0 
+          };
+          
+          this.videos.unshift(videoWithCount);
           this.videoForm.reset();
           this.showCreateForm = false;
           this.isSubmittingVideo = false;
-          this.selectedVideo = newVideo;
-          this.showCommentsForVideo = newVideo.id;
-          this.loadComments(newVideo.id);
+          this.selectedVideo = videoWithCount;
+          this.showCommentsForVideo = videoWithCount.id;
+          this.loadComments(videoWithCount.id);
         },
         error: (error) => {
           this.videoError = 'Failed to create video. Please try again.';

@@ -226,7 +226,7 @@
                         {{ getVideoCommentsCount(video.id) }} comments
                       </p>
                     </div>
-                  </div>
+                  </div>  
                 </div>
 
                 <!-- Comments List -->
@@ -262,52 +262,36 @@
                     </div>
 
                     <div
-                      *ngFor="let comment of comments"
-                      class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 group border border-gray-100"
-                    >
-                      <!-- User Avatar -->
-                      <div class="flex-shrink-0">
-                        <div
-                          class="w-12 h-12 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#a855f7] flex items-center justify-center shadow-md"
-                        >
-                          <span class="material-icons text-white text-lg"
-                            >person</span
-                          >
-                        </div>
+                    *ngFor="let comment of comments"
+                    class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 group border border-gray-100"
+                  >
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                      <div
+                        class="w-12 h-12 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#a855f7] flex items-center justify-center shadow-md"
+                      >
+                        <span class="material-icons text-white text-lg">person</span>
                       </div>
-
-                      <!-- Comment Content -->
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                          <span class="font-bold text-gray-800 text-sm"
-                            >&#64;{{ comment.author.name }}</span
-                          >
-                          <span class="text-xs text-gray-400"
-                            >•
-                            {{ comment.createdAt | date : "shortTime" }}</span
-                          >
-                        </div>
-
-                        <p class="text-gray-700 text-sm mb-3">
-                          {{ comment.content }}
-                        </p>
-
-                        <!-- Comment Actions -->
-                        <div class="flex items-center gap-4">
-                          <button
-                            (click)="
-                              toggleCommentLike(comment.id);
-                              $event.stopPropagation()
-                            "
-                            class="flex items-center gap-2 text-xs text-gray-500 hover:text-[#4f46e5] transition-colors duration-200"
-                          >
-                            <span
-                              class="material-icons text-sm hover:scale-110 transition-transform"
-                              >favorite_border</span
+                    </div>
+                  
+                    <!-- Comment Content -->
+                    <div class="flex-1 min-w-0">
+                      <!-- Comment header with user info and menu -->
+                      <div class="flex items-start justify-between mb-1">
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-gray-800 text-sm"
+                              >&#64;{{ comment.author.name }}</span
                             >
-                            <span>{{ comment.content }}</span>
-                          </button>
-
+                            <span class="text-xs text-gray-400"
+                              >• {{ comment.createdAt | date : "shortTime" }}</span
+                            >
+                          </div>
+                          
+                          <!-- Comment content moved outside the header -->
+                          <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
+                        </div>
+                        
                           <!-- Three-dot menu -->
                           <div class="relative">
                             <button
@@ -352,9 +336,20 @@
                               </button>
                             </div>
                           </div>
-                        </div>
+                      </div>
+                  
+                      <!-- Comment Actions (Like button) - SIMPLIFIED -->
+                      <div class="mt-2">
+                        <button
+                          (click)="toggleCommentLike(comment.id); $event.stopPropagation()"
+                          class="flex items-center gap-1 text-xs text-gray-500 hover:text-[#4f46e5] transition-colors duration-200"
+                        >
+                          <span class="material-icons text-sm">favorite_border</span>
+                          <span>Like</span>
+                        </button>
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
 

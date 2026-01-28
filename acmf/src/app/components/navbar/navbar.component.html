@@ -1,4 +1,4 @@
-<!-- Main Navbar -->
+<!-- Main Navbar template -->
 <div
   class="fixed top-0 left-0 right-0 z-55 bg-white shadow-sm px-4 py-3 h-16 flex items-center justify-between"
 >
@@ -153,115 +153,153 @@
     </div>
   </div>
 
-  <!-- Engagement Icons -->
-  <div class="flex items-center space-x-4">
-    <!-- Mobile Search Button -->
+<!-- Engagement Icons -->
+<div class="flex items-center space-x-4">
+  <!-- Mobile Search Button -->
+  <button
+    routerLink="/search"
+    (click)="toggleSearchPanel()"
+    class="material-icons text-gray-500 text-2xl cursor-pointer sm:hidden"
+  >
+    search
+  </button>
+
+  <!-- Notifications Component -->
+  <app-notification></app-notification>
+
+  <!-- Chat Dropdown -->
+  <div class="relative">
     <button
-      routerLink="/search"
-      (click)="toggleSearchPanel()"
-      class="material-icons text-gray-500 text-2xl cursor-pointer sm:hidden"
+      (click)="toggleRecentPanel()"
+      class="relative flex items-center p-2 rounded-full hover:bg-gray-200 transition-colors"
     >
-      search
+      <span class="material-icons text-gray-500 text-2xl">chat</span>
+      <span *ngIf="totalUnreadMessages > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+        {{ totalUnreadMessages }}
+      </span>
     </button>
 
-    <!-- Notifications Component -->
-    <app-notification></app-notification>
-
-    <!-- Chat -->
-    <button
-      routerLink="/messages"
-      class="material-icons text-gray-500 text-2xl cursor-pointer hover:text-blue-600 transition-colors"
+    <!-- Recent Conversations Dropdown -->
+    <div
+      *ngIf="recentPanelOpen"
+      class="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-xl overflow-hidden z-50"
     >
-      chat
-    </button>
+      <div class="p-2 font-semibold border-b">Recent Conversations</div>
 
-    <!-- User Profile Dropdown -->
-    <ng-container *ngIf="isLoggedIn">
-      <div class="profile-dropdown-container relative select-none">
-        <!-- Profile Trigger -->
-        <div
-          class="flex items-center space-x-2 cursor-pointer group"
-          (click)="toggleMenu()"
+      <div *ngIf="recentConversations.length === 0" class="p-4 text-gray-500">
+        No recent conversations
+      </div>
+
+      <ul class="max-h-96 overflow-y-auto">
+        <li
+          *ngFor="let convo of recentConversations"
+          (click)="openConversation(convo.id)"
+          class="flex items-center p-2 hover:bg-gray-50 cursor-pointer transition-colors"
+        >
+          <!-- profile of other participant(s) -->
+          <img *ngIf="!convo.isGroup" 
+          [src]="getOtherParticipantImage(convo)"
+          class="w-10 h-10 rounded-full object-cover mr-3"
+        />
+
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center">
+              <p class="font-medium truncate">
+                {{ getConversationDisplayName(convo) }}
+              </p>
+              <span
+                *ngIf="convo.unreadCount > 0"
+                class="text-xs bg-blue-500 text-white rounded-full px-2"
+              >
+                {{ convo.unreadCount }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 truncate">
+              {{ convo.lastMessage?.content || 'No messages yet' }}
+            </p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- User Profile Dropdown -->
+  <ng-container *ngIf="isLoggedIn">
+    <div class="profile-dropdown-container relative select-none">
+      <!-- Profile Trigger -->
+      <div
+        class="flex items-center space-x-2 cursor-pointer group"
+        (click)="toggleMenu()"
+      >
+        <img
+          [src]="userImage"
+          class="w-8 h-8 rounded-full object-cover border border-gray-200 group-hover:border-blue-500 transition"
+          alt="user"
+        />
+        <span
+          class="text-xs font-medium hidden sm:inline text-gray-700 group-hover:text-blue-600"
+        >
+          {{ userName }}
+        </span>
+        <span
+          class="material-icons text-gray-600 text-sm sm:inline hidden group-hover:text-blue-600 transition-transform duration-200"
+          [class.rotate-180]="menuOpen"
+        >
+          expand_more
+        </span>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div
+        *ngIf="menuOpen"
+        class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 transform transition-all duration-200 ease-out origin-top opacity-100 scale-100"
+      >
+        <!-- View Profile -->
+        <button
+          (click)="viewProfile()"
+          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
         >
           <img
+            *ngIf="userImage; else defaultIcon"
             [src]="userImage"
-            class="w-8 h-8 rounded-full object-cover border border-gray-200 group-hover:border-blue-500 transition"
-            alt="user"
+            alt="User"
+            class="w-6 h-6 rounded-full mr-2 object-cover border border-gray-300"
           />
-          <span
-            class="text-xs font-medium hidden sm:inline text-gray-700 group-hover:text-blue-600"
-          >
-            {{ userName }}
-          </span>
-          <span
-            class="material-icons text-gray-600 text-sm sm:inline hidden group-hover:text-blue-600 transition-transform duration-200"
-            [class.rotate-180]="menuOpen"
-          >
-            expand_more
-          </span>
-        </div>
+          <ng-template #defaultIcon>
+            <span class="material-icons text-blue-500 text-lg mr-2">person</span>
+          </ng-template>
+          My Profile
+        </button>
 
-        <!-- Dropdown Menu -->
-        <div
-          *ngIf="menuOpen"
-          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 transform transition-all duration-200 ease-out origin-top opacity-100 scale-100"
+        <!-- Settings -->
+        <button
+          (click)="toggleSettingsPanel()"
+          class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
         >
-          <!-- View Profile -->
-          <button
-            (click)="viewProfile()"
-            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <!-- User Image with hover effect -->
-            <img
-              *ngIf="userImage; else defaultIcon"
-              [src]="userImage"
-              alt="User"
-              class="w-6 h-6 rounded-full mr-2 object-cover border border-gray-300"
-            />
+          <span class="material-icons text-gray-500 text-lg mr-2">settings</span>
+          Settings
+        </button>
 
-            <!-- Fallback icon -->
-            <ng-template #defaultIcon>
-              <span class="material-icons text-blue-500 text-lg mr-2"
-                >person</span
-              >
-            </ng-template>
+        <div class="border-t border-gray-100 my-2"></div>
 
-            My Profile
-          </button>
+        <!-- Logout -->
+        <button
+          (click)="openLogoutModal()"
+          class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <span class="material-icons text-red-500 text-lg mr-2">logout</span>
+          Logout
+        </button>
 
-          <!-- Settings -->
-          <!-- Settings -->
-          <button
-            (click)="toggleSettingsPanel()"
-            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <span class="material-icons text-gray-500 text-lg mr-2"
-              >settings</span
-            >
-            Settings
-          </button>
-
-          <!-- Divider -->
-          <div class="border-t border-gray-100 my-2"></div>
-
-          <!-- Logout -->
-          <button
-            (click)="openLogoutModal()"
-            class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <span class="material-icons text-red-500 text-lg mr-2">logout</span>
-            Logout
-          </button>
-
-          <!-- Inside Navbar dropdown -->
-          <app-settings-panel
-            *ngIf="settingsPanelOpen"
-            (close)="closeSettingsPanel()"
-          ></app-settings-panel>
-        </div>
+        <app-settings-panel
+          *ngIf="settingsPanelOpen"
+          (close)="closeSettingsPanel()"
+        ></app-settings-panel>
       </div>
-    </ng-container>
-  </div>
+    </div>
+  </ng-container>
+</div>
+
 </div>
 
 <!-- Mobile Search Modal -->
@@ -426,4 +464,14 @@
       </button>
     </div>
   </div>
+</div>
+
+
+<!-- DM CHAT POPUP -->
+<div *ngIf="activeConversationId" class="fixed z-[999] mb-4 ">
+  <app-dm-chat
+    *ngIf="activeConversationId"
+    [conversationId]="activeConversationId"
+    (close)="closeChatModal()"
+  ></app-dm-chat>
 </div>
