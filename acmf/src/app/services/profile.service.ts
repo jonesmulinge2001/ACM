@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Follow, Profile, ProfileView } from '../interfaces';
+import { Follow, Profile } from '../interfaces';
 import { delay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
@@ -9,7 +9,6 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class ProfileService {
-
   private readonly baseUrl = `${environment.apiBase}/profiles`;
   private readonly followurl = `${environment.apiBase}/follow`;
 
@@ -57,11 +56,11 @@ export class ProfileService {
   }
 
   getMyProfile(): Observable<Profile> {
-    return this.http.get<Profile>(`${this.baseUrl}/me`, {
-      headers: this.getAuthHeaders(),
-    }).pipe(
-      delay(2000) 
-    );
+    return this.http
+      .get<Profile>(`${this.baseUrl}/me`, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(delay(2000));
   }
 
   getAllProfiles(searchTerm?: string): Observable<Profile[]> {
@@ -76,28 +75,30 @@ export class ProfileService {
   }
 
   followUser(userId: string): Observable<Follow> {
-    return this.http.post<Follow>(`${this.followurl}/${userId}`, {}, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.post<Follow>(
+      `${this.followurl}/${userId}`,
+      {},
+      {
+        headers: this.getAuthHeaders(),
+      }
+    );
   }
 
   unFollowUser(userId: string): Observable<{}> {
     return this.http.delete(`${this.followurl}/${userId}`, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
     });
   }
 
   getFollowers(userId: string): Observable<Follow[]> {
-    return this.http.get<Follow[]>(`${this.followurl}/followers/${userId}`,  {
-      headers: this.getAuthHeaders()
-    })
+    return this.http.get<Follow[]>(`${this.followurl}/followers/${userId}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   getFollowing(userId: string): Observable<Follow[]> {
     return this.http.get<Follow[]>(`${this.followurl}/following/${userId}`, {
-      headers: this.getAuthHeaders()
-    })
+      headers: this.getAuthHeaders(),
+    });
   }
-  
-
 }

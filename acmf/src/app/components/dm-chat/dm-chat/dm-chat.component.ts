@@ -26,6 +26,7 @@ import {
   FileUploadProgress,
 } from '../../../services/conversations.service';
 import { DmSocketService } from '../../../services/dm-socket.service';
+import { TimeagoModule } from 'ngx-timeago';
 
 interface AttachmentUI {
   file: File;
@@ -43,7 +44,7 @@ interface MessageAttachmentUI extends MessageAttachment {
 @Component({
   selector: 'app-dm-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TimeagoModule],
   templateUrl: './dm-chat.component.html',
   styleUrls: ['./dm-chat.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -271,6 +272,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
         id: this.myId,
         name: 'You',
         profileImage: localStorage.getItem('profileImage') || undefined,
+        
       },
     };
   

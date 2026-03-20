@@ -32,16 +32,16 @@ import { DmChatComponent } from '../dm-chat/dm-chat/dm-chat.component';
   styleUrl: './navbar.component.css',
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  isLoggedIn = false;
-  userName = '';
-  userImage = '';
-  menuOpen = false;
-  unreadCount = 0;
-  logoutModalOpen = false;
-  searchQuery = '';
+  isLoggedIn: boolean = false;
+  userName: string = '';
+  userImage: string = '';
+  menuOpen: boolean = false;
+  unreadCount: number = 0;
+  logoutModalOpen: boolean = false;
+  searchQuery: string = '';
   searchResults: GlobalSearchResult = { profiles: [], posts: [], resources: [] };
-  loading = false;
-  searchPanelOpen = false;
+  loading: boolean = false;
+  searchPanelOpen: boolean = false;
 
   window = window;
   
@@ -116,7 +116,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.userName = profile.name;
           this.userImage = profile.profileImage || 'https://via.placeholder.com/40';
         },
-        error: () => this.toastr.error('Error loading profile'),
+        error: () => console.error(),
       });
 
       // Subscribe to notification unread count

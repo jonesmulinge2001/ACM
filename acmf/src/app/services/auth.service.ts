@@ -140,7 +140,7 @@ export class AuthService {
         // Fetch user profile immediately after login
         this.profileService.getMyProfile().subscribe({
           next: (profile) => {
-            if (!profile) {
+            if (!profile && user.role === 'STUDENT') {
               //  No profile found → go to profile creation page
               this.toastr.info('Please complete your profile to continue');
               this.router.navigate(['/create-profile']);

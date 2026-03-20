@@ -49,11 +49,12 @@ export class StudentProfileComponent implements OnInit {
   userPosts: Post[] = [];
   followers: Follow[] = [];
   following: Follow[] = [];
-  isFollowing = false;
-  currentUserId = '';
+  isFollowing: boolean = false;
+  currentUserId: string = '';
 
-  isLoading = true;
-  errorMessage = '';
+
+  isLoading: boolean = true;
+  errorMessage: string = '';
 
   @Input() profile!: Profile;
   showFullBio = false;

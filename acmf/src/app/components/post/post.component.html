@@ -1,178 +1,260 @@
 <!-- Modal Backdrop -->
-<div
-  *ngIf="showModal"
-  class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
-  (click)="closeModal()"
->
-  <!--====>>> Prevent modal from closing when clicking inside the form -->
-  <div class="relative z-50" (click)="$event.stopPropagation()">
-    <!-- Modal Content -->
-    <form
-      [formGroup]="postForm"
-      (ngSubmit)="submitPost()"
-      class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-screen overflow-y-auto p-6"
-    >
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold">Create Post</h2>
-        <button
-          type="button"
-          (click)="closeModal()"
-          class="text-gray-400 hover:text-black text-xl font-bold"
-        >
-          &times;
+<div *ngIf="showModal"
+  class="modal-backdrop fixed inset-0 bg-black bg-opacity-60 z-40 flex items-center justify-center p-4 transition-all duration-300 ease-out"
+  (click)="closeModal()">
+  <!-- Modal Content - LinkedIn style -->
+  <div class="relative z-50 w-full max-w-2xl transform transition-all duration-300 ease-out animate-slideUp"
+    (click)="$event.stopPropagation()">
+    <form [formGroup]="postForm" (ngSubmit)="submitPost()" class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+      
+      <!-- Success Message Banner - LinkedIn Style -->
+      <div *ngIf="showSuccessMessage" 
+           class="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 animate-slideDown">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-green-800">{{ successMessage }}</p>
+        </div>
+        <button type="button" (click)="clearMessages()" class="text-green-600 hover:text-green-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Error Message Banner - LinkedIn Style -->
+      <div *ngIf="showErrorMessage" 
+           class="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 animate-slideDown">
+        <div class="flex-shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
+        </div>
+        <button type="button" (click)="clearMessages()" class="text-red-600 hover:text-red-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Header with LinkedIn styling -->
+      <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900">Create a post</h2>
+        <button type="button" (click)="closeModal()"
+          class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
+          aria-label="Close modal">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
         </button>
       </div>
 
-      <!-- User Info -->
-      <div class="flex items-center space-x-4 mb-6" *ngIf="profile">
-        <img
-          [src]="profile.profileImage"
-          class="w-12 h-12 rounded-full"
-          alt="Profile"
-        />
-        <div>
-          <p class="font-semibold">{{ profile.name }}</p>
-          <p class="text-xs text-gray-500">{{ profile.institution?.name }}</p>
+      <!-- User Info - LinkedIn style -->
+      <div class="px-6 pt-5 pb-3 flex items-center space-x-3">
+        <img [src]="profile?.profileImage || 'assets/default-avatar.png'"
+          class="w-12 h-12 rounded-full object-cover border border-gray-200" [alt]="profile?.name || 'User'" />
+        <div class="flex-1">
+          <p class="font-semibold text-gray-900">{{ profile?.name || 'User' }}</p>
+          <div class="flex items-center space-x-2 text-sm text-gray-500">
+            <span>{{ profile?.institution?.name || 'University Student' }}</span>
+            <span>•</span>
+            <button type="button"
+              class="hover:text-blue-600 hover:underline flex items-center space-x-1 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+              </svg>
+              <span>Public</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Category -->
-      <label class="block text-sm font-medium text-gray-700 mb-1"
-        >Category</label
-      >
-      <select
-      formControlName="category"
-      class="w-full bg-white border border-gray-300 text-gray-700 text-sm rounded-xl px-4 py-2.5 mb-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ease-in-out duration-150"
-    >
-      <option value="General">GENERAL</option>
-      <option value="Opportunity">OPPORTUNITY</option>
-      <option value="Academic">ACADEMIC</option>
-      <option value="Resource">RESOURCE</option>
-    </select>
-    
+      <!-- Post Input Area -->
+      <div class="px-6 py-3">
+        <textarea formControlName="content" rows="4" placeholder="What do you want to talk about?"
+          class="w-full border-none focus:ring-0 text-gray-900 placeholder-gray-400 text-base resize-none p-0 focus:outline-none"
+          [class.text-red-500]="isInvalid('content')"></textarea>
 
-      <!-- Title -->
-      <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-      <input
-        formControlName="title"
-        type="text"
-        placeholder="What's your post about?"
-        class="w-full border rounded-lg p-2 mb-1"
-      />
-      <div class="text-red-500 text-sm mb-4" *ngIf="isInvalid('title')">
-        <span *ngIf="postForm.get('title')?.errors?.['required']"
-          >Title is required.</span
-        >
-        <span *ngIf="postForm.get('title')?.errors?.['minlength']"
-          >Minimum 3 characters required.</span
-        >
+        <!-- Error message for content -->
+        <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('content')">
+          {{ getErrorMessage('content') }}
+        </div>
       </div>
 
-      <!-- Content -->
-      <label class="block text-sm font-medium text-gray-700 mb-1"
-        >Content</label
-      >
-      <textarea
-        formControlName="content"
-        rows="4"
-        placeholder="Share your thoughts..."
-        class="w-full border rounded-lg p-2 mb-1"
-      ></textarea>
-      <div class="text-red-500 text-sm mb-4" *ngIf="isInvalid('content')">
-        <span *ngIf="postForm.get('content')?.errors?.['required']"
-          >Content is required.</span
-        >
-        <span *ngIf="postForm.get('content')?.errors?.['minlength']"
-          >Minimum 10 characters required.</span
-        >
+      <!-- Title Field - Optional but recommended -->
+      <div class="px-6 pb-3">
+        <input formControlName="title" type="text" placeholder="Add a title (optional)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          [class.border-red-300]="isInvalid('title')" />
+        <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('title')">
+          {{ getErrorMessage('title') }}
+        </div>
+        <div class="text-gray-400 text-xs mt-1 flex justify-between" *ngIf="!isInvalid('title')">
+          <span>Make your post more discoverable with a title</span>
+          <span>{{ postForm.get('title')?.value?.length || 0 }}/200</span>
+        </div>
       </div>
 
-      <!-- Tags -->
-      <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-      <div
-        class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1 gap-2"
-      >
-        <input
-          formControlName="tagInput"
-          placeholder="Add a tag"
-          class="flex-1 border rounded-lg p-2"
-        />
-        <button
-          type="button"
-          (click)="addTag()"
-          class="bg-gray-200 px-3 py-1 rounded w-full sm:w-auto"
-        >
-          Add
-        </button>
-      </div>
-      <div
-        class="text-red-500 text-sm mb-2"
-        *ngIf="isInvalid('tagInput') && postForm.get('tagInput')?.value"
-      >
-        <span *ngIf="postForm.get('tagInput')?.errors?.['minlength']"
-          >Tag must be at least 2 characters.</span
-        >
-      </div>
-      <div class="flex flex-wrap gap-2 mb-4">
-        <span
-          *ngFor="let tag of tags; index as i"
-          class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center"
-        >
-          {{ tag }}
-          <button class="ml-2 text-red-500" (click)="removeTag(i)">
-            &times;
+      <!-- Category Selection - LinkedIn style pill buttons -->
+      <div class="px-6 pb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-medium text-gray-700">Post category</label>
+          <span class="text-xs text-gray-400">Choose the right category</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button *ngFor="let category of categories" type="button"
+            (click)="postForm.get('category')?.setValue(category.value)"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5"
+            [ngClass]="postForm.get('category')?.value === category.value 
+        ? 'bg-blue-600 text-white shadow-md' 
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+            <span class="material-icons text-sm">{{ category.icon }}</span>
+            <span>{{ category.label }}</span>
           </button>
-        </span>
-      </div>
-
-      <!-- File Upload -->
-      <div class="border-2 border-dashed rounded-lg p-4 text-center mb-4">
-        <p class="text-sm mb-2">
-          Upload images, documents, or resources to share with the community
-        </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-          <label
-            class="cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded text-center"
-          >
-            Add Image
-            <input
-              type="file"
-              hidden
-              (change)="onFileSelected($event, 'image')"
-              accept="image/*"
-            />
-          </label>
-          <label
-            class="cursor-pointer bg-purple-100 text-purple-700 px-4 py-2 rounded text-center"
-          >
-            Attach File
-            <input
-              type="file"
-              hidden
-              (change)="onFileSelected($event, 'file')"
-            />
-          </label>
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="flex justify-end space-x-3">
-        <button
-          (click)="closeModal()"
-          class="bg-gray-100 px-4 py-2 rounded-lg"
-          type="button"
-        >
-          Cancel
-        </button>
-        <button
-          [disabled]="postForm.invalid || isSubmitting"
-          type="submit"
-          class="bg-gradient-to-r from-blue-600 to-purple-500 text-white px-6 py-1 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          {{ isSubmitting ? "Posting..." : "Post" }}
-        </button>
+      <!-- Tags Section -->
+      <div class="px-6 pb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-medium text-gray-700">Add topics</label>
+          <span class="text-xs text-gray-400">{{ tags.length }}/10 topics</span>
+        </div>
+
+        <!-- Tags Display -->
+        <div class="flex flex-wrap gap-2 mb-3" *ngIf="tags.length > 0">
+          <span *ngFor="let tag of tags; index as i"
+            class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-all duration-200">
+            <span class="font-medium">#{{ tag }}</span>
+            <button type="button" (click)="removeTag(i)" class="text-gray-500 hover:text-red-500 ml-1 transition-colors"
+              aria-label="Remove tag">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </span>
+        </div>
+
+        <!-- Tag Input -->
+        <div class="flex items-center space-x-2">
+          <input formControlName="tagInput" type="text" placeholder="Type a topic and press Enter or click Add"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            (keyup.enter)="addTag()" [class.border-red-300]="isInvalid('tagInput')" />
+          <button type="button" (click)="addTag()"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!postForm.get('tagInput')?.value || tags.length >= 10">
+            Add
+          </button>
+        </div>
+
+        <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('tagInput')">
+          {{ getErrorMessage('tagInput') }}
+        </div>
+        <div class="text-gray-400 text-xs mt-1" *ngIf="!isInvalid('tagInput') && tags.length >= 10">
+          Maximum 10 topics reached
+        </div>
+      </div>
+
+      <!-- Media Upload Section - LinkedIn style with preview -->
+      <div class="px-6 pb-4">
+        <div
+          class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer"
+          (click)="triggerFileUpload()">
+          <input type="file" #fileInput hidden
+            (change)="onFileSelected($event, selectedFile?.type?.startsWith('image/') ? 'image' : 'file')"
+            accept="image/*,application/pdf,.doc,.docx,.txt,.ppt,.pptx" />
+          <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+            </path>
+          </svg>
+          <p class="text-sm text-gray-600 mb-1">Click to upload an image or document</p>
+          <p class="text-xs text-gray-400">PNG, JPG, GIF, PDF, DOC up to 10MB</p>
+        </div>
+
+        <!-- File Preview with Image Thumbnail -->
+        <div *ngIf="selectedFile" class="mt-3 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+          <div class="flex items-center space-x-3 flex-1">
+            <!-- Image Preview -->
+            <div *ngIf="selectedFilePreview" class="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+              <img [src]="selectedFilePreview" alt="Preview" class="w-full h-full object-cover">
+            </div>
+            <!-- File Icon for non-images -->
+            <div *ngIf="!selectedFilePreview"
+              class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+              </svg>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ selectedFile.name }}</p>
+              <p class="text-xs text-gray-500">{{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+            </div>
+          </div>
+
+          <button type="button" (click)="removeFile()"
+            class="text-gray-400 hover:text-red-500 transition-colors ml-3 flex-shrink-0" aria-label="Remove file">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer Actions - LinkedIn style -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+        <div class="flex space-x-2">
+          <button type="button" (click)="triggerFileUpload()"
+            class="p-2 hover:bg-gray-200 rounded-full transition-all duration-200 text-gray-600 hover:text-blue-600 group"
+            title="Add media">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+              </path>
+            </svg>
+          </button>
+          <button type="button"
+            class="p-2 hover:bg-gray-200 rounded-full transition-all duration-200 text-gray-600 hover:text-blue-600"
+            title="Add topic" (click)="postForm.get('tagInput')?.value ? addTag() : null">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l5 5a2 2 0 01.586 1.414V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex space-x-3">
+          <button type="button" (click)="closeModal()"
+            class="px-5 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
+            Cancel
+          </button>
+          <button [disabled]="postForm.invalid || isSubmitting || !hasContent()" type="submit"
+            class="px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm">
+            <span *ngIf="!isSubmitting">Post</span>
+            <span *ngIf="isSubmitting" class="flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              Posting...
+            </span>
+          </button>
+        </div>
       </div>
     </form>
   </div>
 </div>
+

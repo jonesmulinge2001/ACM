@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
- 
- 
+
 /* eslint-disable prettier/prettier */
 import {
   Controller,
@@ -17,7 +16,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { RequirePermissions } from '../../decorator/permissions.decorator';
 import { Permission } from '../../permissions/permission.enum';
 import { RequestWithUser } from '../../interfaces/requestwithUser.interface';
-
 
 @Controller('admin/users')
 export class UserManagementController {
@@ -96,10 +94,9 @@ export class UserManagementController {
   }
 
   @Delete()
-@UseGuards(AuthGuard('jwt'))
-@RequirePermissions(Permission.MANAGE_USERS)
-async deleteUsers(@Body('ids') ids: string[]) {
-  return this.userService.deleteUsers(ids);
-}
-
+  @UseGuards(AuthGuard('jwt'))
+  @RequirePermissions(Permission.MANAGE_USERS)
+  async deleteUsers(@Body('ids') ids: string[]) {
+    return this.userService.deleteUsers(ids);
+  }
 }

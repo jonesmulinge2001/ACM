@@ -7,3 +7,32 @@
     50% { opacity: 0.4; }
   }
   
+
+  
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Custom breakpoint for extra small screens */
+  @media (min-width: 480px) {
+    .xs\:inline {
+      display: inline;
+    }
+  }
+  
+  /* Ensure images don't overflow */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Better text wrapping */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }

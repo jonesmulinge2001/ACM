@@ -97,13 +97,6 @@ import { LikeService } from '../../services/like.service';
                   </svg>
                   Edit post
                 </button>
-                <!-- <button *ngIf="canDeletePost()" class="dropdown-item delete" (click)="deletePost()">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                  Delete post
-                </button> -->
                 <button class="dropdown-item" (click)="reportPost()">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -133,18 +126,18 @@ import { LikeService } from '../../services/like.service';
               <span *ngFor="let tag of post.tags" class="tag">{{ tag }}</span>
             </div>
 
-            <!-- Media content -->
+            <!-- Media content - UPDATED FOR FULL HEIGHT -->
             <div *ngIf="post.fileUrl" class="post-media">
               <ng-container [ngSwitch]="getFileType(post.fileUrl)">
                 <img *ngSwitchCase="'image'" 
                      [src]="post.fileUrl" 
                      [alt]="post.title"
-                     class="post-image"
+                     class="post-image-full"
                      (click)="openMediaViewer(post.fileUrl!)"
                      (error)="handleMediaError($event)"/>
                 <video *ngSwitchCase="'video'" 
                        controls
-                       class="post-video"
+                       class="post-video-full"
                        (error)="handleMediaError($event)">
                   <source [src]="post.fileUrl" type="video/mp4">
                   Your browser does not support the video tag.
@@ -218,15 +211,6 @@ import { LikeService } from '../../services/like.service';
               </svg>
               <span>Share</span>
             </button>
-            <!-- <button class="action-btn" (click)="toggleBookmark()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" 
-                   [attr.stroke]="isBookmarked ? 'none' : 'currentColor'" 
-                   stroke-width="2"
-                   [attr.fill]="isBookmarked ? '#2563eb' : 'none'">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
-              </svg>
-              <span>{{ isBookmarked ? 'Saved' : 'Save' }}</span>
-            </button> -->
           </div>
 
           <!-- Comments section -->
@@ -629,17 +613,18 @@ import { LikeService } from '../../services/like.service';
       background: #f9fafb;
     }
 
-    .post-image {
+    /* UPDATED: Full-height image styles - no cropping */
+    .post-image-full {
       width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-      cursor: zoom-in;
+      height: auto;
       display: block;
+      cursor: zoom-in;
+      object-fit: contain;
     }
 
-    .post-video {
+    .post-video-full {
       width: 100%;
-      max-height: 400px;
+      height: auto;
       display: block;
     }
 
@@ -1081,25 +1066,6 @@ export class PostDetailComponent implements OnInit {
   canEditPost(): boolean {
     return this.currentUserId === this.post?.author.id;
   }
-
-  // canDeletePost(): boolean {
-  //   return this.canEditPost() || this.authService.getUserId();
-  // }
-
-  // deletePost() {
-  //   if (!this.post || !confirm('Are you sure you want to delete this post?')) return;
-
-  //   this.postService.deletePost(this.post.id).subscribe({
-  //     next: () => {
-  //       this.close();
-  //       // Emit event for parent component to handle
-  //       this.postUpdated.emit({ ...this.post!, isDeleted: true });
-  //     },
-  //     error: (err) => {
-  //       alert('Failed to delete post: ' + err.message);
-  //     }
-  //   });
-  // }
 
   editPost() {
     // TODO: Navigate to edit post page or open edit modal

@@ -13,7 +13,7 @@ export class VideoService {
   constructor(private http: HttpClient) {}
 
   /** Common headers for JSON requests */
-  private jsonHeaders(): HttpHeaders {
+  private getAuthHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -23,7 +23,7 @@ export class VideoService {
   /** CREATE video via JSON (existing method) */
   createVideo(payload: CreateVideoDto): Observable<Video> {
     return this.http.post<Video>(this.baseUrl, payload, {
-      headers: this.jsonHeaders(),
+      headers: this.getAuthHeaders(),
     });
   }
 
@@ -36,28 +36,28 @@ export class VideoService {
   /** GET all videos */
   getAllVideos(): Observable<Video[]> {
     return this.http.get<Video[]>(this.baseUrl, {
-      headers: this.jsonHeaders(),
+      headers: this.getAuthHeaders(),
     });
   }
 
   /** GET single video */
   getVideoById(videoId: string): Observable<Video> {
     return this.http.get<Video>(`${this.baseUrl}/${videoId}`, {
-      headers: this.jsonHeaders(),
+      headers: this.getAuthHeaders(),
     });
   }
 
   /** UPDATE video */
   updateVideo(videoId: string, payload: UpdateVideoDto): Observable<Video> {
     return this.http.patch<Video>(`${this.baseUrl}/${videoId}`, payload, {
-      headers: this.jsonHeaders(),
+      headers: this.getAuthHeaders(),
     });
   }
 
   /** DELETE video */
   deleteVideo(videoId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${videoId}`, {
-      headers: this.jsonHeaders(),
+      headers: this.getAuthHeaders(),
     });
   }
 }

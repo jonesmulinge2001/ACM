@@ -74,7 +74,7 @@ export class ConversationsService {
   // ensures user is participant
   private async ensureParticipant(conversationId: string, userId: string) {
     const p = await this.prisma.conversationParticipant.findUnique({
-      where: { conversationId_userId: { conversationId, userId } as any }, // generated prisma composite name maybe different
+      where: { conversationId_userId: { conversationId, userId } as any },
     });
     if (!p) throw new ForbiddenException('Not a conversation participant');
     return p;
@@ -144,34 +144,35 @@ export class ConversationsService {
           select: {
             id: true,
             name: true,
+            createdAt: true,
             profile: { select: { profileImage: true } },
           },
         },
       },
     });
 
-// fetch participants
-const participants = await this.prisma.conversationParticipant.findMany({
-  where: { conversationId },
-  select: { userId: true },
-});
+    // fetch participants
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { userId: true },
+    });
 
-const recipients = participants
-  .map(p => p.userId)
-  .filter(id => id !== senderId);
+    const recipients = participants
+      .map((p) => p.userId)
+      .filter((id) => id !== senderId);
 
-for (const recipientId of recipients) {
-  const event: NotificationEvent = {
-    type: NotificationEventType.MESSAGE_SENT,
-    actorId: senderId,
-    recipientId,
-    entityId: saved.id,
-    createdAt: new Date(),
-  };
+    for (const recipientId of recipients) {
+      const event: NotificationEvent = {
+        type: NotificationEventType.MESSAGE_SENT,
+        actorId: senderId,
+        recipientId,
+        entityId: saved.id,
+        createdAt: new Date(),
+      };
 
-  console.log('MESSAGE EVENT EMITTED', event); // 🔥 should see this now
-  this.notificationEvents.emit(event);
-}
+      // console.log('MESSAGE EVENT EMITTED', event);
+      this.notificationEvents.emit(event);
+    }
 
     // 5. Flatten response
     return {
@@ -250,6 +251,7 @@ for (const recipientId of recipients) {
           select: {
             id: true,
             name: true,
+            createdAt: true,
             profile: { select: { profileImage: true } },
           },
         },
@@ -286,6 +288,7 @@ for (const recipientId of recipients) {
               select: {
                 id: true,
                 name: true,
+                createdAt: true,
                 profile: { select: { profileImage: true } },
               },
             },
@@ -318,7 +321,14 @@ for (const recipientId of recipients) {
           include: {
             participants: {
               include: {
-                user: { select: { id: true, name: true, profile: true } },
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    profile: true,
+                    createdAt: true,
+                  },
+                },
               },
             },
             messages: {
@@ -395,45 +405,44 @@ for (const recipientId of recipients) {
     return { success: true };
   }
 
-  
   async getRecentConversations(userId: string, dto: GetRecentConversationsDto) {
-    const participants =
-      await this.prisma.conversationParticipant.findMany({
-        where: { userId },
-        include: {
-          conversation: {
-            include: {
-              participants: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      profile: {
-                        select: { profileImage: true },
-                      },
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { userId },
+      include: {
+        conversation: {
+          include: {
+            participants: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    createdAt: true,
+                    profile: {
+                      select: { profileImage: true },
                     },
                   },
                 },
               },
-              messages: {
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-              },
+            },
+            messages: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
             },
           },
         },
-        orderBy: {
-          conversation: { updatedAt: 'desc' },
-        },
-        take: dto.limit,
-      });
-  
+      },
+      orderBy: {
+        conversation: { updatedAt: 'desc' },
+      },
+      take: dto.limit,
+    });
+
     return Promise.all(
       participants.map(async (cp) => {
         const convo = cp.conversation;
         const lastMessage = convo.messages[0] ?? null;
-  
+
         const unreadCount = await this.prisma.conversationMessage.count({
           where: {
             conversationId: convo.id,
@@ -443,7 +452,7 @@ for (const recipientId of recipients) {
             },
           },
         });
-  
+
         return {
           conversationId: convo.id,
           isGroup: convo.isGroup,
@@ -462,11 +471,9 @@ for (const recipientId of recipients) {
                 senderId: lastMessage.senderId,
               }
             : null,
-          unreadCount, // ✅ now a NUMBER
+          unreadCount,
         };
       }),
     );
   }
-  
-
 }

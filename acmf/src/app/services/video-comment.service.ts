@@ -14,7 +14,7 @@ export class VideoCommentService {
   constructor(private http: HttpClient) {}
 
   /** Common JSON headers */
-  private jsonHeaders(): HttpHeaders {
+  private getAuthHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -27,7 +27,7 @@ export class VideoCommentService {
     return this.http.post<VideoComment>(
       `${this.baseUrl}/${videoId}`,
       payload,
-      { headers: this.jsonHeaders() }
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -35,7 +35,7 @@ export class VideoCommentService {
   getComments(videoId: string): Observable<VideoComment[]> {
     return this.http.get<VideoComment[]>(
       `${this.baseUrl}/video/${videoId}`,
-      { headers: this.jsonHeaders() }
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -45,7 +45,7 @@ export class VideoCommentService {
     return this.http.patch<VideoComment>(
       `${this.baseUrl}/${commentId}`,
       payload,
-      { headers: this.jsonHeaders() }
+      { headers: this.getAuthHeaders() }
     );
   }
 
@@ -53,7 +53,7 @@ export class VideoCommentService {
   deleteComment(commentId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.baseUrl}/${commentId}`,
-      { headers: this.jsonHeaders() }
+      { headers: this.getAuthHeaders() }
     );
   }
 }

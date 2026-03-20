@@ -30,6 +30,7 @@ import { AcademicResourceAdminModule } from './admin/academic-rsource/academic-r
 import { VideosModule } from './uniTok/videos/videos.module';
 import { VideoLikeModule } from './uniTok/video-like/video-like.module';
 import { VideoCommentModule } from './uniTok/video-comment/video-comment.module';
+import { DebugController } from './debug/resend.controller';
 
 @Module({
   imports: [
@@ -63,6 +64,6 @@ import { VideoCommentModule } from './uniTok/video-comment/video-comment.module'
     VideoCommentModule
   ],
   providers: [AppService],
-  controllers: [],
+  controllers: [DebugController],
 })
 export class AppModule {}
