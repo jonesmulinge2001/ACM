@@ -1,131 +1,260 @@
 <div
   *ngIf="showProfileModal"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 animate-fadeIn"
+  (click)="closeProfileModal()"
 >
   <!-- Modal Container -->
   <div
-    class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative animate-fade-in"
+    class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative transform transition-all duration-300 animate-modalSlideUp"
+    (click)="$event.stopPropagation()"
   >
     <!-- Close Button -->
     <button
       (click)="closeProfileModal()"
-      class="absolute top-4 right-4 text-gray-400 hover:text-black transition duration-200 text-2xl font-light"
+      class="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
       aria-label="Close"
     >
-      &times;
+      <span class="material-icons text-lg">close</span>
     </button>
 
-    <!-- Cover Section -->
-    <div class="h-48 bg-gray-100 relative rounded-t-2xl overflow-hidden">
-      <img
-        *ngIf="coverPreview"
-        [src]="coverPreview"
-        class="absolute inset-0 w-full h-full object-cover"
-      />
-      <label
-        class="absolute top-3 right-3 cursor-pointer bg-white/90 hover:bg-white text-sm text-blue-600 px-3 py-1 rounded-full shadow-sm transition"
-      >
-        <input
-          type="file"
-          class="hidden"
-          (change)="onCoverPhotoSelected($event)"
-        />
-        Change Cover
-      </label>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+      <p class="text-gray-500 text-sm">Loading your profile...</p>
     </div>
 
-    <!-- Profile Image -->
-    <div class="relative -mt-12 flex justify-center">
-      <div class="relative">
+    <!-- Profile Content -->
+    <ng-container *ngIf="!isLoading">
+      <!-- Cover Section -->
+      <div class="relative h-48 sm:h-56 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden group">
         <img
-          *ngIf="profilePreview"
-          [src]="profilePreview"
-          class="w-24 h-24 rounded-full border-4 border-white object-cover shadow-md"
+          *ngIf="coverPreview"
+          [src]="coverPreview"
+          class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          alt="Cover Photo"
         />
-        <div
-          *ngIf="!profilePreview"
-          class="w-24 h-24 bg-gray-300 rounded-full border-4 border-white shadow-md"
-        ></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+        
+        <!-- Change Cover Button -->
         <label
-          class="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer shadow hover:bg-blue-700 transition"
+          class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md cursor-pointer hover:bg-white transition-all duration-200 flex items-center gap-1.5 z-10"
         >
+          <span class="material-icons text-sm text-gray-600">photo_camera</span>
+          <span class="text-sm text-gray-700 font-medium">Change Cover</span>
           <input
             type="file"
             class="hidden"
-            (change)="onProfileImageSelected($event)"
+            (change)="onCoverPhotoSelected($event)"
           />
-          <span class="text-xs font-semibold">Edit</span>
         </label>
-      </div>
-    </div>
-
-    <!-- Editable Form -->
-    <form
-      [formGroup]="profileForm"
-      (ngSubmit)="onSubmit()"
-      class="px-8 pt-6 pb-8 grid gap-6 grid-cols-1 md:grid-cols-2"
-    >
-      <!-- Input Group -->
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Full Name</label>
-        <input
-          formControlName="name"
-          type="text"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
+        
+        <!-- Default Cover Pattern -->
+        <div *ngIf="!coverPreview" class="absolute inset-0 flex items-center justify-center">
+          <div class="text-center text-white/60">
+            <span class="material-icons text-4xl">photo_camera</span>
+            <p class="text-xs mt-1">Add a cover photo</p>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Institution</label>
-        <select
-          formControlName="institutionId"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        >
-          <option value="" disabled>Select your institution</option>
-          <option *ngFor="let inst of institutions" [value]="inst.id">
-            {{ inst.name }}
-          </option>
-        </select>
-      </div>
-      
-
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Academic Level</label>
-        <input
-          formControlName="academicLevel"
-          type="text"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Skills (comma separated)</label>
-        <input
-          formControlName="skills"
-          type="text"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
+      <!-- Profile Image Section -->
+      <div class="relative -mt-12 flex justify-center px-4">
+        <div class="relative group">
+          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
+            <img
+              *ngIf="profilePreview"
+              [src]="profilePreview"
+              class="w-full h-full object-cover"
+              alt="Profile"
+            />
+            <div *ngIf="!profilePreview" class="w-full h-full flex items-center justify-center text-white">
+              <span class="material-icons text-4xl">person</span>
+            </div>
+          </div>
+          
+          <!-- Edit Profile Button -->
+          <label
+            class="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 shadow-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 opacity-0 group-hover:opacity-100"
+          >
+            <span class="material-icons text-sm">edit</span>
+            <input
+              type="file"
+              class="hidden"
+              (change)="onProfileImageSelected($event)"
+            />
+          </label>
+        </div>
       </div>
 
-      <div class="md:col-span-2 space-y-1">
-        <label class="text-sm font-medium text-gray-600">Bio</label>
-        <textarea
-          formControlName="bio"
-          rows="4"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-        ></textarea>
-      </div>
+      <!-- Form Section -->
+      <form
+        [formGroup]="profileForm"
+        (ngSubmit)="onSubmit()"
+        class="px-6 sm:px-8 pt-6 pb-8"
+      >
+        <div class="grid gap-5 grid-cols-1 md:grid-cols-2">
+          
+          <!-- Full Name -->
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-gray-700">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span class="material-icons text-lg">person</span>
+              </span>
+              <input
+                formControlName="name"
+                type="text"
+                placeholder="Enter your full name"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+              />
+            </div>
+            <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-red-500 text-xs">
+              Name is required
+            </div>
+          </div>
 
-      <!-- Submit Button -->
-      <div class="md:col-span-2 flex justify-end pt-2">
-        <button
-          type="submit"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-          [disabled]="profileForm.invalid"
-        >
-          Save Changes
-        </button>
-      </div>
-    </form>
+          <!-- Institution -->
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-gray-700">
+              Institution <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span class="material-icons text-lg">school</span>
+              </span>
+              <select
+                formControlName="institutionId"
+                class="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                [class.border-red-300]="profileForm.get('institutionId')?.invalid && profileForm.get('institutionId')?.touched"
+              >
+                <option value="" disabled>Select your institution</option>
+                <option *ngFor="let inst of institutions" [value]="inst.id">
+                  {{ inst.name }}
+                </option>
+              </select>
+              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                <span class="material-icons text-lg">expand_more</span>
+              </span>
+            </div>
+            <div *ngIf="profileForm.get('institutionId')?.invalid && profileForm.get('institutionId')?.touched" class="text-red-500 text-xs">
+              Please select your institution
+            </div>
+          </div>
+
+          <!-- Academic Level -->
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-gray-700">
+              Academic Level <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span class="material-icons text-lg">menu_book</span>
+              </span>
+              <input
+                formControlName="academicLevel"
+                type="text"
+                placeholder="e.g., Year 3, Senior, Masters"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="profileForm.get('academicLevel')?.invalid && profileForm.get('academicLevel')?.touched"
+              />
+            </div>
+            <div *ngIf="profileForm.get('academicLevel')?.invalid && profileForm.get('academicLevel')?.touched" class="text-red-500 text-xs">
+              Academic level is required
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-gray-700">
+              Skills <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span class="material-icons text-lg">psychology</span>
+              </span>
+              <input
+                formControlName="skills"
+                type="text"
+                placeholder="e.g., Public Speaking, AI, Tutoring (comma separated)"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                [class.border-red-300]="profileForm.get('skills')?.invalid && profileForm.get('skills')?.touched"
+              />
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Separate skills with commas</p>
+            <div *ngIf="profileForm.get('skills')?.invalid && profileForm.get('skills')?.touched" class="text-red-500 text-xs">
+              Skills are required
+            </div>
+          </div>
+
+          <!-- Interests (Optional) -->
+          <div class="space-y-1.5 md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Interests
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <span class="material-icons text-lg">favorite</span>
+              </span>
+              <input
+                formControlName="interests"
+                type="text"
+                placeholder="e.g., Math, Music, Travelling (comma separated)"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <p class="text-xs text-gray-400">Tell others what you're passionate about</p>
+          </div>
+
+          <!-- Bio -->
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="block text-sm font-medium text-gray-700">
+              Bio <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-gray-400">
+                <span class="material-icons text-lg">description</span>
+              </span>
+              <textarea
+                formControlName="bio"
+                rows="4"
+                placeholder="Write a short bio about yourself..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                [class.border-red-300]="profileForm.get('bio')?.invalid && profileForm.get('bio')?.touched"
+              ></textarea>
+            </div>
+            <div class="flex justify-between items-center mt-1">
+              <p class="text-xs text-gray-400">Tell others about your journey, goals, and passions</p>
+              <p class="text-xs text-gray-400">{{ profileForm.get('bio')?.value?.length || 0 }}/500</p>
+            </div>
+            <div *ngIf="profileForm.get('bio')?.invalid && profileForm.get('bio')?.touched" class="text-red-500 text-xs">
+              Bio is required
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-end pt-6 mt-4 border-t border-gray-200">
+          <button
+            type="button"
+            (click)="closeProfileModal()"
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="profileForm.invalid"
+            class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <span class="material-icons text-sm">save</span>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </ng-container>
   </div>
 </div>
+

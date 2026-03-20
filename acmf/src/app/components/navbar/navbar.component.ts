@@ -307,6 +307,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
     //  TELL LAYOUT CHAT IS CLOSED
     this.chatClosed.emit();
   }
+
+
+  viewAllMessages(): void {
+    this.recentPanelOpen = false;
+    this.router.navigate(['/messages']);
+  }
   
 
   logOut(): void {

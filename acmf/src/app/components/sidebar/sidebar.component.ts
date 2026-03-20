@@ -1,5 +1,5 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, HostListener, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -11,45 +11,78 @@ import { Router, RouterModule } from '@angular/router';
 export class SidebarComponent implements OnInit {
   collapsed = false;
   showSidebar = true;
+  isBrowser: boolean;
 
   navItems = [
-    { label: 'Feed', link: '/home', icon: 'dynamic_feed' },
-    { label: 'Network', link: '/network', icon: 'diversity_3' },
-    { label: 'Create', link: '/create', icon: 'add_circle' },
-    // { label: 'Resources', link: '/resources', icon: 'work' },
-    { label: 'UniTok', link: '/videos', icon: 'video_library' },
-    // { label: 'Opportunities', link: '/opportunities', icon: 'business_center' },
-    // { label: 'Fund Me', link: '/fund-me', icon: 'volunteer_activism' },
-    { label: 'Groups', link: '/groups', icon: 'handshake' },
+    { label: 'Feed', link: '/home', icon: 'dynamic_feed', activeIcon: 'feed' },
+    { label: 'Network', link: '/network', icon: 'diversity_3', activeIcon: 'people' },
+    { label: 'Create', link: '/create', icon: 'add_circle', activeIcon: 'edit' },
+    { label: 'UniTok', link: '/videos', icon: 'video_library', activeIcon: 'play_circle' },
+    { label: 'Groups', link: '/groups', icon: 'handshake', activeIcon: 'group' },
   ];
+
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  ngOnInit(): void {
+    if (this.isBrowser) {
+      this.showSidebar = window.innerWidth >= 1024;
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any): void {
+    if (this.isBrowser) {
+      this.showSidebar = window.innerWidth >= 1024;
+    }
+  }
+
+  isActiveRoute(route: string): boolean {
+    return this.router.url === route || this.router.url.startsWith(route + '/');
+  }
 
   getIconGradient(label: string): string {
     const gradients: { [key: string]: string } = {
-      Feed: 'from-pink-500 to-red-500',
+      Feed: 'from-blue-500 to-purple-600',
       Network: 'from-indigo-500 to-purple-500',
       Create: 'from-green-500 to-emerald-500',
       UniTok: 'from-blue-500 to-cyan-500',
-      Opportunities: 'from-yellow-500 to-orange-500',
-      'Fund Me': 'from-black via-red-600 to-green-600', 
+      Groups: 'from-pink-500 to-rose-500',
     };
   
     const gradient = gradients[label] || 'from-gray-500 to-gray-700';
     return `bg-gradient-to-r ${gradient}`;
   }
-  
 
-  constructor(private router: Router) {}
-
-  ngOnInit(): void {
-    this.showSidebar = window.innerWidth >= 768;                         
+  getActiveIcon(icon: string): string {
+    const iconMap: { [key: string]: string } = {
+      'dynamic_feed': 'feed',
+      'diversity_3': 'people',
+      'add_circle': 'edit',
+      'video_library': 'play_circle',
+      'handshake': 'group',
+    };
+    return iconMap[icon] || icon;
   }
-  
-  isActiveRoute(route: string): boolean {
-    return this.router.url.includes(route);
+
+  openCreatePost(): void {
+    this.router.navigate(['/create']);
   }
 
-  logout(): void{
-    localStorage.removeItem('token');
-    this.router.navigate(['/login']);
+  openSearch(): void {
+    // You can implement search modal or navigate to search page
+    this.router.navigate(['/search']);
+  }
+
+  logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      this.router.navigate(['/login']);
+    }
   }
 }

@@ -19,14 +19,8 @@ export class UpdateProfileComponent implements OnInit {
   isLoading = true;
   profilePreview: string | null = null;
   coverPreview: string | null | undefined = null;
-
   showProfileModal = true;
-
   institutions: { id: string; name: string }[] = [];
-
-  closeProfileModal() {
-    this.showProfileModal = false;
-  }
 
   constructor(
     private fb: FormBuilder,
@@ -37,20 +31,30 @@ export class UpdateProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initForm();
+    this.loadInstitutions();
+    this.loadProfile();
+  }
+
+  private initForm(): void {
     this.profileForm = this.fb.group({
-      name: ['', Validators.required],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       institutionId: ['', Validators.required],
-      academicLevel: ['', Validators.required],
-      skills: ['', Validators.required],
-      bio: ['', Validators.required]
+      academicLevel: ['', [Validators.required, Validators.maxLength(100)]],
+      skills: ['', [Validators.required, Validators.maxLength(500)]],
+      bio: ['', [Validators.required, Validators.maxLength(500)]],
+      interests: ['', [Validators.maxLength(500)]]
     });
+  }
 
-       // fetch institutions for dropdown
-       this.institutionService.getInstitutions().subscribe({
-        next: (data) => (this.institutions = data),
-        error: () => this.toastr.error('Failed to load institutions'),
-      });
+  private loadInstitutions(): void {
+    this.institutionService.getInstitutions().subscribe({
+      next: (data) => (this.institutions = data),
+      error: () => this.toastr.error('Failed to load institutions'),
+    });
+  }
 
+  private loadProfile(): void {
     this.profileService.getMyProfile().subscribe({
       next: (profile: Profile) => {
         this.isLoading = false;
@@ -58,31 +62,63 @@ export class UpdateProfileComponent implements OnInit {
           name: profile.name,
           institutionId: profile.institutionId,
           academicLevel: profile.academicLevel,
-          skills: profile.skills.join(', '),
-          bio: profile.bio
+          skills: profile.skills?.join(', ') || '',
+          bio: profile.bio,
+          interests: profile.interests?.join(', ') || ''
         });
         this.profilePreview = profile.profileImage ?? null;
         this.coverPreview = profile.coverPhoto ?? null;
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
+        console.error('Failed to load profile:', err);
         this.toastr.error('Failed to load profile');
       }
     });
   }
 
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    this.router.navigate(['/my-profile']);
+  }
+
   onSubmit(): void {
-    if (this.profileForm.invalid) return;
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      
+      if (this.profileForm.get('name')?.errors?.['required']) {
+        this.toastr.error('Please enter your name');
+      } else if (this.profileForm.get('institutionId')?.errors?.['required']) {
+        this.toastr.error('Please select your institution');
+      } else if (this.profileForm.get('academicLevel')?.errors?.['required']) {
+        this.toastr.error('Please enter your academic level');
+      } else if (this.profileForm.get('skills')?.errors?.['required']) {
+        this.toastr.error('Please enter your skills');
+      } else if (this.profileForm.get('bio')?.errors?.['required']) {
+        this.toastr.error('Please enter a bio');
+      }
+      return;
+    }
 
     const formData = this.profileForm.value;
-    formData.skills = formData.skills.split(',').map((s: string) => s.trim());
+    
+    // Parse skills and interests
+    formData.skills = formData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+    formData.interests = formData.interests ? 
+      formData.interests.split(',').map((i: string) => i.trim()).filter((i: string) => i) : [];
 
     this.profileService.updateProfile(formData).subscribe({
       next: () => {
-        this.toastr.success('Profile updated successfully!');
-        this.router.navigate(['/my-profile']);
+        this.toastr.success('Profile updated successfully! 🎉');
+        setTimeout(() => {
+          this.closeProfileModal();
+        }, 1500);
       },
-      error: () => this.toastr.error('Failed to update profile')
+      error: (err) => {
+        console.error('Failed to update profile:', err);
+        const errorMessage = err.error?.message || 'Failed to update profile';
+        this.toastr.error(errorMessage);
+      }
     });
   }
 
@@ -90,14 +126,28 @@ export class UpdateProfileComponent implements OnInit {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (!file) return;
 
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      this.toastr.error('Profile image must be less than 2MB');
+      return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+      return;
+    }
+
     this.profileService.uploadProfileImage(file).subscribe({
       next: (res) => {
         this.profilePreview = res.profileImage ?? null;
-
-
-        this.toastr.success('Profile photo updated');
+        this.toastr.success('Profile photo updated successfully');
       },
-      error: () => this.toastr.error('Failed to upload profile photo')
+      error: (err) => {
+        console.error('Failed to upload profile photo:', err);
+        this.toastr.error('Failed to upload profile photo');
+      }
     });
   }
 
@@ -105,12 +155,28 @@ export class UpdateProfileComponent implements OnInit {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (!file) return;
 
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      this.toastr.error('Cover image must be less than 5MB');
+      return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+      return;
+    }
+
     this.profileService.uploadCoverPhoto(file).subscribe({
       next: (res) => {
         this.coverPreview = res.coverPhoto ?? null;
-        this.toastr.success('Cover photo updated');
+        this.toastr.success('Cover photo updated successfully');
       },
-      error: () => this.toastr.error('Failed to upload cover photo')
+      error: (err) => {
+        console.error('Failed to upload cover photo:', err);
+        this.toastr.error('Failed to upload cover photo');
+      }
     });
   }
 }
