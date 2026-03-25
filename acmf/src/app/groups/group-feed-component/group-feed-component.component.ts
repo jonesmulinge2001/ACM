@@ -64,6 +64,9 @@ export class GroupFeedComponent implements OnInit {
 
   menuOpen: { [id: string]: boolean } = {};
   currentUserId: string | null = null;
+  expanded = false;
+  imageViewerUrl: string | null = null;
+  showImageViewer = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -385,6 +388,13 @@ export class GroupFeedComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  removeFile(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.fileType = null;
+    this.fileIcon = null;
+  }
+
   createPost(): void {
     const content = this.newPost.content?.trim() || '';
 
@@ -444,6 +454,7 @@ export class GroupFeedComponent implements OnInit {
         this.fileIcon = null;
         this.creatingPost = false;
         this.errorMessage = null;
+        this.expanded = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -580,7 +591,7 @@ export class GroupFeedComponent implements OnInit {
 
   formatCount(count: number, singular: string, plural: string): string {
     const value = count || 0;
-    return `${value} ${value === 1 ? singular : plural}...`;
+    return `${value} ${value === 1 ? singular : plural}`;
   }
 
   formatTimeAgo(dateString: string): string {
@@ -607,5 +618,15 @@ export class GroupFeedComponent implements OnInit {
 
     const years = Math.floor(days / 365);
     return `${years}y ago`;
+  }
+
+  openImageViewer(url: string): void {
+    this.imageViewerUrl = url;
+    this.showImageViewer = true;
+  }
+
+  closeImageViewer(): void {
+    this.showImageViewer = false;
+    this.imageViewerUrl = null;
   }
 }

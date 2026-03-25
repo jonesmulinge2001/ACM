@@ -1,80 +1,206 @@
-<div class="fixed inset-0 sm:relative sm:inset-auto max-w-6xl mx-auto bg-gray-100 min-h-screen flex flex-col z-50 sm:z-0">
-
-  <!-- HEADER -->
-  <div
-    class="sticky top-0 z-20 flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 py-4 sm:px-0 sm:py-6 bg-gray-100 border-b border-gray-200"
-  >
-    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900">
-      Explore student communities
-    </h2>
-
-    <a
-      routerLink="/groups/create"
-      class="mt-3 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 transition"
-    >
-      <span class="material-icons text-[18px]">add</span>
-      Create community
-    </a>
-  </div>
-
-  <!-- CONTENT -->
-  <div class="flex-1 overflow-y-auto px-4 sm:px-0 py-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-20 sm:pb-0">
-
-      <ng-container *ngIf="groups$ | async as groups">
-        <div
-          *ngFor="let g of groups"
-          class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition flex flex-col"
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full mb-3">
+            <span class="material-icons text-sm">groups</span>
+            <span class="text-xs font-medium">Communities</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Explore student communities
+          </h1>
+          <p class="text-gray-500">Join groups that match your interests and connect with like-minded students</p>
+        </div>
+        
+        <a
+          routerLink="/groups/create"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-sm hover:shadow-lg transition-all duration-200 transform hover:scale-105"
         >
+          <span class="material-icons text-[18px]">add</span>
+          Create community
+        </a>
+      </div>
+    </div>
 
-          <!-- COVER IMAGE (NO CROPPING) -->
-          <div
-            class="w-full bg-gray-50 flex items-center justify-center aspect-[16/9] overflow-hidden border-b border-gray-200"
+    <!-- Stats Cards -->
+    <!-- <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Total Communities</p>
+            <p class="text-2xl font-bold text-gray-900">{{ (groups$ | async)?.length || 0 }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+            <span class="material-icons text-blue-600">groups</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Total Members</p>
+            <p class="text-2xl font-bold text-gray-900">{{ getTotalMembers() }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+            <span class="material-icons text-green-600">people</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Active Today</p>
+            <p class="text-2xl font-bold text-gray-900">{{ getActiveGroups() }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+            <span class="material-icons text-purple-600">trending_up</span>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Search & Filter Bar -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-col sm:flex-row gap-4">
+        <!-- Search Input -->
+        <div class="flex-1 relative">
+          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <span class="material-icons text-lg">search</span>
+          </span>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="filterGroups()"
+            placeholder="Search by name or description..."
+            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="flex gap-2">
+          <button
+            (click)="selectedFilter = 'all'; filterGroups()"
+            class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            [ngClass]="selectedFilter === 'all' 
+              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
           >
-            <img
-              *ngIf="g.coverImage"
-              [src]="g.coverImage"
-              alt="Group cover"
-              class="max-h-full max-w-full object-contain"
-            />
+            All Groups
+          </button>
+          <button
+            (click)="selectedFilter = 'joined'; filterGroups()"
+            class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            [ngClass]="selectedFilter === 'joined' 
+              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          >
+            My Groups
+          </button>
+        </div>
+      </div>
+    </div>
 
-            <span
-              *ngIf="!g.coverImage"
-              class="text-sm text-gray-400"
-            >
-              No cover image
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+        <div class="aspect-video bg-gradient-to-r from-gray-200 to-gray-300"></div>
+        <div class="p-5">
+          <div class="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+          <div class="flex justify-between items-center">
+            <div class="h-4 bg-gray-200 rounded w-20"></div>
+            <div class="h-4 bg-gray-200 rounded w-24"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Groups Grid -->
+    <div *ngIf="!isLoading && filteredGroups.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let group of filteredGroups" 
+           class="group bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+           [routerLink]="['/groups', group.id]">
+        
+        <!-- Cover Image with Gradient Overlay -->
+        <div class="relative aspect-video bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
+          <img *ngIf="group.coverImage" 
+               [src]="group.coverImage" 
+               alt="Group cover" 
+               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <!-- Category Badge -->
+          <div class="absolute top-3 left-3">
+            <span class="px-2 py-1 bg-white/90 backdrop-blur-sm text-xs font-medium rounded-full text-gray-700">
+              {{ group.visibility === 'PUBLIC' ? 'Public' : 'Private' }}
             </span>
           </div>
+          
+          <!-- Member Count Badge -->
+          <div class="absolute bottom-3 right-3">
+            <span class="px-2 py-1 bg-black/50 backdrop-blur-sm text-xs font-medium rounded-full text-white flex items-center gap-1">
+              <span class="material-icons text-xs">group</span>
+              {{ getMemberCount(group) }} members
+            </span>
+          </div>
+        </div>
 
-          <!-- BODY -->
-          <div class="p-5 flex flex-col flex-1">
-            <h3 class="text-base font-semibold text-gray-900 leading-snug">
-              {{ g.name }}
+        <!-- Content -->
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              {{ group.name }}
             </h3>
-
-            <p class="mt-1 text-sm text-gray-600 line-clamp-2">
-              {{ g.description }}
-            </p>
-
-            <!-- FOOTER -->
-            <div class="mt-auto pt-4 flex items-center justify-between">
-              <div class="flex items-center gap-1.5 text-xs text-gray-500">
-                <span class="material-icons text-[16px]">group</span>
-                {{ g._count?.members ?? g.members?.length }} members
-              </div>
-
-              <a
-                [routerLink]="['/groups', g.id]"
-                class="text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                View community →
-              </a>
+            <div *ngIf="isUserJoined(group)" class="flex-shrink-0">
+              <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">Joined</span>
             </div>
           </div>
-
+          
+          <p class="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-4">
+            {{ group.description || 'No description provided' }}
+          </p>
+          
+          <!-- Footer -->
+          <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div class="flex items-center gap-1 text-xs text-gray-500">
+              <span class="material-icons text-sm">calendar_today</span>
+              <span>{{ formatDate(group.createdAt) }}</span>
+            </div>
+            
+            <div class="flex items-center gap-1 text-blue-600 group-hover:gap-2 transition-all duration-200">
+              <span class="text-sm font-medium">View Community</span>
+              <span class="material-icons text-sm">arrow_forward</span>
+            </div>
+          </div>
         </div>
-      </ng-container>
+      </div>
+    </div>
 
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredGroups.length === 0" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+      <div class="flex flex-col items-center">
+        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <span class="material-icons text-4xl text-gray-400">groups</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No communities found</h3>
+        <p class="text-gray-500 max-w-md">
+          {{ searchQuery ? 'No groups match your search criteria.' : 
+             selectedFilter === 'joined' ? 'You haven\'t joined any groups yet.' : 
+             'No communities have been created yet.' }}
+        </p>
+        <button *ngIf="selectedFilter === 'joined' || (!searchQuery && selectedFilter === 'all')"
+                routerLink="/groups/create"
+                class="mt-6 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:shadow-lg transition-all duration-200">
+          Create a Community
+        </button>
+      </div>
     </div>
   </div>
 </div>
+

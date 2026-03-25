@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -10,9 +10,10 @@ import { RouterLink, RouterModule } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit{
+export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   showPassword: boolean = false;
+  capsLockWarning: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -21,7 +22,7 @@ export class LoginComponent implements OnInit{
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      email: ['',[Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
@@ -29,6 +30,14 @@ export class LoginComponent implements OnInit{
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      // Add shake animation to invalid fields
+      const invalidFields = document.querySelectorAll('.border-red-400');
+      invalidFields.forEach(field => {
+        field.classList.add('animate-shake');
+        setTimeout(() => {
+          field.classList.remove('animate-shake');
+        }, 300);
+      });
       return;
     }
 
@@ -45,4 +54,13 @@ export class LoginComponent implements OnInit{
     return !!control?.invalid && control?.touched;
   }
 
+  // Detect Caps Lock
+  @HostListener('window:keydown', ['$event'])
+  detectCapsLock(event: KeyboardEvent): void {
+    if (event.getModifierState && event.getModifierState('CapsLock')) {
+      this.capsLockWarning = true;
+    } else {
+      this.capsLockWarning = false;
+    }
+  }
 }

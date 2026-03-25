@@ -55,5 +55,26 @@ export class RegisterComponent implements OnInit {
     return !!control?.invalid && control?.touched;
   }
 
-  
+  // method for password strength indicator
+  getPasswordStrength(): 'weak' | 'medium' | 'strong' {
+    const password = this.registerForm.get('password')?.value || '';
+    
+    if (!password) return 'weak';
+    
+    let strength = 0;
+    
+    // Length check
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    
+    // Complexity checks
+    if (/[a-z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    
+    if (strength <= 2) return 'weak';
+    if (strength <= 4) return 'medium';
+    return 'strong';
+  }
 }
