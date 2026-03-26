@@ -1,211 +1,360 @@
-<div
-  class="min-h-screen flex flex-col bg-gray-50 p-4 pb-32 md:pb-4 justify-center"
->
-  <!-- Modal / Form -->
-  <div
-    [formGroup]="videoForm"
-    class="max-w-xl w-full bg-white p-6 rounded-2xl shadow-lg space-y-6 overflow-y-auto max-h-[calc(100vh-8rem)] mx-auto"
-  >
-    <!-- Motivational Header -->
-    <div class="max-w-xl w-full mx-auto mb-8 text-center">
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-        Create Your Video
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header Section -->
+    <div class="mb-8 text-center">
+      <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1.5 rounded-full mb-4">
+        <span class="material-icons text-sm">videocam</span>
+        <span class="text-sm font-medium">UniTok Creator Hub</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        Share Your Knowledge
       </h1>
-      <p class="text-gray-600 text-lg">
-        Share your knowledge and help fellow students navigate university life.
-        <span class="block md:inline"
-          >Your experience could make someone's journey easier!</span
-        >
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Help fellow students navigate university life by sharing your experiences, tips, and insights
       </p>
     </div>
-    <!-- Header -->
-    <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
-      <span class="material-icons">videocam</span> Upload Video
-    </h2>
 
-    <!-- Video Upload / Preview -->
-    <div
-      class="border-2 border-dashed border-slate-300 rounded-xl p-4 md:p-6 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 w-full"
-      (click)="fileInput.click()"
-    >
-      <input
-        type="file"
-        #fileInput
-        accept="video/*"
-        class="hidden"
-        (change)="onFileSelected($event)"
-      />
-      <div
-        *ngIf="!videoPreviewUrl"
-        class="flex flex-col items-center gap-2 text-center px-2"
-      >
-        <span class="material-icons text-4xl text-indigo-500">upload</span>
-        <p class="text-sm text-slate-500">
-          Drop your video here or click to browse
-        </p>
-        <button
-          type="button"
-          class="px-4 py-2 bg-indigo-500 text-white rounded-md"
-        >
-          Choose Video
-        </button>
-      </div>
-      <video
-        *ngIf="videoPreviewUrl"
-        [src]="videoPreviewUrl"
-        controls
-        class="w-full max-h-[400px] rounded-lg mt-2"
-      ></video>
-    </div>
-    <div
-      *ngIf="
-        videoForm.get('videoFile')?.touched &&
-        videoForm.get('videoFile')?.invalid
-      "
-      class="text-red-500 text-sm"
-    >
-      Please upload a video file.
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-    <!-- Title -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700"
-        >Video Title</label
-      >
-      <input
-        type="text"
-        formControlName="title"
-        placeholder="e.g., How to Apply for HELB Step-by-Step"
-        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
-      />
-      <div
-        *ngIf="
-          videoForm.get('title')?.touched && videoForm.get('title')?.invalid
-        "
-        class="text-red-500 text-sm mt-1"
-      >
-        Title is required (min 3 characters).
-      </div>
-    </div>
+      <!-- Main Form - Enhanced -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
 
-    <!-- Description -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700"
-        >Description</label
-      >
-      <textarea
-        formControlName="description"
-        placeholder="Describe what your video covers and why it's helpful..."
-        rows="3"
-        class="mt-1 block w-full rounded-md border border-slate-300 p-2 focus:ring-2 focus:ring-indigo-400"
-      ></textarea>
-      <div
-        *ngIf="
-          videoForm.get('description')?.touched &&
-          videoForm.get('description')?.invalid
-        "
-        class="text-red-500 text-sm mt-1"
-      >
-        Description cannot exceed 500 characters.
-      </div>
-    </div>
+          <!-- Form Header -->
+          <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                <span class="material-icons text-white text-lg">add_circle</span>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">Create New Video</h2>
+                <p class="text-sm text-gray-500">Share your knowledge and help others</p>
+              </div>
+            </div>
+          </div>
 
-    <!-- Tags -->
-    <div>
-      <label class="block text-sm font-medium text-slate-700"
-        >Tags (Select up to 5)</label
-      >
-      <div class="flex flex-wrap gap-2 mt-2 overflow-x-auto py-2">
-        <button
-          type="button"
-          *ngFor="let tag of tags"
-          (click)="toggleTag(tag)"
-          [class.bg-indigo-500]="selectedTags.includes(tag)"
-          [class.text-white]="selectedTags.includes(tag)"
-          class="border border-slate-300 rounded-full px-3 py-1 text-sm hover:bg-indigo-100 transition flex-shrink-0"
-        >
-          #{{ tag }}
-        </button>
-      </div>
-    </div>
+          <!-- Progress Bar Section -->
+          <div *ngIf="uploadStatus !== 'idle'" class="px-6 pt-4">
+            <div class="bg-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="material-icons text-sm" [class]="{
+                    'text-blue-500': uploadStatus === 'uploading',
+                    'text-orange-500': uploadStatus === 'processing',
+                    'text-green-500': uploadStatus === 'complete',
+                    'text-red-500': uploadStatus === 'error'
+                  }">
+                    {{
+                      uploadStatus === 'uploading' ? 'cloud_upload' :
+                      uploadStatus === 'processing' ? 'hourglass_empty' :
+                      uploadStatus === 'complete' ? 'check_circle' :
+                      uploadStatus === 'error' ? 'error' : ''
+                    }}
+                  </span>
+                  <span class="text-sm font-medium text-gray-700">
+                    {{
+                      uploadStatus === 'uploading' ? 'Uploading...' :
+                      uploadStatus === 'processing' ? 'Processing video...' :
+                      uploadStatus === 'complete' ? 'Complete!' :
+                      uploadStatus === 'error' ? 'Upload failed' : ''
+                    }}
+                  </span>
+                </div>
+                <span class="text-sm font-semibold text-gray-700">{{ uploadProgress }}%</span>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  class="h-full rounded-full transition-all duration-300 ease-out"
+                  [class]="{
+                    'bg-gradient-to-r from-blue-500 to-purple-600': uploadStatus === 'uploading' || uploadStatus === 'processing',
+                    'bg-green-500': uploadStatus === 'complete',
+                    'bg-red-500': uploadStatus === 'error'
+                  }"
+                  [style.width]="uploadProgress + '%'"
+                ></div>
+              </div>
+              
+              <!-- Additional Info -->
+              <div *ngIf="uploadStatus === 'uploading' && uploadedFileName" class="mt-2 text-xs text-gray-500">
+                Uploading: {{ uploadedFileName }}
+              </div>
+              <div *ngIf="uploadStatus === 'processing'" class="mt-2 text-xs text-orange-600 flex items-center gap-1">
+                <span class="animate-spin rounded-full h-3 w-3 border-2 border-orange-500 border-t-transparent"></span>
+                This may take a moment...
+              </div>
+              <div *ngIf="uploadStatus === 'complete'" class="mt-2 text-xs text-green-600">
+                Your video is ready! Redirecting...
+              </div>
+              <div *ngIf="uploadStatus === 'error'" class="mt-2 text-xs text-red-600">
+                {{ error || 'Something went wrong. Please try again.' }}
+              </div>
+            </div>
+          </div>
 
-    <!-- Error -->
-    <div *ngIf="error" class="text-red-500 text-sm">{{ error }}</div>
+          <form [formGroup]="videoForm" (ngSubmit)="submit()" class="p-6 space-y-6">
 
-    <!-- Creator Tips inside the modal -->
-    <section class="bg-[#f0f9ff] p-6 rounded-xl border border-blue-50 mt-6">
-      <div class="flex items-center gap-2 mb-4">
-        <h2 class="text-lg font-bold text-slate-900">Creator Tips</h2>
-        <span class="material-icons text-yellow-500 text-lg">lightbulb</span>
-      </div>
+            <!-- Video Upload Section - Enhanced -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Upload Video <span class="text-red-500">*</span>
+              </label>
+              
+              <div 
+                class="relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300"
+                [class.border-blue-400]="videoPreviewUrl"
+                [class.bg-blue-50]="videoPreviewUrl"
+                [class.border-gray-300]="!videoPreviewUrl"
+                [class.bg-gray-50]="!videoPreviewUrl"
+                [class.hover:border-blue-400]="!videoPreviewUrl"
+                [class.hover:bg-blue-50]="!videoPreviewUrl"
+                [class.opacity-50]="isSubmitting"
+                [class.cursor-not-allowed]="isSubmitting"
+                (click)="!isSubmitting && fileInput.click()"
+              >
+                <input 
+                  #fileInput
+                  type="file" 
+                  accept="video/mp4,video/quicktime,video/x-msvideo"
+                  (change)="onFileSelected($event)"
+                  [disabled]="isSubmitting"
+                  hidden
+                />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Keep it concise:</span
-          >
-          <span class="text-slate-600"
-            >Aim for 1-3 minutes for maximum engagement</span
-          >
+                <!-- Upload Placeholder -->
+                <div *ngIf="!videoPreviewUrl" class="flex flex-col items-center gap-4">
+                  <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span class="material-icons text-4xl text-gray-500">cloud_upload</span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">Drop your video here</p>
+                    <p class="text-sm text-gray-500">or click to browse</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    [disabled]="isSubmitting"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50"
+                  >
+                    <span class="material-icons text-sm">upload</span>
+                    Choose Video
+                  </button>
+                  <div class="flex flex-wrap justify-center gap-4 text-xs text-gray-400 mt-2">
+                    <span class="flex items-center gap-1">
+                      <span class="material-icons text-xs">schedule</span>
+                      Max 5 minutes
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <span class="material-icons text-xs">movie</span>
+                      MP4, MOV, AVI
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <span class="material-icons text-xs">storage</span>
+                      Max 100MB
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Preview -->
+                <div *ngIf="videoPreviewUrl" class="w-full">
+                  <video [src]="videoPreviewUrl" controls class="w-full max-h-80 rounded-lg mb-4 shadow-lg"></video>
+                  <button 
+                    type="button"
+                    [disabled]="isSubmitting"
+                    class="inline-flex items-center gap-2 bg-gray-100 border border-gray-300 px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-200 disabled:opacity-50"
+                    (click)="$event.stopPropagation(); !isSubmitting && fileInput.click()"
+                  >
+                    <span class="material-icons text-sm">swap_horiz</span>
+                    Change Video
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="videoForm.get('videoFile')?.touched && videoForm.get('videoFile')?.errors?.['required']" 
+                   class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                <span class="material-icons text-sm">error</span>
+                Video is required
+              </div>
+            </div>
+
+            <!-- Title Field -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span class="material-icons text-gray-500 text-sm">title</span>
+                Video Title <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  formControlName="title"
+                  [disabled]="isSubmitting"
+                  placeholder="e.g., How to Apply for HELB Step-by-Step"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100"
+                  [class.border-red-300]="videoForm.get('title')?.invalid && videoForm.get('title')?.touched"
+                />
+              </div>
+              <div *ngIf="videoForm.get('title')?.invalid && videoForm.get('title')?.touched" class="text-red-500 text-xs mt-1">
+                <span *ngIf="videoForm.get('title')?.errors?.['required']">Title is required</span>
+                <span *ngIf="videoForm.get('title')?.errors?.['minlength']">Minimum 3 characters required</span>
+              </div>
+            </div>
+
+            <!-- Description Field -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span class="material-icons text-gray-500 text-sm">description</span>
+                Description
+              </label>
+              <textarea 
+                rows="4"
+                formControlName="description"
+                [disabled]="isSubmitting"
+                placeholder="Describe what your video covers and why it's helpful..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none disabled:bg-gray-100"
+              ></textarea>
+              <div class="flex justify-between items-center mt-1">
+                <p class="text-xs text-gray-400">Brief but descriptive helps viewers understand your content</p>
+                <span class="text-xs text-gray-400">{{videoForm.get('description')?.value?.length || 0}}/500</span>
+              </div>
+            </div>
+
+            <!-- Tags Section - Enhanced -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <span class="material-icons text-gray-500 text-sm">sell</span>
+                Tags <span class="text-gray-400 text-xs">(Select up to 5)</span>
+              </label>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <button 
+                  *ngFor="let tag of tags"
+                  type="button"
+                  [disabled]="isSubmitting"
+                  class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 disabled:opacity-50"
+                  [class]="selectedTags.includes(tag) 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md transform scale-105' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                  (click)="toggleTag(tag)"
+                >
+                  #{{tag}}
+                </button>
+              </div>
+              <div *ngIf="selectedTags.length === 5" class="text-xs text-amber-600 flex items-center gap-1">
+                <span class="material-icons text-xs">info</span>
+                Maximum 5 tags selected
+              </div>
+            </div>
+
+            <!-- Action Buttons - Enhanced -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+              <button 
+                type="button"
+                (click)="cancel()"
+                [disabled]="isSubmitting"
+                class="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200 border border-gray-200 disabled:opacity-50"
+              >
+                <span class="material-icons text-sm">close</span>
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                [disabled]="videoForm.invalid || isSubmitting"
+                class="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <span *ngIf="!isSubmitting" class="material-icons text-sm">publish</span>
+                <span *ngIf="isSubmitting" class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                {{isSubmitting ? 'Publishing...' : 'Publish Video'}}
+              </button>
+            </div>
+
+          </form>
         </div>
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Add captions:</span
-          >
-          <span class="text-slate-600"
-            >Make your content accessible to everyone</span
-          >
-        </div>
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Be authentic:</span
-          >
-          <span class="text-slate-600"
-            >Share your real experiences and mistakes</span
-          >
-        </div>
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Use good lighting:</span
-          >
-          <span class="text-slate-600">Natural light works best</span>
-        </div>
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Use clear audio:</span
-          >
-          <span class="text-slate-600">Good sound quality is crucial</span>
-        </div>
-        <div class="flex flex-wrap items-baseline gap-1">
-          <span class="font-bold text-slate-800 whitespace-nowrap"
-            >Engage viewers:</span
-          >
-          <span class="text-slate-600"
-            >Ask questions and encourage comments</span
-          >
+      </div>
+
+      <!-- Tips Sidebar - Enhanced -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-6 space-y-6">
+          
+          <!-- Creator Tips Card -->
+          <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-white">tips_and_updates</span>
+                <h2 class="text-lg font-bold text-white">Creator Tips</h2>
+              </div>
+              <p class="text-white/80 text-sm mt-1">Make your videos stand out</p>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-all cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition">
+                  <span class="material-icons text-blue-600 text-sm">schedule</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">Keep it concise</p>
+                  <p class="text-gray-500 text-xs">Aim for 1-3 minutes to maintain viewer engagement</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-all cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition">
+                  <span class="material-icons text-green-600 text-sm">gps_fixed</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">Be authentic</p>
+                  <p class="text-gray-500 text-xs">Share real experiences and genuine advice</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-all cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition">
+                  <span class="material-icons text-purple-600 text-sm">mic</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">Clear audio</p>
+                  <p class="text-gray-500 text-xs">Good sound quality is essential for engagement</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-all cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-200 transition">
+                  <span class="material-icons text-orange-600 text-sm">subtitles</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">Add captions</p>
+                  <p class="text-gray-500 text-xs">Improve accessibility and reach</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Why Create Card -->
+          <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-icons text-purple-600">emoji_events</span>
+              <h3 class="font-semibold text-gray-900">Why Create?</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-gray-600">
+              <li class="flex items-center gap-2">
+                <span class="material-icons text-green-500 text-sm">check_circle</span>
+                Help thousands of students
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="material-icons text-green-500 text-sm">check_circle</span>
+                Build your personal brand
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="material-icons text-green-500 text-sm">check_circle</span>
+                Earn creator recognition
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="material-icons text-green-500 text-sm">check_circle</span>
+                Join our creator community
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-    </section>
-
-    <!-- Actions -->
-    <div
-      class="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-200 mb-4 md:mb-0"
-    >
-      <button
-        type="button"
-        (click)="cancel()"
-        class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-100 transition"
-      >
-        Cancel
-      </button>
-      <button
-        type="button"
-        (click)="submit()"
-        [disabled]="isSubmitting"
-        class="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-50 transition"
-      >
-        Upload Video
-      </button>
     </div>
   </div>
 </div>

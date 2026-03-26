@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ElementRef, HostListener, QueryList, ViewChildren } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -17,7 +17,7 @@ import { DatePipe } from '@angular/common';
   templateUrl: './video-manager.component.html',
   styleUrl: './video-manager.component.css',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, CreateVideoComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CreateVideoComponent],
   providers: [DatePipe]
 })
 export class VideoManagerComponent implements OnInit, OnDestroy {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateVideoDto, Video, UpdateVideoDto } from '../interfaces';
 import { environment } from '../../environments/environment';
@@ -32,6 +32,15 @@ export class VideoService {
     // Do NOT set Content-Type here; HttpClient will set multipart/form-data automatically
     return this.http.post<Video>(this.baseUrl, formData);
   }
+
+    // Upload video with progress tracking
+    uploadVideoWithProgress(formData: FormData): Observable<HttpEvent<Video>> {
+      return this.http.post<Video>(`${this.baseUrl}`, formData, {
+        reportProgress: true,
+        observe: 'events'
+      });
+    }
+  
 
   /** GET all videos */
   getAllVideos(): Observable<Video[]> {
