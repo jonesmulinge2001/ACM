@@ -1042,52 +1042,112 @@ export class GroupsService {
   }
 
   // edit post
-  async editResource(
-    userId: string,
-    resourceId: string,
-    dto: { content?: string },
-    file?: Express.Multer.File,
-  ) {
-    //  Find the existing resource
-    const resource = await this.prisma.groupResource.findUnique({
-      where: { id: resourceId },
-    });
+// edit post
+async editResource(
+  userId: string,
+  resourceId: string,
+  dto: { content?: string },
+  file?: Express.Multer.File,
+) {
+  // Find the existing resource
+  const resource = await this.prisma.groupResource.findUnique({
+    where: { id: resourceId },
+  });
 
-    if (!resource) throw new NotFoundException('Resource not found');
+  if (!resource) throw new NotFoundException('Resource not found');
 
-    //  Ensure the user owns the post
-    if (resource.sharedById !== userId) {
-      throw new ForbiddenException('You can only edit your own post');
-    }
-
-    //  Keep old file info, unless a new file is provided
-    let resourceUrl = resource.resourceUrl;
-    let originalName = resource.originalName;
-    let fileType = resource.fileType;
-
-    //  If a new file is uploaded, replace the file details
-    if (file) {
-      const uploadResult = await this.cloudinary.uploadRaw(
-        file,
-        AcademeetUploadType.RESOURCE_FILE,
-      );
-      resourceUrl = uploadResult.secure_url;
-      originalName = file.originalname;
-      const parts = file.originalname.split('.');
-      fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
-    }
-
-    //  Update the database with new content and/or file
-    return this.prisma.groupResource.update({
-      where: { id: resourceId },
-      data: {
-        content: dto.content ?? resource.content, // fallback if not provided
-        resourceUrl,
-        originalName,
-        fileType,
-      },
-    });
+  // Ensure the user owns the post
+  if (resource.sharedById !== userId) {
+    throw new ForbiddenException('You can only edit your own post');
   }
+
+  // Keep old file info, unless a new file is provided
+  let resourceUrl = resource.resourceUrl;
+  let originalName = resource.originalName;
+  let fileType = resource.fileType;
+
+  // If a new file is uploaded, replace the file details
+  if (file) {
+    const uploadResult = await this.cloudinary.uploadRaw(
+      file,
+      AcademeetUploadType.RESOURCE_FILE,
+    );
+    resourceUrl = uploadResult.secure_url;
+    originalName = file.originalname;
+    const parts = file.originalname.split('.');
+    fileType = parts.length > 1 ? parts.pop()!.toLowerCase() : null;
+  }
+
+  // Update the database with new content and/or file
+  const updatedResource = await this.prisma.groupResource.update({
+    where: { id: resourceId },
+    data: {
+      content: dto.content ?? resource.content,
+      resourceUrl,
+      originalName,
+      fileType,
+    },
+    include: {
+      sharedBy: {
+        select: {
+          id: true,
+          name: true,
+          profile: { select: { profileImage: true } },
+        },
+      },
+      likes: {
+        select: { userId: true },
+      },
+      comments: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profile: { select: { profileImage: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Return the complete resource with all data
+  return {
+    id: updatedResource.id,
+    content: updatedResource.content,
+    createdAt: updatedResource.createdAt,
+    groupId: updatedResource.groupId,
+    resourceUrl: updatedResource.resourceUrl,
+    originalName: updatedResource.originalName,
+    fileType: updatedResource.fileType,
+    sharedBy: {
+      id: updatedResource.sharedBy.id,
+      name: updatedResource.sharedBy.name,
+      profileImage: updatedResource.sharedBy.profile?.profileImage || null,
+    },
+    likesCount: updatedResource.likes.length,
+    commentsCount: updatedResource.comments.length,
+    isLiked: updatedResource.likes.some((like) => like.userId === userId),
+    comments: updatedResource.comments.map((c) => ({
+      id: c.id,
+      userId: c.userId,
+      resourceId: c.resourceId,
+      content: c.content,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      user: {
+        id: c.user.id,
+        name: c.user.name,
+        profile: {
+          profileImage: c.user.profile?.profileImage || null,
+        },
+      },
+      likesCount: 0, // You might want to add comment likes count if needed
+      isLikedByCurrentUser: false,
+    })),
+  };
+}
 
   async deleteResource(userId: string, resourceId: string) {
     // Find the resource

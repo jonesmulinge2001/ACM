@@ -234,12 +234,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
           unreadCount: convo.unreadCount || 0
         }));
         
-        console.log('Mapped conversations:', this.recentConversations);
+        // console.log('Mapped conversations:', this.recentConversations);
         this.calculateTotalUnreadMessages();
       },
       error: (err) => {
-        console.error('Error fetching recent conversations', err);
-        this.toastr.error('Failed to load conversations');
+        // console.error('Error fetching recent conversations', err);
+        // this.toastr.error('Failed to load conversations');
       }
     });
   }
@@ -287,8 +287,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.recentPanelOpen = false;
   
     if (!conversationId || conversationId.trim() === '') {
-      console.error('Invalid conversation ID:', conversationId);
-      this.toastr.error('Cannot open conversation: Invalid ID');
+      // console.error('Invalid conversation ID:', conversationId);
+      // this.toastr.error('Cannot open conversation: Invalid ID');
       return;
     }
   

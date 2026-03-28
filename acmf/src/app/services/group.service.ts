@@ -25,15 +25,23 @@ export class GroupsService {
 
   constructor(private http: HttpClient) {}
 
-  //  Attach token from localStorage
+  // Attach token from localStorage for regular JSON requests
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
   }
 
-  // All authenticated routes should use headers
+  // For FormData requests (file uploads) - don't set Content-Type
+  private getFormDataHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      // Note: Content-Type is NOT set here - browser will set it with boundary
+    });
+  }
 
   getAllGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(this.base, {
@@ -57,6 +65,13 @@ export class GroupsService {
     groupId: string,
     dto: Partial<Group> | FormData
   ): Observable<Group> {
+    // Check if it's FormData
+    if (dto instanceof FormData) {
+      return this.http.patch<Group>(`${this.base}/${groupId}`, dto, {
+        headers: this.getFormDataHeaders(),
+      });
+    }
+    // Regular JSON update
     return this.http.patch<Group>(`${this.base}/${groupId}`, dto, {
       headers: this.getAuthHeaders(),
     });
@@ -78,7 +93,7 @@ export class GroupsService {
     );
   }
 
-  //  Share text or file resource
+  // Share text or file resource
   shareResource(
     groupId: string,
     formData: FormData
@@ -87,7 +102,7 @@ export class GroupsService {
       `${this.base}/${groupId}/resources`,
       formData,
       {
-        headers: this.getAuthHeaders(),
+        headers: this.getFormDataHeaders(),
       }
     );
   }
@@ -111,7 +126,7 @@ export class GroupsService {
   sendMessage(
     groupId: string,
     content?: string,
-    files?: File[], // note: accept an array
+    files?: File[],
     replyToId?: string,
     progressCb?: (progress: number) => void
   ): Observable<GroupMessage> {
@@ -120,14 +135,14 @@ export class GroupsService {
     if (content) formData.append('content', content);
     if (files && files.length > 0) {
       for (const file of files) {
-        formData.append('attachments', file); // must match backend
+        formData.append('attachments', file);
       }
     }
     if (replyToId) formData.append('replyToId', replyToId);
 
     return this.http
       .post<GroupMessage>(`${this.base}/${groupId}/messages`, formData, {
-        headers: this.getAuthHeaders(),
+        headers: this.getFormDataHeaders(),
         reportProgress: true,
         observe: 'events',
       })
@@ -222,8 +237,8 @@ export class GroupsService {
   likeFeedPost(
     groupId: string,
     postId: string
-  ): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
+  ): Observable<{ message: string; likesCount: number; isLiked: boolean }> {
+    return this.http.post<{ message: string; likesCount: number; isLiked: boolean }>(
       `${this.base}/${groupId}/feed/${postId}/like`,
       {},
       { headers: this.getAuthHeaders() }
@@ -233,8 +248,8 @@ export class GroupsService {
   unlikeFeedPost(
     groupId: string,
     postId: string
-  ): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(
+  ): Observable<{ message: string; likesCount: number; isLiked: boolean }> {
+    return this.http.delete<{ message: string; likesCount: number; isLiked: boolean }>(
       `${this.base}/${groupId}/feed/${postId}/like`,
       {
         headers: this.getAuthHeaders(),
@@ -285,16 +300,16 @@ export class GroupsService {
     );
   }
 
-  likeFeedComment(commentId: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
+  likeFeedComment(commentId: string): Observable<{ message: string; likesCount: number; isLiked: boolean }> {
+    return this.http.post<{ message: string; likesCount: number; isLiked: boolean }>(
       `${this.base}/comments/${commentId}/like`,
       {},
       { headers: this.getAuthHeaders() }
     );
   }
 
-  unlikeFeedComment(commentId: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
+  unlikeFeedComment(commentId: string): Observable<{ message: string; likesCount: number; isLiked: boolean }> {
+    return this.http.post<{ message: string; likesCount: number; isLiked: boolean }>(
       `${this.base}/comments/${commentId}/unlike`,
       {},
       { headers: this.getAuthHeaders() }
@@ -309,7 +324,7 @@ export class GroupsService {
     });
   }
 
-  //  Update group resource (content + optional file)
+  // Update group resource (content + optional file)
   updateGroupResource(
     groupId: string,
     resourceId: string,
@@ -321,9 +336,13 @@ export class GroupsService {
     if (file) {
       formData.append('file', file);
     }
+    
     return this.http.patch<GroupResource>(
       `${this.base}/${groupId}/resources/${resourceId}`,
-      formData
+      formData,
+      {
+        headers: this.getFormDataHeaders(),
+      }
     );
   }
 
@@ -347,7 +366,7 @@ export class GroupsService {
     );
   }
 
-  //  Delete a message
+  // Delete a message
   deleteMessage(messageId: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(
       `${this.base}/messages/${messageId}`,

@@ -4,23 +4,18 @@
   <div class="py-16 px-6">
     <div class="max-w-6xl mx-auto text-center">
       <h1 class="text-4xl md:text-5xl font-bold text-[#1e293b] mb-4">
-        Welcome to <span class="text-[#4f46e5]">Uni</span
-        ><span class="text-[#a855f7]">Tok</span>
+        Welcome to <span class="text-[#4f46e5]">Uni</span><span class="text-[#a855f7]">Tok</span>
       </h1>
 
-      <p
-        class="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-16"
-      >
+      <p class="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-16">
         Your guide to university life in Kenya. Watch short videos from fellow
         students and learn everything you need to know about campus life.
       </p>
 
       <!-- Navigation to Video Feed -->
       <div class="mt-16">
-        <button
-          (click)="scrollToVideos()"
-          class="inline-flex items-center gap-2 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg hover:shadow-purple-200 transition-all duration-300 transform hover:scale-105"
-        >
+        <button (click)="scrollToVideos()"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg hover:shadow-purple-200 transition-all duration-300 transform hover:scale-105">
           <span class="material-icons">play_arrow</span>
           Start Watching Videos
         </button>
@@ -28,197 +23,132 @@
     </div>
   </div>
 
-  <!--  VIDEO FEED SECTION -->
-  <div
-    id="videoFeed"
-    class="relative bg-gradient-to-br from-gray-50 to-white min-h-screen"
-  >
+  <!-- VIDEO FEED SECTION -->
+  <div id="videoFeed" class="relative bg-gradient-to-br from-gray-50 to-white min-h-screen">
     <!-- VIDEO CONTAINER WITH RESPONSIVE WIDTH -->
     <div class="flex justify-center h-screen">
       <!-- VIDEO COLUMN (Center Aligned with Max Width) -->
-      <div
-        class="h-full overflow-y-scroll snap-y snap-mandatory scroll-smooth scrollbar-hide w-full max-w-4xl py-4"
-      >
+      <div class="h-full overflow-y-scroll snap-y snap-mandatory scroll-smooth scrollbar-hide w-full max-w-4xl py-4">
         <ng-container *ngFor="let video of videos; let i = index">
           <article
             class="relative h-[calc(100vh-2rem)] w-full snap-start flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-300 mb-4 bg-white"
-            [class.active]="currentVideoIndex === i"
-            #videoContainer
-          >
+            [class.active]="currentVideoIndex === i" #videoContainer>
             <!-- Video Background with Gradient Overlay -->
             <div class="absolute inset-0">
-              <video
-                [src]="video.videoUrl"
-                [muted]="isMuted"
-                [autoplay]="currentVideoIndex === i"
-                playsinline
-                preload="metadata"
-                loop
-                class="absolute inset-0 w-full h-full object-cover"
-                (click)="togglePlayPause(video.id)"
-                #videoPlayer
-              ></video>
+              <video [src]="video.videoUrl" [muted]="isMuted" [autoplay]="currentVideoIndex === i" playsinline
+                preload="metadata" loop class="absolute inset-0 w-full h-full object-cover"
+                (click)="togglePlayPause(video.id)" #videoPlayer></video>
 
               <!-- Gradient Overlay for Text Readability -->
-              <div
-                class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-              ></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
               <!-- Video Controls Overlay -->
               <div
                 class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-                (click)="togglePlayPause(video.id)"
-              >
+                (click)="togglePlayPause(video.id)">
                 <div
-                  class="bg-white/90 backdrop-blur-sm rounded-full p-4 transform scale-90 hover:scale-100 transition-transform duration-300"
-                >
+                  class="bg-white/90 backdrop-blur-sm rounded-full p-4 transform scale-90 hover:scale-100 transition-transform duration-300">
                   <span class="material-icons text-gray-800 text-7xl">
-                    {{
-                      getVideoPlayState(video.id)
-                        ? "pause_circle"
-                        : "play_circle"
-                    }}
+                    {{ getVideoPlayState(video.id) ? "pause_circle" : "play_circle" }}
                   </span>
                 </div>
               </div>
-
-              <!-- Volume Toggle -->
-              <!-- <button
-                  (click)="toggleMute(); $event.stopPropagation()"
-                  class="absolute top-6 left-6 z-20 bg-white/90 backdrop-blur-sm rounded-full p-3 text-gray-800 hover:bg-white transition-all duration-200 hover:scale-110 shadow-lg"
-                >
-                  <span class="material-icons text-xl">
-                    {{ isMuted ? 'volume_off' : 'volume_up' }}
-                  </span>
-                </button> -->
             </div>
 
             <!-- Loading State -->
-            <div
-              *ngIf="isLoadingVideos"
-              class="absolute inset-0 flex items-center justify-center"
-            >
-              <div
-                class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#4f46e5]"
-              ></div>
+            <div *ngIf="isLoadingVideos" class="absolute inset-0 flex items-center justify-center">
+              <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#4f46e5]"></div>
             </div>
 
-            <!-- Video Info Overlay (Bottom Left) - Clean Style -->
-            <!-- <div class="absolute bottom-28 left-4 text-white max-w-xs z-10">
-                <h3 class="font-bold text-xl mb-2 drop-shadow-lg">{{ video.title }}</h3>
-                <p class="text-sm opacity-90 mb-3 line-clamp-2">{{ video.description || 'No description' }}</p>
-                <div class="flex items-center gap-2 text-sm opacity-90 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                  <span class="material-icons text-sm">visibility</span>
-                  <span class="font-medium">{{ video.viewsCount || 0 }} views</span>
-                </div>
-              </div> -->
-
             <!-- Side Action Buttons (Stacked - Clean Style) -->
-            <div
-              class="absolute bottom-28 right-4 flex flex-col items-center gap-6"
-            >
-              <!-- CREATE VIDEO BUTTON (Floating) - Modern Style -->
+            <div class="absolute bottom-28 right-4 flex flex-col items-center gap-6">
+              <!-- Video Menu Button (Only for video owner) -->
+              <div *ngIf="isVideoOwner(video)" class="relative">
+                <button 
+                  (click)="toggleVideoMenu(video.id, $event)"
+                  class="flex flex-col items-center group video-menu-trigger"
+                  title="Video options">
+                  <div
+                    class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg">
+                    <span class="material-icons text-3xl text-white">more_vert</span>
+                  </div>
+                </button>
+                
+                <!-- Video Dropdown Menu -->
+                <div *ngIf="videoMenuOpen === video.id"
+                  class="absolute right-full mr-2 top-0 w-40 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden video-menu z-50">
+                  <button 
+                    (click)="openVideoEditModal(video, $event)"
+                    class="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                    <span class="material-icons text-base text-gray-500">edit</span>
+                    Edit Video
+                  </button>
+                  <div class="h-px bg-gray-100"></div>
+                  <button 
+                    (click)="openVideoDeleteModal(video, $event)"
+                    class="w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors">
+                    <span class="material-icons text-base">delete</span>
+                    Delete Video
+                  </button>
+                </div>
+              </div>
+
+              <!-- CREATE VIDEO BUTTON (Floating) -->
               <button
-                class="flex items-center gap-2 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white px-4 py-2.5 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-blue-500/20 hover:shadow-blue-500/30"
-                (click)="showCreateForm = true"
-              >
+                class="flex items-center gap-2 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white px-4 py-2.5 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95"
+                (click)="openCreateVideoModal()">
                 <span class="material-icons text-lg">add_circle</span>
               </button>
 
               <!-- Like Button -->
-              <button
-                (click)="toggleLike(video.id); $event.stopPropagation()"
-                class="flex flex-col items-center group"
-                [disabled]="isLoadingLikes"
-              >
+              <button (click)="toggleLike(video.id, $event)" class="flex flex-col items-center group"
+                [disabled]="isLoadingLikes">
                 <div
-                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg"
-                >
-                  <span
-                    class="material-icons text-3xl transition-all duration-300"
-                    [class.text-red-500]="isVideoLiked(video.id)"
-                    [class.text-white]="!isVideoLiked(video.id)"
-                    [class.animate-like]="isVideoLiked(video.id)"
-                  >
-                    {{
-                      isVideoLiked(video.id) ? "favorite" : "favorite_border"
-                    }}
+                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg">
+                  <span class="material-icons text-3xl transition-all duration-300"
+                    [class.text-red-500]="isVideoLiked(video.id)" [class.text-white]="!isVideoLiked(video.id)">
+                    {{ isVideoLiked(video.id) ? "favorite" : "favorite_border" }}
                   </span>
                 </div>
-                <span
-                  class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full"
-                  >{{ video.likesCount || 0 }}</span
-                >
+                <span class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full">{{
+                  video.likesCount || 0 }}</span>
               </button>
 
               <!-- Comment Button -->
-              <button
-                (click)="
-                  toggleVideoComments(video.id); $event.stopPropagation()
-                "
-                class="flex flex-col items-center group"
-              >
+              <button (click)="toggleVideoComments(video.id); $event.stopPropagation()" class="flex flex-col items-center group">
                 <div
-                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg"
-                >
-                  <span
-                    class="material-icons text-3xl text-white transition-transform duration-300 group-hover:scale-110"
-                  >
-                    {{
-                      showCommentsForVideo === video.id
-                        ? "chat_bubble"
-                        : "chat_bubble_outline"
-                    }}
+                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg">
+                  <span class="material-icons text-3xl text-white transition-transform duration-300 group-hover:scale-110">
+                    {{ showCommentsForVideo === video.id ? "chat_bubble" : "chat_bubble_outline" }}
                   </span>
                 </div>
-                <span
-                  class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full"
-                  >{{ getVideoCommentsCount(video.id) }}</span
-                >
+                <span class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full">{{
+                  getVideoCommentsCount(video.id) }}</span>
               </button>
 
               <!-- Share Button -->
-              <button
-                (click)="shareVideo(video); $event.stopPropagation()"
-                class="flex flex-col items-center group"
-              >
+              <button (click)="shareVideo(video, $event)" class="flex flex-col items-center group">
                 <div
-                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg"
-                >
-                  <span
-                    class="material-icons text-3xl text-white transition-transform duration-300 group-hover:rotate-45"
-                    >share</span
-                  >
+                  class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-1 hover:bg-white/30 transition-all duration-200 group-hover:scale-110 shadow-lg">
+                  <span class="material-icons text-3xl text-white transition-transform duration-300 group-hover:rotate-45">share</span>
                 </div>
-                <span
-                  class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full"
-                  >Share</span
-                >
+                <span class="text-xs text-white font-semibold bg-black/20 backdrop-blur-sm px-2 py-1 rounded-full">Share</span>
               </button>
             </div>
 
             <!-- Comments Panel (Clean Modern Style) -->
-            <div
-              *ngIf="showCommentsForVideo === video.id"
+            <div *ngIf="showCommentsForVideo === video.id"
               class="fixed inset-0 bg-gradient-to-br from-white to-gray-50 z-50 transform transition-transform duration-500 ease-out shadow-2xl"
               [class.translate-x-0]="showCommentsForVideo === video.id"
-              [class.translate-x-full]="showCommentsForVideo !== video.id"
-            >
+              [class.translate-x-full]="showCommentsForVideo !== video.id">
               <!-- Comments Content -->
               <div class="relative h-full flex flex-col">
                 <!-- Header -->
-                <div
-                  class="flex items-center justify-between p-6 border-b border-gray-200 bg-white/80 backdrop-blur-sm"
-                >
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
                   <div class="flex items-center gap-3">
-                    <button
-                      (click)="toggleVideoComments(video.id)"
-                      class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all duration-200"
-                    >
-                      <span
-                        class="material-icons text-gray-600 transform rotate-180"
-                        >arrow_forward_ios</span
-                      >
+                    <button (click)="toggleVideoComments(video.id)"
+                      class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all duration-200">
+                      <span class="material-icons text-gray-600 transform rotate-180">arrow_forward_ios</span>
                     </button>
                     <div>
                       <h3 class="text-gray-800 text-xl font-bold">Comments</h3>
@@ -226,30 +156,17 @@
                         {{ getVideoCommentsCount(video.id) }} comments
                       </p>
                     </div>
-                  </div>  
+                  </div>
                 </div>
 
                 <!-- Comments List -->
-                <div
-                  class="flex-1 overflow-y-auto p-4 pt-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
-                >
-                  <div
-                    *ngIf="isLoadingComments && video.id === selectedVideo?.id"
-                    class="flex justify-center py-8"
-                  >
-                    <div
-                      class="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-[#4f46e5]"
-                    ></div>
+                <div class="flex-1 overflow-y-auto p-4 pt-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                  <div *ngIf="isLoadingComments && video.id === selectedVideo?.id" class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-[#4f46e5]"></div>
                   </div>
 
-                  <div
-                    *ngIf="!isLoadingComments && video.id === selectedVideo?.id"
-                    class="space-y-4"
-                  >
-                    <div
-                      *ngIf="comments.length === 0"
-                      class="text-center py-12"
-                    >
+                  <div *ngIf="!isLoadingComments && video.id === selectedVideo?.id" class="space-y-4">
+                    <div *ngIf="comments.length === 0" class="text-center py-12">
                       <div class="material-icons text-gray-300 text-6xl mb-4">
                         chat_bubble_outline
                       </div>
@@ -261,135 +178,80 @@
                       </div>
                     </div>
 
-                    <div
-                    *ngFor="let comment of comments"
-                    class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 group border border-gray-100"
-                  >
-                    <!-- User Avatar -->
-                    <div class="flex-shrink-0">
-                      <div
-                        class="w-12 h-12 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#a855f7] flex items-center justify-center shadow-md"
-                      >
-                        <span class="material-icons text-white text-lg">person</span>
-                      </div>
-                    </div>
-                  
-                    <!-- Comment Content -->
-                    <div class="flex-1 min-w-0">
-                      <!-- Comment header with user info and menu -->
-                      <div class="flex items-start justify-between mb-1">
-                        <div>
-                          <div class="flex items-center gap-2">
-                            <span class="font-bold text-gray-800 text-sm"
-                              >&#64;{{ comment.author.name }}</span
-                            >
-                            <span class="text-xs text-gray-400"
-                              >• {{ comment.createdAt | date : "shortTime" }}</span
-                            >
-                          </div>
-                          
-                          <!-- Comment content moved outside the header -->
-                          <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
+                    <div *ngFor="let comment of comments"
+                      class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 group border border-gray-100">
+                      <!-- User Avatar -->
+                      <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#a855f7] flex items-center justify-center shadow-md">
+                          <span class="material-icons text-white text-lg">person</span>
                         </div>
-                        
-                          <!-- Three-dot menu -->
-                          <div class="relative">
-                            <button
-                              (click)="toggleCommentMenu(comment.id, $event)"
-                              class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-600"
-                            >
-                              <span class="material-icons text-base"
-                                >more_vert</span
-                              >
+                      </div>
+
+                      <!-- Comment Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between mb-1">
+                          <div>
+                            <div class="flex items-center gap-2">
+                              <span class="font-bold text-gray-800 text-sm">&#64;{{ comment.author.name }}</span>
+                              <span class="text-xs text-gray-400">• {{ comment.createdAt | date : "shortTime" }}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm mt-1">{{ comment.content }}</p>
+                          </div>
+
+                          <!-- Three-dot menu (only for comment owner) -->
+                          <div *ngIf="isCommentAuthor(comment)" class="relative">
+                            <button (click)="toggleCommentMenu(comment.id, $event)"
+                              class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-600 comment-menu-trigger">
+                              <span class="material-icons text-base">more_vert</span>
                             </button>
 
                             <!-- Dropdown Menu -->
-                            <div
-                              *ngIf="commentMenuOpen === comment.id"
-                              class="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden"
-                            >
-                              <button
-                                (click)="
-                                  openEditModal(comment);
-                                  $event.stopPropagation()
-                                "
-                                class="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
-                              >
-                                <span
-                                  class="material-icons text-base text-gray-500"
-                                  >edit</span
-                                >
+                            <div *ngIf="commentMenuOpen === comment.id"
+                              class="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden comment-menu">
+                              <button (click)="openEditModal(comment, $event)"
+                                class="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                                <span class="material-icons text-base text-gray-500">edit</span>
                                 Edit
                               </button>
                               <div class="h-px bg-gray-100"></div>
-                              <button
-                                (click)="
-                                  openDeleteModal(comment);
-                                  $event.stopPropagation()
-                                "
-                                class="w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                              >
-                                <span class="material-icons text-base"
-                                  >delete</span
-                                >
+                              <button (click)="openDeleteModal(comment, $event)"
+                                class="w-full px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors">
+                                <span class="material-icons text-base">delete</span>
                                 Delete
                               </button>
                             </div>
                           </div>
-                      </div>
-                  
-                      <!-- Comment Actions (Like button) - SIMPLIFIED -->
-                      <div class="mt-2">
-                        <button
-                          (click)="toggleCommentLike(comment.id); $event.stopPropagation()"
-                          class="flex items-center gap-1 text-xs text-gray-500 hover:text-[#4f46e5] transition-colors duration-200"
-                        >
-                          <span class="material-icons text-sm">favorite_border</span>
-                          <span>Like</span>
-                        </button>
+                        </div>
+
+                        <!-- Comment Actions -->
+                        <div class="mt-2">
+                          <button (click)="toggleCommentLike(comment.id); $event.stopPropagation()"
+                            class="flex items-center gap-1 text-xs text-gray-500 hover:text-[#4f46e5] transition-colors duration-200">
+                            <span class="material-icons text-sm">favorite_border</span>
+                            <span>Like</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   </div>
                 </div>
 
                 <!-- Comment Input (Fixed Bottom) -->
-                <div
-                  class="sticky bottom-16 md:bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4"
-                >
-                  <form
-                    [formGroup]="commentForm"
-                    (ngSubmit)="createCommentForVideo(video.id)"
-                    class="flex gap-3"
-                  >
+                <div class="sticky bottom-16 md:bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4">
+                  <form [formGroup]="commentForm" (ngSubmit)="createCommentForVideo(video.id)" class="flex gap-3">
                     <div class="flex-1 relative">
-                      <input
-                        formControlName="content"
-                        type="text"
-                        placeholder="Add a comment..."
+                      <input formControlName="content" type="text" placeholder="Add a comment..."
                         class="w-full bg-gray-100 text-gray-800 border border-gray-200 rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[#4f46e5] focus:bg-white placeholder-gray-400 transition-all duration-300"
-                        [class.border-red-400]="
-                          commentForm.get('content')?.invalid &&
-                          commentForm.get('content')?.touched
-                        "
-                      />
-                      <div
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2"
-                      >
-                        <button
-                          type="button"
-                          class="text-gray-400 hover:text-gray-600 transition-colors"
-                          (click)="commentForm.reset()"
-                        >
+                        [class.border-red-400]="commentForm.get('content')?.invalid && commentForm.get('content')?.touched" />
+                      <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors"
+                          (click)="commentForm.reset()">
                           <span class="material-icons text-sm">close</span>
                         </button>
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      [disabled]="commentForm.invalid || isSubmittingComment"
-                      class="px-6 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white font-semibold rounded-full hover:from-[#4338ca] hover:to-[#9333ea] transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
+                    <button type="submit" [disabled]="commentForm.invalid || isSubmittingComment"
+                      class="px-6 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white font-semibold rounded-full hover:from-[#4338ca] hover:to-[#9333ea] transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                       {{ isSubmittingComment ? "..." : "Post" }}
                     </button>
                   </form>
@@ -405,95 +267,61 @@
     </div>
 
     <!-- CREATE VIDEO MODAL -->
-    <app-create-video
-      *ngIf="showCreateForm"
-      class="fixed inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-4"
-      (videoCreated)="videos.unshift($event); showCreateForm = false"
-      (cancelled)="showCreateForm = false"
-    ></app-create-video>
+    <app-create-video *ngIf="showCreateVideoModal"
+      class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      (videoCreated)="onVideoCreated($event)"
+      (cancelled)="closeCreateVideoModal()"></app-create-video>
 
     <!-- EDIT COMMENT MODAL -->
-    <div
-      *ngIf="showEditModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm p-4"
-    >
+    <div *ngIf="showEditModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      (click)="closeEditModal()">
       <div
         class="bg-white border border-gray-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 animate-in fade-in"
-        (click)="$event.stopPropagation()"
-      >
+        (click)="$event.stopPropagation()">
         <div class="p-6 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-gray-800 text-xl font-bold">Edit Comment</h3>
-            <button
-              (click)="closeEditModal()"
+            <button (click)="closeEditModal()"
               class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-              [disabled]="isUpdatingComment"
-            >
+              [disabled]="isUpdatingComment">
               <span class="material-icons text-gray-600">close</span>
             </button>
           </div>
         </div>
 
-        <form
-          [formGroup]="commentEditForm"
-          (ngSubmit)="updateComment()"
-          class="p-6"
-        >
+        <form [formGroup]="commentEditForm" (ngSubmit)="updateComment()" class="p-6">
           <div class="mb-6">
-            <textarea
-              formControlName="content"
-              rows="4"
+            <textarea formControlName="content" rows="4"
               class="w-full bg-gray-50 border border-gray-300 rounded-xl p-4 text-gray-800 focus:outline-none focus:border-[#4f46e5] focus:bg-white placeholder-gray-400 resize-none transition-all duration-300"
-              placeholder="Edit your comment..."
-              [class.border-red-400]="
-                commentEditForm.get('content')?.invalid &&
-                commentEditForm.get('content')?.touched
-              "
-              [disabled]="isUpdatingComment"
-            ></textarea>
+              placeholder="Edit your comment..." 
+              [class.border-red-400]="commentEditForm.get('content')?.invalid && commentEditForm.get('content')?.touched"
+              [disabled]="isUpdatingComment"></textarea>
 
-            <div
-              *ngIf="
-                commentEditForm.get('content')?.invalid &&
-                commentEditForm.get('content')?.touched
-              "
-              class="mt-3 text-red-500 text-sm space-y-1"
-            >
+            <div *ngIf="commentEditForm.get('content')?.invalid && commentEditForm.get('content')?.touched" 
+                 class="mt-3 text-red-500 text-sm space-y-1">
               <div *ngIf="commentEditForm.get('content')?.errors?.['required']">
                 Comment content is required
               </div>
-              <div
-                *ngIf="commentEditForm.get('content')?.errors?.['minlength']"
-              >
+              <div *ngIf="commentEditForm.get('content')?.errors?.['minlength']">
                 Comment must be at least 1 character
               </div>
-              <div
-                *ngIf="commentEditForm.get('content')?.errors?.['maxlength']"
-              >
+              <div *ngIf="commentEditForm.get('content')?.errors?.['maxlength']">
                 Comment cannot exceed 1000 characters
               </div>
             </div>
           </div>
 
           <div class="flex gap-3">
-            <button
-              type="submit"
-              [disabled]="commentEditForm.invalid || isUpdatingComment"
-              class="flex-1 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white font-semibold py-3 rounded-xl hover:from-[#4338ca] hover:to-[#9333ea] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <span
-                *ngIf="isUpdatingComment"
-                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
-              ></span>
+            <button type="submit" [disabled]="commentEditForm.invalid || isUpdatingComment"
+              class="flex-1 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white font-semibold py-3 rounded-xl hover:from-[#4338ca] hover:to-[#9333ea] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span *ngIf="isUpdatingComment"
+                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
               {{ isUpdatingComment ? "Updating..." : "Update Comment" }}
             </button>
-
-            <button
-              type="button"
-              (click)="closeEditModal()"
+            <button type="button" (click)="closeEditModal()"
               class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 disabled:opacity-50"
-              [disabled]="isUpdatingComment"
-            >
+              [disabled]="isUpdatingComment">
               Cancel
             </button>
           </div>
@@ -502,45 +330,127 @@
     </div>
 
     <!-- DELETE COMMENT MODAL -->
-    <div
-      *ngIf="showDeleteModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm p-4"
-    >
+    <div *ngIf="showDeleteModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      (click)="closeDeleteModal()">
       <div
         class="bg-white border border-gray-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 animate-in fade-in"
-        (click)="$event.stopPropagation()"
-      >
+        (click)="$event.stopPropagation()">
         <div class="p-8 text-center">
-          <div
-            class="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-full bg-red-100"
-          >
+          <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-full bg-red-100">
             <span class="material-icons text-red-500 text-3xl">delete</span>
           </div>
 
           <h3 class="text-gray-800 text-2xl font-bold mb-3">Delete Comment</h3>
           <p class="text-gray-600 text-base mb-8">
-            Are you sure you want to delete this comment? This action cannot be
-            undone.
+            Are you sure you want to delete this comment? This action cannot be undone.
           </p>
 
           <div class="flex gap-3">
-            <button
-              (click)="deleteComment()"
-              [disabled]="isDeletingComment"
-              class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <span
-                *ngIf="isDeletingComment"
-                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"
-              ></span>
+            <button (click)="deleteComment()" [disabled]="isDeletingComment"
+              class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span *ngIf="isDeletingComment"
+                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
               {{ isDeletingComment ? "Deleting..." : "Delete" }}
             </button>
-
-            <button
-              (click)="closeDeleteModal()"
+            <button (click)="closeDeleteModal()"
               class="flex-1 bg-gray-100 text-gray-700 font-semibold py-3.5 rounded-xl hover:bg-gray-200 transition-all duration-300 disabled:opacity-50"
-              [disabled]="isDeletingComment"
-            >
+              [disabled]="isDeletingComment">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO EDIT MODAL -->
+    <div *ngIf="showVideoEditModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      (click)="closeVideoEditModal()">
+      <div
+        class="bg-white border border-gray-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 animate-in fade-in"
+        (click)="$event.stopPropagation()">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-gray-800 text-xl font-bold">Edit Video</h3>
+            <button (click)="closeVideoEditModal()"
+              class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              [disabled]="isUpdatingVideo">
+              <span class="material-icons text-gray-600">close</span>
+            </button>
+          </div>
+        </div>
+
+        <form [formGroup]="videoEditForm" (ngSubmit)="updateVideo()" class="p-6">
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Video Title *</label>
+            <input type="text" formControlName="title"
+              class="w-full bg-gray-50 border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:border-[#4f46e5] focus:bg-white transition-all duration-300"
+              [class.border-red-400]="videoEditForm.get('title')?.invalid && videoEditForm.get('title')?.touched"
+              placeholder="Enter video title" />
+            <div *ngIf="videoEditForm.get('title')?.invalid && videoEditForm.get('title')?.touched" 
+                 class="mt-2 text-red-500 text-sm">
+              Title is required (minimum 3 characters)
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea formControlName="description" rows="4"
+              class="w-full bg-gray-50 border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:border-[#4f46e5] focus:bg-white transition-all duration-300 resize-none"
+              placeholder="Describe your video..."></textarea>
+            <div class="text-right text-xs text-gray-400 mt-1">
+              {{ videoEditForm.get('description')?.value?.length || 0 }}/500
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="submit" [disabled]="videoEditForm.invalid || isUpdatingVideo"
+              class="flex-1 bg-gradient-to-r from-[#4f46e5] to-[#a855f7] text-white font-semibold py-3 rounded-xl hover:from-[#4338ca] hover:to-[#9333ea] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span *ngIf="isUpdatingVideo"
+                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+              {{ isUpdatingVideo ? "Updating..." : "Update Video" }}
+            </button>
+            <button type="button" (click)="closeVideoEditModal()"
+              class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 disabled:opacity-50"
+              [disabled]="isUpdatingVideo">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- VIDEO DELETE MODAL -->
+    <div *ngIf="showVideoDeleteModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      (click)="closeVideoDeleteModal()">
+      <div
+        class="bg-white border border-gray-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 animate-in fade-in"
+        (click)="$event.stopPropagation()">
+        <div class="p-8 text-center">
+          <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-full bg-red-100">
+            <span class="material-icons text-red-500 text-3xl">delete_forever</span>
+          </div>
+
+          <h3 class="text-gray-800 text-2xl font-bold mb-3">Delete Video</h3>
+          <p class="text-gray-600 text-base mb-4">
+            Are you sure you want to delete "<strong>{{ selectedVideoForEdit?.title }}</strong>"?
+          </p>
+          <p class="text-gray-500 text-sm mb-8">
+            This action cannot be undone. All comments and likes will be permanently removed.
+          </p>
+
+          <div class="flex gap-3">
+            <button (click)="deleteVideo()" [disabled]="isDeletingVideo"
+              class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-3.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span *ngIf="isDeletingVideo"
+                class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+              {{ isDeletingVideo ? "Deleting..." : "Delete" }}
+            </button>
+            <button (click)="closeVideoDeleteModal()"
+              class="flex-1 bg-gray-100 text-gray-700 font-semibold py-3.5 rounded-xl hover:bg-gray-200 transition-all duration-300 disabled:opacity-50"
+              [disabled]="isDeletingVideo">
               Cancel
             </button>
           </div>

@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
   NgZone,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,6 +40,10 @@ export class GroupFeedComponent implements OnInit {
   commentToDelete: { resourceId: string; commentId: string } | null = null;
   isDeleteCommentModalOpen = false;
 
+  isExpanded = false;
+
+  postTextarea: any;
+
   editingPost: {
     id: string;
     content: string;
@@ -67,6 +73,16 @@ export class GroupFeedComponent implements OnInit {
   expanded = false;
   imageViewerUrl: string | null = null;
   showImageViewer = false;
+
+  @ViewChild('postTextarea') postTextareaRef!: ElementRef;
+  isSavingPost = false;
+
+  activeEmojiPicker: string | null = null;
+
+    // Emoji collections
+    commonEmojis: string[] = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣'];
+    smileyEmojis: string[] = ['😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰'];
+    gestureEmojis: string[] = ['👍', '👎', '👏', '🙌', '🤝', '✌️', '🤞', '👌'];
 
   constructor(
     private route: ActivatedRoute,
@@ -191,39 +207,6 @@ export class GroupFeedComponent implements OnInit {
         resource.likesCount = (resource.likesCount ?? 0) + (isLiking ? -1 : 1);
       },
     });
-  }
-
-  addComment(resource: GroupResource): void {
-    const content = (this.newComment[resource.id] ?? '').trim();
-    if (!content) return;
-
-    this.groupsService
-      .addFeedComment(this.groupId, resource.id, content)
-      .subscribe({
-        next: (comment: GroupResourceComment) => {
-          // Add to comments array like home component
-          if (!this.comments[resource.id]) {
-            this.comments[resource.id] = [];
-          }
-
-          this.comments[resource.id].push(comment);
-          this.commentCounts[resource.id] =
-            (this.commentCounts[resource.id] || 0) + 1;
-
-          // Create new array reference to trigger change detection
-          this.comments[resource.id] = [...this.comments[resource.id]];
-
-          // Clear the input
-          this.newComment[resource.id] = '';
-
-          // Force change detection
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Failed to add comment', err);
-          this.cdr.detectChanges();
-        },
-      });
   }
 
   // ------------------ EDIT COMMENT HANDLERS (Home Component Pattern) ------------------
@@ -395,11 +378,17 @@ export class GroupFeedComponent implements OnInit {
     this.fileIcon = null;
   }
 
+  // Also, update your createPost method to reset isExpanded after posting
   createPost(): void {
     const content = this.newPost.content?.trim() || '';
 
     if (!content && !this.selectedFile) {
       this.errorMessage = 'Please write something or attach a file.';
+
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+
       return;
     }
 
@@ -455,6 +444,7 @@ export class GroupFeedComponent implements OnInit {
         this.creatingPost = false;
         this.errorMessage = null;
         this.expanded = false;
+        this.isExpanded = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -465,6 +455,9 @@ export class GroupFeedComponent implements OnInit {
   }
 
   startEditPost(resource: GroupResource): void {
+    // Close any open menus first
+    this.closeAllMenus();
+
     this.editingPost = {
       id: resource.id,
       content: resource.content,
@@ -474,6 +467,9 @@ export class GroupFeedComponent implements OnInit {
         resource.fileType || resource.originalName || resource.resourceUrl || ''
       ),
     };
+
+    // Force change detection to ensure modal appears
+    this.cdr.detectChanges();
   }
 
   onEditFileSelected(event: any): void {
@@ -492,32 +488,74 @@ export class GroupFeedComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  savePostEdit(): void {
-    if (!this.editingPost) return;
-    const { id, content, file } = this.editingPost;
 
-    // Safely handle null/undefined/empty content
-    const safeContent = content ? content.trim() : '';
+savePostEdit(): void {
+  if (!this.editingPost || this.isSavingPost) return;
+  
+  this.isSavingPost = true;
+  const { id, content, file } = this.editingPost;
+  const safeContent = content ? content.trim() : '';
 
-    this.groupsService
-      .updateGroupResource(this.groupId, id, safeContent, file || undefined)
-      .subscribe({
-        next: (updated: GroupResource) => {
-          const index = this.feed.findIndex((f) => f.id === updated.id);
-          if (index !== -1) {
-            this.feed[index] = updated;
-            this.cdr.detectChanges();
+    // Convert null to undefined
+    const fileToSend = file || undefined;
+  
+  this.groupsService
+    .updateGroupResource(this.groupId, id, safeContent, fileToSend)
+    .subscribe({
+      next: (updated: GroupResource) => {
+        // Find and update the post in feed
+        const index = this.feed.findIndex((f) => f.id === updated.id);
+        if (index !== -1) {
+          // Update the feed with complete data from backend
+          this.feed[index] = {
+            ...updated,
+            fileType: this.detectFileType(
+              updated.fileType || updated.originalName || updated.resourceUrl || ''
+            ),
+          };
+          
+          // Update comments store with the comments from the updated post
+          if (updated.comments) {
+            this.comments[id] = updated.comments;
+            this.commentCounts[id] = updated.commentsCount || updated.comments.length;
           }
-          this.cancelPostEdit();
-        },
-        error: () => {
-          this.errorMessage = 'Failed to update post';
-        },
-      });
-  }
+          
+          // Create new array reference to trigger change detection
+          this.feed = [...this.feed];
+        }
+        
+        // Close modal after update
+        this.cancelPostEdit();
+        this.isSavingPost = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to update post', error);
+        this.errorMessage = 'Failed to update post';
+        this.isSavingPost = false;
+        
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 3000);
+        
+        this.cdr.detectChanges();
+      },
+    });
+}
 
   cancelPostEdit(): void {
     this.editingPost = null;
+    this.cdr.detectChanges();
+  }
+
+  // Add to your component class
+  removeEditFile(): void {
+    if (this.editingPost) {
+      this.editingPost.file = null;
+      this.editingPost.previewUrl = null;
+      this.editingPost.fileType = null;
+      this.cdr.detectChanges();
+    }
   }
 
   openDeleteCommentModal(resourceId: string, commentId: string): void {
@@ -629,4 +667,105 @@ export class GroupFeedComponent implements OnInit {
     this.showImageViewer = false;
     this.imageViewerUrl = null;
   }
-}
+
+  focusTextarea() {
+    this.isExpanded = true;
+    // Use setTimeout to ensure the textarea is rendered before focusing
+    setTimeout(() => {
+      if (this.postTextareaRef && this.postTextareaRef.nativeElement) {
+        this.postTextareaRef.nativeElement.focus();
+      }
+    });
+  }
+
+  removeMedia() {
+    this.previewUrl = null;
+    this.selectedFile = null;
+    this.fileType = null;
+    this.fileIcon = null;
+  }
+
+  toggleEmojiPicker(resourceId: string): void {
+    this.activeEmojiPicker = this.activeEmojiPicker === resourceId ? null : resourceId;
+  }
+  
+
+    
+    // Setup outside click to close emoji picker
+    private setupOutsideClick(): void {
+      const closePicker = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.emoji-picker-container') && this.activeEmojiPicker) {
+          this.activeEmojiPicker = null;
+          this.cdr.detectChanges();
+          document.removeEventListener('click', closePicker);
+        }
+      };
+      
+      setTimeout(() => {
+        document.addEventListener('click', closePicker);
+      });
+    }
+    
+    // Add emoji to comment
+    addEmoji(resourceId: string, emoji: string): void {
+      this.newComment[resourceId] = (this.newComment[resourceId] || '') + emoji;
+      this.activeEmojiPicker = null;
+      
+      // Auto-focus and resize the textarea
+      setTimeout(() => {
+        const textarea = document.querySelector(`#comment-textarea-${resourceId}`) as HTMLTextAreaElement;
+        if (textarea) {
+          textarea.focus();
+          this.autoResizeCommentInput({ target: textarea });
+        }
+      }, 100);
+    }
+  
+    autoResizeCommentInput(event: any): void {
+      const textarea = event.target;
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'; // Max height 120px
+    }
+  
+    // Update your addComment method to ensure it doesn't submit on Enter
+    addComment(resource: GroupResource): void {
+      const content = (this.newComment[resource.id] ?? '').trim();
+      if (!content) return;
+  
+      this.groupsService
+        .addFeedComment(this.groupId, resource.id, content)
+        .subscribe({
+          next: (comment: GroupResourceComment) => {
+            // Add to comments array like home component
+            if (!this.comments[resource.id]) {
+              this.comments[resource.id] = [];
+            }
+  
+            this.comments[resource.id].push(comment);
+            this.commentCounts[resource.id] =
+              (this.commentCounts[resource.id] || 0) + 1;
+  
+            // Create new array reference to trigger change detection
+            this.comments[resource.id] = [...this.comments[resource.id]];
+  
+            // Clear the input
+            this.newComment[resource.id] = '';
+            
+            // Reset textarea height
+            const textarea = document.querySelector(`#comment-textarea-${resource.id}`) as HTMLTextAreaElement;
+            if (textarea) {
+              textarea.style.height = 'auto';
+            }
+  
+            // Force change detection
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Failed to add comment', err);
+            this.cdr.detectChanges();
+          },
+        });
+    }
+  }
+

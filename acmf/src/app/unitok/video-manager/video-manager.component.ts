@@ -1,15 +1,35 @@
-import { Component, OnInit, OnDestroy, ElementRef, HostListener, QueryList, ViewChildren } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  HostListener,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { Video, VideoComment, CreateVideoDto, UpdateVideoDto, LikeStatusResponse, VideoLikeResponse } from '../../interfaces';
+import {
+  Video,
+  VideoComment,
+  CreateVideoDto,
+  UpdateVideoDto,
+  LikeStatusResponse,
+  VideoLikeResponse,
+} from '../../interfaces';
 import { VideoService } from '../../services/unitok-video.service';
 import { VideoCommentService } from '../../services/video-comment.service';
 import { VideoLikeService } from '../../services/video-like.service';
-import { CreateVideoComponent } from "../create-video/create-video.component";
+import { CreateVideoComponent } from '../create-video/create-video.component';
 import { DatePipe } from '@angular/common';
 
 @Component({
@@ -17,8 +37,14 @@ import { DatePipe } from '@angular/common';
   templateUrl: './video-manager.component.html',
   styleUrl: './video-manager.component.css',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CreateVideoComponent],
-  providers: [DatePipe]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+    CreateVideoComponent,
+  ],
+  providers: [DatePipe],
 })
 export class VideoManagerComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -44,7 +70,18 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   selectedComment: VideoComment | null = null;
   isUpdatingComment = false;
   isDeletingComment = false;
-  
+
+  // Video Edit/Delete Properties
+  showVideoEditModal = false;
+  showVideoDeleteModal = false;
+  selectedVideoForEdit: Video | null = null;
+  isUpdatingVideo = false;
+  isDeletingVideo = false;
+
+  // Menu state
+  commentMenuOpen: string | null = null;
+  videoMenuOpen: string | null = null;
+
   // Temporary storage for comment to edit
   commentToEdit: VideoComment | null = null;
 
@@ -69,8 +106,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   videoPlayers = new Map<string, HTMLVideoElement>();
   videoPlayStates = new Map<string, boolean>();
 
-  // Comment menu state
-  commentMenuOpen: string | null = null;
+  showCreateVideoModal = false;
 
   constructor(
     private videoService: VideoService,
@@ -92,32 +128,53 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     });
 
     this.commentForm = this.fb.group({
-      content: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(1000)]]
+      content: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(1000),
+        ],
+      ],
     });
 
     this.commentEditForm = this.fb.group({
-      content: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(1000)]]
+      content: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(1000),
+        ],
+      ],
     });
   }
 
   ngOnInit(): void {
     this.loadAllVideos();
-    
-    // Close comment menu when clicking outside
-    document.addEventListener('click', this.closeCommentMenu.bind(this));
+    // Close menus when clicking outside
+    document.addEventListener('click', this.closeMenus.bind(this));
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    document.removeEventListener('click', this.closeCommentMenu.bind(this));
+    document.removeEventListener('click', this.closeMenus.bind(this));
   }
 
-  // Close comment menu when clicking outside
-  private closeCommentMenu(event: MouseEvent): void {
-    if (!(event.target as HTMLElement).closest('.comment-menu-trigger') && 
-        !(event.target as HTMLElement).closest('.comment-menu')) {
+  // Close all menus when clicking outside
+  private closeMenus(event: MouseEvent): void {
+    if (
+      !(event.target as HTMLElement).closest('.comment-menu-trigger') &&
+      !(event.target as HTMLElement).closest('.comment-menu')
+    ) {
       this.commentMenuOpen = null;
+    }
+    if (
+      !(event.target as HTMLElement).closest('.video-menu-trigger') &&
+      !(event.target as HTMLElement).closest('.video-menu')
+    ) {
+      this.videoMenuOpen = null;
     }
   }
 
@@ -127,7 +184,8 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     this.isLoadingComments = true;
     this.commentError = null;
 
-    this.commentService.getComments(videoId)
+    this.commentService
+      .getComments(videoId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (comments) => {
@@ -138,7 +196,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.commentError = 'Failed to load comments. Please try again.';
           console.error('Error loading comments:', error);
           this.isLoadingComments = false;
-        }
+        },
       });
   }
 
@@ -147,22 +205,23 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
       this.markFormGroupTouched(this.commentForm);
       return;
     }
-  
+
     this.isSubmittingComment = true;
     this.commentError = null;
-  
-    this.commentService.createComment(videoId, this.commentForm.value.content)
+
+    this.commentService
+      .createComment(videoId, this.commentForm.value.content)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (newComment) => {
-          this.comments.push(newComment);
-          
+          this.comments.unshift(newComment); // Add to top for better UX
+
           // Increment the video's comment count
-          const video = this.videos.find(v => v.id === videoId);
+          const video = this.videos.find((v) => v.id === videoId);
           if (video) {
             video.commentsCount = (video.commentsCount || 0) + 1;
           }
-          
+
           this.commentForm.reset();
           this.isSubmittingComment = false;
         },
@@ -170,23 +229,25 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.commentError = 'Failed to post comment. Please try again.';
           console.error('Error creating comment:', error);
           this.isSubmittingComment = false;
-        }
+        },
       });
   }
 
   // Open edit modal
-  openEditModal(comment: VideoComment): void {
+  openEditModal(comment: VideoComment, event?: Event): void {
+    if (event) event.stopPropagation();
     this.selectedComment = comment;
     this.commentEditForm.patchValue({ content: comment.content });
     this.showEditModal = true;
-    this.commentMenuOpen = null; // Close the menu
+    this.commentMenuOpen = null;
   }
 
   // Open delete modal
-  openDeleteModal(comment: VideoComment): void {
+  openDeleteModal(comment: VideoComment, event?: Event): void {
+    if (event) event.stopPropagation();
     this.selectedComment = comment;
     this.showDeleteModal = true;
-    this.commentMenuOpen = null; // Close the menu
+    this.commentMenuOpen = null;
   }
 
   // Update comment via modal
@@ -198,14 +259,21 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     this.isUpdatingComment = true;
     this.commentError = null;
 
-    this.commentService.updateComment(this.selectedComment.id, this.commentEditForm.value.content)
+    this.commentService
+      .updateComment(
+        this.selectedComment.id,
+        this.commentEditForm.value.content
+      )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedComment) => {
           // Update the comment in the array
-          const index = this.comments.findIndex(c => c.id === updatedComment.id);
+          const index = this.comments.findIndex(
+            (c) => c.id === updatedComment.id
+          );
           if (index !== -1) {
             this.comments[index] = updatedComment;
+            this.comments = [...this.comments]; // Trigger change detection
           }
           this.closeEditModal();
           this.isUpdatingComment = false;
@@ -214,7 +282,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.commentError = 'Failed to update comment. Please try again.';
           console.error('Error updating comment:', error);
           this.isUpdatingComment = false;
-        }
+        },
       });
   }
 
@@ -222,26 +290,29 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     if (!this.selectedComment) {
       return;
     }
-  
+
     if (!this.isCommentAuthor(this.selectedComment)) {
       this.commentError = 'You can only delete your own comments.';
       return;
     }
-  
+
     this.isDeletingComment = true;
     const videoId = this.selectedComment.videoId;
-  
-    this.commentService.deleteComment(this.selectedComment.id)
+
+    this.commentService
+      .deleteComment(this.selectedComment.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.comments = this.comments.filter(c => c.id !== this.selectedComment?.id);
-          
-          const video = this.videos.find(v => v.id === videoId);
+          this.comments = this.comments.filter(
+            (c) => c.id !== this.selectedComment?.id
+          );
+
+          const video = this.videos.find((v) => v.id === videoId);
           if (video && video.commentsCount > 0) {
             video.commentsCount -= 1;
           }
-          
+
           this.closeDeleteModal();
           this.isDeletingComment = false;
         },
@@ -249,10 +320,9 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.commentError = 'Failed to delete comment. Please try again.';
           console.error('Error deleting comment:', error);
           this.isDeletingComment = false;
-        }
+        },
       });
   }
-  
 
   // Close edit modal
   closeEditModal(): void {
@@ -280,14 +350,15 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   loadAllVideos(): void {
     this.isLoadingVideos = true;
     this.videoError = null;
-    
-    this.videoService.getAllVideos()
+
+    this.videoService
+      .getAllVideos()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (videos) => {
           this.videos = videos;
           this.isLoadingVideos = false;
-          
+
           // Load like status for all videos
           if (videos.length > 0) {
             this.loadAllLikeStatuses();
@@ -297,7 +368,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.videoError = 'Failed to load videos. Please try again.';
           console.error('Error loading videos:', error);
           this.isLoadingVideos = false;
-        }
+        },
       });
   }
 
@@ -306,16 +377,127 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
       // Close comments if already open
       this.showCommentsForVideo = null;
       this.comments = [];
-      this.commentMenuOpen = null; // Close any open menu
+      this.commentMenuOpen = null;
     } else {
       // Open comments for this video
       this.showCommentsForVideo = videoId;
-      this.selectedVideo = this.videos.find(v => v.id === videoId) || null;
+      this.selectedVideo = this.videos.find((v) => v.id === videoId) || null;
       if (this.selectedVideo) {
         this.loadComments(videoId);
       }
-      this.commentMenuOpen = null; // Close any open menu
+      this.commentMenuOpen = null;
     }
+  }
+
+  // ==================== VIDEO CRUD OPERATIONS ====================
+
+  // Check if current user is the video owner
+  isVideoOwner(video: Video): boolean {
+    const currentUserId = localStorage.getItem('userId');
+    return currentUserId === video.id;
+  }
+
+  // Open video edit modal
+  openVideoEditModal(video: Video, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.selectedVideoForEdit = video;
+    this.videoEditForm.patchValue({
+      title: video.title,
+      description: video.description || ''
+    });
+    this.showVideoEditModal = true;
+    this.videoMenuOpen = null;
+  }
+
+  // Update video
+  updateVideo(): void {
+    if (!this.selectedVideoForEdit || this.videoEditForm.invalid) return;
+
+    this.isUpdatingVideo = true;
+
+    const payload: UpdateVideoDto = {
+      title: this.videoEditForm.value.title,
+      description: this.videoEditForm.value.description
+    };
+
+    this.videoService
+      .updateVideo(this.selectedVideoForEdit.id, payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedVideo) => {
+          const index = this.videos.findIndex(v => v.id === updatedVideo.id);
+          if (index !== -1) {
+            this.videos[index] = updatedVideo;
+            this.videos = [...this.videos]; // Trigger change detection
+          }
+          this.closeVideoEditModal();
+          this.isUpdatingVideo = false;
+        },
+        error: (error) => {
+          this.videoError = 'Failed to update video. Please try again.';
+          console.error('Error updating video:', error);
+          this.isUpdatingVideo = false;
+        }
+      });
+  }
+
+  // Close video edit modal
+  closeVideoEditModal(): void {
+    this.showVideoEditModal = false;
+    this.selectedVideoForEdit = null;
+    this.videoEditForm.reset();
+    this.isUpdatingVideo = false;
+  }
+
+  // Open video delete modal
+  openVideoDeleteModal(video: Video, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.selectedVideoForEdit = video;
+    this.showVideoDeleteModal = true;
+    this.videoMenuOpen = null;
+  }
+
+  // Delete video
+  deleteVideo(): void {
+    if (!this.selectedVideoForEdit) return;
+
+    this.isDeletingVideo = true;
+    const videoId = this.selectedVideoForEdit.id;
+
+    this.videoService
+      .deleteVideo(videoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.videos = this.videos.filter(v => v.id !== videoId);
+          this.closeVideoDeleteModal();
+          this.isDeletingVideo = false;
+          
+          // If the deleted video had comments open, close them
+          if (this.showCommentsForVideo === videoId) {
+            this.showCommentsForVideo = null;
+            this.comments = [];
+          }
+        },
+        error: (error) => {
+          this.videoError = 'Failed to delete video. Please try again.';
+          console.error('Error deleting video:', error);
+          this.isDeletingVideo = false;
+        }
+      });
+  }
+
+  // Close video delete modal
+  closeVideoDeleteModal(): void {
+    this.showVideoDeleteModal = false;
+    this.selectedVideoForEdit = null;
+    this.isDeletingVideo = false;
+  }
+
+  // Toggle video menu
+  toggleVideoMenu(videoId: string, event: Event): void {
+    event.stopPropagation();
+    this.videoMenuOpen = this.videoMenuOpen === videoId ? null : videoId;
   }
 
   // ==================== LIKE OPERATIONS ====================
@@ -324,15 +506,16 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     this.isLoadingLikes = true;
     this.likeError = null;
 
-    const videoIds = this.videos.map(v => v.id);
-    videoIds.forEach(videoId => {
+    const videoIds = this.videos.map((v) => v.id);
+    videoIds.forEach((videoId) => {
       this.checkLikeStatus(videoId);
     });
     this.isLoadingLikes = false;
   }
 
   checkLikeStatus(videoId: string): void {
-    this.likeService.hasLiked(videoId)
+    this.likeService
+      .hasLiked(videoId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: LikeStatusResponse) => {
@@ -340,15 +523,16 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error checking like status:', error);
-        }
+        },
       });
   }
 
-  toggleLike(videoId: string): void {
+  toggleLike(videoId: string, event?: Event): void {
+    if (event) event.stopPropagation();
     if (!videoId) return;
 
     const currentlyLiked = this.videoLikes.get(videoId);
-    
+
     if (currentlyLiked) {
       this.unlikeVideo(videoId);
     } else {
@@ -357,13 +541,14 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   }
 
   likeVideo(videoId: string): void {
-    this.likeService.likeVideo(videoId)
+    this.likeService
+      .likeVideo(videoId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: VideoLikeResponse) => {
           this.videoLikes.set(videoId, true);
           // Update the video's like count in the videos array
-          const video = this.videos.find(v => v.id === videoId);
+          const video = this.videos.find((v) => v.id === videoId);
           if (video) {
             video.likesCount = (video.likesCount || 0) + 1;
           }
@@ -371,18 +556,19 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.likeError = 'Failed to like video. Please try again.';
           console.error('Error liking video:', error);
-        }
+        },
       });
   }
 
   unlikeVideo(videoId: string): void {
-    this.likeService.unlikeVideo(videoId)
+    this.likeService
+      .unlikeVideo(videoId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.videoLikes.set(videoId, false);
           // Update the video's like count in the videos array
-          const video = this.videos.find(v => v.id === videoId);
+          const video = this.videos.find((v) => v.id === videoId);
           if (video && video.likesCount && video.likesCount > 0) {
             video.likesCount -= 1;
           }
@@ -390,14 +576,14 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.likeError = 'Failed to unlike video. Please try again.';
           console.error('Error unliking video:', error);
-        }
+        },
       });
   }
 
   // ==================== HELPER METHODS ====================
 
   private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
+    Object.values(formGroup.controls).forEach((control) => {
       control.markAsTouched();
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
@@ -414,42 +600,42 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
   }
 
   getVideoCommentsCount(videoId: string): number {
-    const video = this.videos.find(v => v.id === videoId);
+    const video = this.videos.find((v) => v.id === videoId);
     return video ? video.commentsCount : 0;
   }
 
   // Check if current user is the comment author
   isCommentAuthor(comment: VideoComment): boolean {
     const currentUserId = localStorage.getItem('userId');
-    return currentUserId === comment.authorId; 
+    return currentUserId === comment.authorId;
   }
-  
 
   createVideo(): void {
     if (this.videoForm.invalid) {
       this.markFormGroupTouched(this.videoForm);
       return;
     }
-  
+
     this.isSubmittingVideo = true;
     this.videoError = null;
-  
+
     const payload: CreateVideoDto = {
       title: this.videoForm.value.title,
       description: this.videoForm.value.description,
       videoUrl: this.videoForm.value.url,
-      tags: []
+      tags: [],
     };
-  
-    this.videoService.createVideo(payload)
+
+    this.videoService
+      .createVideo(payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (newVideo) => {
           const videoWithCount = {
             ...newVideo,
-            commentsCount: 0 
+            commentsCount: 0,
           };
-          
+
           this.videos.unshift(videoWithCount);
           this.videoForm.reset();
           this.showCreateForm = false;
@@ -462,7 +648,7 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
           this.videoError = 'Failed to create video. Please try again.';
           console.error('Error creating video:', error);
           this.isSubmittingVideo = false;
-        }
+        },
       });
   }
 
@@ -485,13 +671,13 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
       player.pause();
       this.videoPlayStates.set(videoId, false);
     });
-    
+
     // Play current video
     const currentVideo = this.videos[this.currentVideoIndex];
     if (currentVideo && this.videoPlayers.has(currentVideo.id)) {
       const player = this.videoPlayers.get(currentVideo.id);
       if (player) {
-        player.play().catch(e => console.log('Autoplay prevented:', e));
+        player.play().catch((e) => console.log('Autoplay prevented:', e));
         this.videoPlayStates.set(currentVideo.id, true);
       }
     }
@@ -516,13 +702,15 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
 
   toggleMute(): void {
     this.isMuted = !this.isMuted;
-    this.videoPlayers.forEach(player => {
+    this.videoPlayers.forEach((player) => {
       player.muted = this.isMuted;
     });
   }
 
   // Template reference for video players
-  @ViewChildren('videoPlayer') set videoPlayerRefs(refs: QueryList<ElementRef>) {
+  @ViewChildren('videoPlayer') set videoPlayerRefs(
+    refs: QueryList<ElementRef>
+  ) {
     refs.forEach((ref, index) => {
       const video = this.videos[index];
       if (video) {
@@ -532,12 +720,17 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     });
   }
 
-  shareVideo(video: Video): void {
+  shareVideo(video: Video, event?: Event): void {
+    if (event) event.stopPropagation();
     if (navigator.share) {
       navigator.share({
         title: video.title,
         text: video.description,
-        url: window.location.href
+        url: window.location.href,
+      }).catch(() => {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href + '?video=' + video.id);
+        alert('Link copied to clipboard!');
       });
     } else {
       // Fallback: copy to clipboard
@@ -556,5 +749,22 @@ export class VideoManagerComponent implements OnInit, OnDestroy {
     if (videoFeed) {
       videoFeed.scrollIntoView({ behavior: 'smooth' });
     }
+  }
+
+  openCreateVideoModal() {
+    this.showCreateVideoModal = true;
+  }
+
+  closeCreateVideoModal() {
+    this.showCreateVideoModal = false;
+  }
+
+  onVideoCreated(video: Video): void {
+    // Handle the created video
+    this.showCreateVideoModal = false;
+    // Add the new video to the list
+    this.videos.unshift(video);
+    // Load like status for the new video
+    this.checkLikeStatus(video.id);
   }
 }
