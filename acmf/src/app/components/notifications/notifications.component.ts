@@ -1,5 +1,5 @@
 // notification.component.ts
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -552,7 +552,8 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   
@@ -578,6 +579,8 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
     // Load notifications when component initializes
     this.loadNotifications();
+    this.cdr.detectChanges();
+
   }
 
   ngOnDestroy() {
@@ -625,6 +628,8 @@ export class NotificationComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.loading = false;
     }, 300);
+
+    this.cdr.detectChanges();
   }
 
   refresh() {

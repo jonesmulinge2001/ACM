@@ -38,7 +38,7 @@ interface AttachmentUI {
 
 interface MessageAttachmentUI extends MessageAttachment {
   progress?: number;
-  previewUrl?: string; // optional, for frontend preview
+  previewUrl?: string;
 }
 
 @Component({
@@ -56,11 +56,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   @ViewChild('messagesContainer')
   private messagesContainer!: ElementRef<HTMLDivElement>;
-  // @ViewChild('fileInput', { static: false})
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   conversation?: Conversation;
   messages: ConversationMessage[] = [];
-  newMessage:string = '';
+  newMessage: string = '';
 
   participantName: string = '';
   participantImage: string = '';
@@ -74,20 +74,23 @@ export class DmChatComponent implements OnInit, OnDestroy {
   currentUserId: string | null = null;
   menuOpen: Record<string, boolean> = {};
 
-  // delete modal
   showDeleteModal: boolean = false;
   messageToDelete: ConversationMessage | null = null;
 
-  // edit modal
   showEditModal: boolean = false;
   editedMessage: string = '';
   editingMessageId: string | null = null;
 
-  // reply
   replyingTo: ConversationMessage | null = null;
-  
-
   isChatVisible: boolean = true;
+  previewFile: { url: string; type: string; name: string } | null = null;
+
+  activeEmojiPicker: string | null = null;
+
+  // Emoji collections
+  commonEmojis: string[] = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣'];
+  smileyEmojis: string[] = ['😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰'];
+  gestureEmojis: string[] = ['👍', '👎', '👏', '🙌', '🤝', '✌️', '🤞', '👌'];
 
   constructor(
     private convos: ConversationsService,
@@ -104,7 +107,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     if (this.conversationId) this.loadConversation(this.conversationId);
     else if (this.participantId) this.createOrLoadConversation();
 
-    // Typing indicator subscription
     this.sub.add(
       this.socket.onTyping().subscribe((event) => {
         if (
@@ -145,13 +147,10 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   private setupParticipantInfo(convo: Conversation): void {
-    // Debug: Log the participants to see what we're getting
     console.log('Conversation participants:', convo.participants);
     console.log('My ID:', this.myId);
     
-    // Find the participant who is NOT the current user
     const other = convo.participants.find((p) => {
-      // Compare IDs - make sure both are strings
       return p.id.toString() !== this.myId.toString();
     });
     
@@ -161,7 +160,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
       this.participantName = other.name || 'Unknown User';
       this.participantImage = other.profileImage || 'https://via.placeholder.com/40';
     } else {
-      // If no other participant found (shouldn't happen in 1:1 chat)
       this.participantName = 'User';
       this.participantImage = 'https://via.placeholder.com/40';
     }
@@ -175,10 +173,8 @@ export class DmChatComponent implements OnInit, OnDestroy {
   }
 
   private joinAndLoad(convoId: string) {
-    // 1. Join conversation safely
     this.socket.join(convoId);
 
-    // 2. Load past messages
     this.sub.add(
       this.convos.getMessages(convoId).subscribe((msgs) => {
         this.messages = msgs.reverse();
@@ -186,11 +182,9 @@ export class DmChatComponent implements OnInit, OnDestroy {
       })
     );
 
-    // 3. Live message subscription
     this.sub.add(
       this.socket.onMessage().subscribe((msg) => {
         if (!this.conversation) return;
-        // Compare as strings to avoid type mismatch
         if (msg.conversationId.toString() === this.conversation.id.toString()) {
           this.messages = [...this.messages, msg];
           this.cdr.markForCheck();
@@ -198,7 +192,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
       })
     );
 
-    // 4. Typing indicator
     this.sub.add(
       this.socket.onTyping().subscribe((event) => {
         if (!this.conversation) return;
@@ -219,7 +212,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
 
-    // convert to AttachmentUI
     const newAttachments: AttachmentUI[] = Array.from(input.files).map(
       (file) => {
         let previewUrl: string | undefined;
@@ -246,6 +238,22 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  openFilePreview(attachment: MessageAttachment) {
+    this.previewFile = {
+      url: attachment.url,
+      type: attachment.type,
+      name: attachment.name
+    };
+    this.cdr.markForCheck();
+  }
+
+  closeFilePreview() {
+    if (this.previewFile) {
+      this.previewFile = null;
+      this.cdr.markForCheck();
+    }
+  }
+
   sendMessage(): void {
     if (!this.newMessage.trim() && this.selectedAttachments.length === 0)
       return;
@@ -255,7 +263,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     const content = this.newMessage.trim();
     const files = this.selectedAttachments.map((a) => a.file);
   
-    // 1. Optimistic UI message
     const tempMsg: ConversationMessage = {
       id: 'temp-' + Date.now(),
       conversationId: convoId,
@@ -272,7 +279,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
         id: this.myId,
         name: 'You',
         profileImage: localStorage.getItem('profileImage') || undefined,
-        
       },
     };
   
@@ -282,14 +288,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     this.scrollToBottom();
   
-    // 2. Emit via socket immediately for real-time
     this.socket.sendMessage({
       conversationId: convoId,
       content,
-      // You might need to handle attachments differently for socket
     });
   
-    // 3. Upload + save via service (for DB + attachments)
     this.sub.add(
       this.convos
         .sendMessageWithFiles(convoId, content, files, (progress) => {
@@ -298,7 +301,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
         })
         .subscribe({
           next: (saved) => {
-            // Replace optimistic message with DB-confirmed message
             this.messages = this.messages.map((m) =>
               m.id === tempMsg.id ? saved : m
             );
@@ -312,7 +314,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
         })
     );
   
-    // 4. Stop typing notification
     this.socket.sendTyping(convoId, false);
   }
 
@@ -329,13 +330,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
     if (this.conversation) this.socket.leave(this.conversation.id);
     this.sub.unsubscribe();
 
-    // Revoke any preview URLs
     this.selectedAttachments.forEach((a) => {
       if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
     });
   }
 
-  // scroll and UI
   private scrollToBottom() {
     setTimeout(() => {
       const el = this.messagesContainer.nativeElement;
@@ -359,7 +358,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     return m.senderId.toString() === this.myId;
   }
 
-  // menu handlers
   toggleMenu(id: string) {
     this.menuOpen[id] = !this.menuOpen[id];
     this.cdr.markForCheck();
@@ -370,7 +368,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // Edit Modal
   openEditModal(message: ConversationMessage) {
     if (message.senderId.toString() !== this.myId) return;
     this.closeAllMenus();
@@ -396,7 +393,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
         const idx = this.messages.findIndex(
           (m) => m.id === this.editingMessageId
         );
-        if (idx > 1) this.messages[idx] = { ...res };
+        if (idx !== -1) this.messages[idx] = { ...res };
         this.cancelEdit();
         this.cdr.markForCheck();
       },
@@ -407,9 +404,8 @@ export class DmChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  // open delete Modal
   openDeleteModal(message: ConversationMessage) {
-    if (message.senderId.toString() !== this.myId) return; // Fix this check
+    if (message.senderId.toString() !== this.myId) return;
     this.closeAllMenus();
     this.messageToDelete = message;
     this.showDeleteModal = true;
@@ -434,18 +430,17 @@ export class DmChatComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Delete Failde');
+        console.error('Delete Failed');
         this.cancelDelete();
       },
     });
   }
 
-  // reply
   replyToMessage(message: ConversationMessage) {
     this.replyingTo = message;
   }
 
-  cancelreply() {
+  cancelReply() {
     this.replyingTo = null;
   }
 
@@ -462,18 +457,13 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
   
-  // Close menus when clicking outside
-@HostListener('document:click', ['$event'])
-onDocumentClick(event: Event) {
-  const target = event.target as HTMLElement;
 
-  // Check if click is inside a menu or its button
-  const clickedInsideMenu = target.closest('.dm-menu, .dm-menu-btn');
-
-  if (!clickedInsideMenu) {
-    this.closeAllMenus();
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const clickedInsideMenu = target.closest('.dm-menu, .dm-menu-btn');
+    if (!clickedInsideMenu) {
+      this.closeAllMenus();
+    }
   }
-}
-
-
 }

@@ -35,6 +35,7 @@ import { SuperAdminInstitutionsComponent } from './admin/institution-management/
 import { FundMeComponent } from './components/fund-me/fund-me.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
 import { VideoManagerComponent } from './unitok/video-manager/video-manager.component';
+import { VideoDetailComponent } from './unitok/video-detail/video-detail.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -69,6 +70,7 @@ export const routes: Routes = [
       { path: 'groups/:id', component: GroupDetailComponent },
       // { path: 'fund-me', component: FundMeComponent },
       { path: 'search', component: SearchResultsComponent },
+      { path: 'videos/:id', component: VideoDetailComponent },
     ]
   },
 

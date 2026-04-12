@@ -761,7 +761,7 @@ export interface CreateVideoDto {
   title: string;
   description: string;
   tags: string[];
-  videoUrl: string;
+  videourl: string;
 }
 
 export interface UpdateVideoDto {

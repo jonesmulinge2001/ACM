@@ -69,4 +69,14 @@ export class VideoService {
       headers: this.getAuthHeaders(),
     });
   }
+
+    // get videos by category
+    getVideosByCategory(category: string): Observable<Video[]> {
+      return this.http.get<Video[]>(
+        `${this.baseUrl}/category/${encodeURIComponent(category)}`,
+        {
+          headers: this.getAuthHeaders(),
+        }
+      );
+    }
 }

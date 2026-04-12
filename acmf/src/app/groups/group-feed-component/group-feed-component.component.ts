@@ -28,7 +28,7 @@ export class GroupFeedComponent implements OnInit {
   feed: GroupResource[] = [];
   newComment: Record<string, string> = {};
 
-  // Store comments separately like home component
+  // Store comments separately 
   comments: { [resourceId: string]: GroupResourceComment[] } = {};
   commentCounts: { [resourceId: string]: number } = {};
 

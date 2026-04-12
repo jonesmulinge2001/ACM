@@ -1,10 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Follow, Profile } from '../../interfaces';
-import { ProfileService } from '../../services/profile.service';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StudentCardComponent } from "../shared/student-card/student-card.component";
+import { Profile } from '../../interfaces';
+import { StudentCardComponent } from '../shared/student-card/student-card.component';
+import { RecommenderService } from '../../services/recommender.service';
 import { FollowService } from '../../services/follow.service';
-import { Router } from '@angular/router';
+import { Follow } from '../../interfaces';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+
+type TabKey = 'all' | 'skills' | 'interests' | 'course' | 'academicLevel' | 'institution';
+
+interface Tab {
+  key: TabKey;
+  label: string;
+  icon: string;
+  description: string;
+}
 
 @Component({
   imports: [CommonModule, StudentCardComponent],
@@ -14,89 +25,184 @@ import { Router } from '@angular/router';
 })
 export class NetworkComponent implements OnInit {
   currentUserId: string = '';
-  selectedTab: 'all' | 'following' | 'followers' = 'all';
+  selectedTab: TabKey = 'all';
 
-  allProfiles: Profile[] = [];
+  @ViewChild('tabNav') tabNav!: ElementRef<HTMLElement>;
+@ViewChildren('tabBtn') tabBtns!: QueryList<ElementRef<HTMLElement>>;
+
+  tabs: Tab[] = [
+    {
+      key: 'all',
+      label: 'All Profiles',
+      icon: 'ri-team-line',
+      description: 'Suggested connections for you'
+    },
+    {
+      key: 'skills',
+      label: 'By Skills',
+      icon: 'ri-tools-line',
+      description: 'People who share your skills'
+    },
+    {
+      key: 'interests',
+      label: 'By Interests',
+      icon: 'ri-heart-line',
+      description: 'People with similar interests'
+    },
+    {
+      key: 'course',
+      label: 'By Course',
+      icon: 'ri-book-open-line',
+      description: 'People in your course'
+    },
+    {
+      key: 'academicLevel',
+      label: 'By Level',
+      icon: 'ri-graduation-cap-line',
+      description: 'People at your academic level'
+    },
+    {
+      key: 'institution',
+      label: 'By Institution',
+      icon: 'ri-building-line',
+      description: 'People from your institution'
+    },
+  ];
+
+  profileCache: Partial<Record<TabKey, Profile[]>> = {};
+  displayedProfiles: Profile[] = [];
   following: Follow[] = [];
-  followers: Follow[] = [];
+  loading = false;
 
-  loading: boolean = false;
-
-  @Input() profile!: Profile;
-  @Input() isFollowing = false;
-
-  constructor(
-    private profileService: ProfileService, 
-    private followService: FollowService,
-    private router: Router
-  ) {}
-
-  ngOnInit() {
-    this.currentUserId = localStorage.getItem('userId') || '';
-    this.fetchAllData();
+  get activeTab(): Tab {
+    return this.tabs.find(t => t.key === this.selectedTab)!;
   }
 
-  fetchAllData() {
-    this.loading = true;
+  constructor(
+    private recommenderService: RecommenderService,
+    private followService: FollowService
+  ) {}
 
-    const allProfiles$ = this.profileService.getAllProfiles();
-    const following$ = this.followService.getFollowing(this.currentUserId);
-    const followers$ = this.followService.getFollowers(this.currentUserId);
+  ngOnInit(): void {
+    this.currentUserId = localStorage.getItem('userId') || '';
+    this.loadFollowing();
+    this.loadTab('all');
+  }
 
-    const startTime = Date.now();
-    let completedRequests = 0;
-
-    const finishLoading = () => {
-      completedRequests++;
-      if (completedRequests === 3) {
-        const elapsed = Date.now() - startTime;
-        const remaining = 2000 - elapsed;
-        setTimeout(() => {
-          this.loading = false;
-        }, remaining > 0 ? remaining : 0);
+  loadFollowing(): void {
+    this.followService.getFollowing(this.currentUserId).subscribe({
+      next: (follows: Follow[]) => {
+        this.following = follows;
       }
-    };
-
-    allProfiles$.subscribe(all => {
-      this.allProfiles = all.filter(p => p.userId !== this.currentUserId);
-      finishLoading();
     });
+  }
 
-    following$.subscribe(f => {
-      this.following = f;
-      finishLoading();
-    });
+  selectTab(key: TabKey): void {
+    if (this.selectedTab === key) return;
+    this.selectedTab = key;
+    this.loadTab(key);
+    this.scrollTabIntoView(key);
+  }
+  
+  private scrollTabIntoView(key: TabKey): void {
+    const index = this.tabs.findIndex(t => t.key === key);
+    if (index === -1) return;
+  
+    // Allow DOM to update before scrolling
+    setTimeout(() => {
+      const nav = this.tabNav?.nativeElement;
+      const btn = this.tabBtns?.toArray()[index]?.nativeElement;
+      if (!nav || !btn) return;
+  
+      const btnLeft = btn.offsetLeft;
+      const btnWidth = btn.offsetWidth;
+      const navWidth = nav.offsetWidth;
+  
+      // Center the active tab in the scroll container
+      nav.scrollTo({
+        left: btnLeft - navWidth / 2 + btnWidth / 2,
+        behavior: 'smooth'
+      });
+    }, 0);
+  }
 
-    followers$.subscribe(f => {
-      this.followers = f;
-      finishLoading();
+  loadTab(key: TabKey): void {
+    if (this.profileCache[key]) {
+      this.displayedProfiles = this.profileCache[key]!;
+      return;
+    }
+
+    this.loading = true;
+    this.displayedProfiles = [];
+
+    this.getTabSource(key).subscribe({
+      next: (profiles: Profile[]) => {
+        const filtered = profiles.filter((p: Profile) => p.userId !== this.currentUserId);
+        this.profileCache[key] = filtered;
+        this.displayedProfiles = filtered;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
     });
+  }
+
+  private getTabSource(key: TabKey): Observable<Profile[]> {
+    switch (key) {
+      case 'skills':
+        return this.recommenderService.suggestProfilesBySkills();
+      case 'interests':
+        return this.recommenderService.suggestProfilesByInterests();
+      case 'course':
+        return this.recommenderService.suggestProfilesByCourse();
+      case 'academicLevel':
+        return this.recommenderService.suggestProfilesByAcademicLevel();
+      case 'institution':
+        return this.recommenderService.suggestProfilesByInstitution();
+      default:
+        return this.recommenderService.getRecommendations().pipe(
+          map(response => response.profiles)
+        );
+    }
   }
 
   isUserFollowing(userId: string): boolean {
-    return this.following.some(f => f.followingId === userId);
+    return this.following.some((f: Follow) => f.followingId === userId);
   }
 
-  followUser(userId: string) {
-    this.profileService.followUser(userId).subscribe(() => {
-      this.fetchAllData(); 
-    });
-  }
-  
-  unfollowUser(userId: string) {
-    this.profileService.unFollowUser(userId).subscribe(() => {
-      this.fetchAllData();
+  followUser(userId: string): void {
+    this.followService.followUser(userId).subscribe({
+      next: () => {
+        // Optimistically update local following list
+        const tempFollow: Follow = {
+          id: '',
+          followerId: this.currentUserId,
+          followingId: userId,
+          createdAt: new Date().toISOString()
+        };
+        this.following = [...this.following, tempFollow];
+        // Refresh following list from server
+        this.loadFollowing();
+      }
     });
   }
 
-  getDisplayedProfiles(): Profile[] {
-    if (this.selectedTab === 'all') {
-      return this.allProfiles;
-    } else if (this.selectedTab === 'following') {
-      return this.following.map(f => f.following!.profile);
-    } else if (this.selectedTab === 'followers') {
-      return this.followers.map(f => f.follower!.profile);
-    }
-    return [];
+  unfollowUser(userId: string): void {
+    this.followService.unFollowUser(userId).subscribe({
+      next: () => {
+        // Optimistically remove from local following list
+        this.following = this.following.filter((f: Follow) => f.followingId !== userId);
+      }
+    });
+  }
+
+  trackByUserId(_index: number, profile: Profile): string {
+    return profile.userId;
+  }
+
+  invalidateCacheAndReload(): void {
+    this.profileCache = {};
+    this.loadTab(this.selectedTab);
   }
 }

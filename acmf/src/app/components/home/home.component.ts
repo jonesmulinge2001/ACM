@@ -1,6 +1,6 @@
 import { Router, RouterModule } from '@angular/router';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Comment, Post, Profile } from '../../interfaces';
+import { Comment, Post, Profile, Group } from '../../interfaces';
 import { PostService } from '../../services/post.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
@@ -14,11 +14,11 @@ import { NumberShortPipe } from '../../pipes/number-short.pipe';
 import { EditPostComponent } from '../edit-post/edit-post.component';
 import { LikeService } from '../../services/like.service';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
-import { forkJoin, timer, filter } from 'rxjs';
+import { forkJoin, timer } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FlagPostModalComponent } from '../flag-modal-component/flag-modal-component.component';
 import { ElementRef, HostListener } from '@angular/core';
-import Swal from 'sweetalert2';
+import { RecommenderService } from '../../services/recommender.service';
 
 @Component({
   standalone: true,
@@ -41,7 +41,23 @@ import Swal from 'sweetalert2';
 export class HomeComponent implements OnInit {
   trendingPosts: Post[] = [];
   recommendedPosts: Post[] = [];
-  profiles: Profile[] = [];
+
+  // Recommender: broken-out post categories from getRecommendations()
+  recommendedResourcePosts: Post[] = [];
+  recommendedAcademicPosts: Post[] = [];
+  recommendedOpportunityPosts: Post[] = [];
+  recommendedGeneralPosts: Post[] = [];
+
+  // Recommender: profile suggestions
+  profiles: Profile[] = [];                     // skill-matched profiles (replaces getAllProfiles)
+  profilesByInterests: Profile[] = [];
+  profilesByCourse: Profile[] = [];
+  profilesByAcademicLevel: Profile[] = [];
+  profilesByInstitution: Profile[] = [];
+
+  // Recommender: group suggestions
+  suggestedGroups: Group[] = [];
+
   followingIds: string[] = [];
 
   loggedInUserId = localStorage.getItem('userId');
@@ -63,11 +79,9 @@ export class HomeComponent implements OnInit {
   showEditModal = false;
   selectedPostForEdit?: Post | null;
 
-  // edit a comment
   editedComment: string = '';
   editingCommentId: string | null = null;
 
-  // delete a comment
   commentToDelete: Comment | null = null;
   showCommentDeleteModal = false;
 
@@ -78,16 +92,16 @@ export class HomeComponent implements OnInit {
   limit = 10;
 
   likingInProgress = new Set<string>();
-
   expandedPosts: { [postId: string]: boolean } = {};
 
   showFlagModal = false;
   selectedPostToFlag?: Post;
   showMoreOptions = false;
-
   showCommentEditModal = false;
-
   menuOpen: Record<string, boolean> = {};
+
+  showDeleteModal = false;
+  postToDelete?: Post | null;
 
   constructor(
     private postService: PostService,
@@ -98,20 +112,17 @@ export class HomeComponent implements OnInit {
     private likeService: LikeService,
     private eRef: ElementRef,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private recommenderService: RecommenderService,
   ) {}
 
   ngOnInit(): void {
     this.loading = true;
-    this.loadMorePosts(); // initial load via infinite scroll array
+    this.loadMorePosts();
 
     this.profileService.getMyProfile().subscribe({
-      next: (profile) => {
-        this.userProfile = profile;
-      },
-      error: () => {
-        console.error('Failed to load profile');
-      },
+      next: (profile) => (this.userProfile = profile),
+      error: () => console.error('Failed to load profile'),
     });
 
     if (this.loggedInUserId) {
@@ -123,27 +134,85 @@ export class HomeComponent implements OnInit {
       });
     }
 
-    this.loadProfilesWithFollowStats();
     this.loadTrendingAndRecommended();
+    this.loadRecommenderData();
   }
+
+  // ─── Recommender ────────────────────────────────────────────────────────────
+
+  private loadRecommenderData(): void {
+    // Full recommendations: skill+interest scored profiles + posts by category
+    this.recommenderService.getRecommendations().subscribe({
+      next: ({ profiles, resources }) => {
+        this.profiles                  = profiles;
+        this.recommendedResourcePosts  = resources.resource;
+        this.recommendedAcademicPosts  = resources.academic;
+        this.recommendedOpportunityPosts = resources.opportunity;
+        this.recommendedGeneralPosts   = resources.general;
+
+        // inject like counts into all recommended post lists
+        [
+          ...resources.resource,
+          ...resources.academic,
+          ...resources.opportunity,
+          ...resources.general,
+        ].forEach((post) => this.injectLikesCount(post));
+      },
+      error: () => console.error('Failed to load recommendations'),
+    });
+
+    // Profile suggestions by individual dimensions
+    this.recommenderService.suggestProfilesByInterests().subscribe({
+      next: (profiles) => (this.profilesByInterests = profiles),
+      error: () => console.error('Failed to load interest-based profiles'),
+    });
+
+    this.recommenderService.suggestProfilesByCourse().subscribe({
+      next: (profiles) => (this.profilesByCourse = profiles),
+      error: () => console.error('Failed to load course-based profiles'),
+    });
+
+    this.recommenderService.suggestProfilesByAcademicLevel().subscribe({
+      next: (profiles) => (this.profilesByAcademicLevel = profiles),
+      error: () => console.error('Failed to load academic-level profiles'),
+    });
+
+    this.recommenderService.suggestProfilesByInstitution().subscribe({
+      next: (profiles) => (this.profilesByInstitution = profiles),
+      error: () => console.error('Failed to load institution-based profiles'),
+    });
+
+    // Group suggestions based on the user's skills
+    this.recommenderService.recommendGroupsBySkills().subscribe({
+      next: (groups) => (this.suggestedGroups = groups),
+      error: () => console.error('Failed to load suggested groups'),
+    });
+  }
+
+  // Load similar posts for a specific post (call this when viewing a post detail)
+  loadSimilarPosts(postId: string): void {
+    this.recommenderService.recommendSimilarPosts(postId).subscribe({
+      next: (posts) => {
+        this.recommendedPosts = posts;
+        posts.forEach((post) => this.injectLikesCount(post));
+      },
+      error: () => console.error('Failed to load similar posts'),
+    });
+  }
+
+  // ─── Existing methods (unchanged) ───────────────────────────────────────────
 
   loadMorePosts() {
     if (this.isLoading || this.nextCursor === null) return;
 
     this.isLoading = true;
-    this.loading = true; // show skeleton loader
+    this.loading = true;
 
-    // Wrap the HTTP request and a 2-second timer
     forkJoin({
       posts: this.postService.getInfinitePosts(this.limit, this.nextCursor),
       delay: timer(2000),
     })
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-          this.loading = false;
-        })
-      )
+      .pipe(finalize(() => { this.isLoading = false; this.loading = false; }))
       .subscribe({
         next: ({ posts }) => {
           this.posts = [...this.posts, ...posts.posts];
@@ -151,17 +220,14 @@ export class HomeComponent implements OnInit {
 
           posts.posts.forEach((post) => {
             this.commentService.getCommentCount(post.id).subscribe({
-              next: (response) =>
-                (this.commentCounts[post.id] = response.total),
+              next: (response) => (this.commentCounts[post.id] = response.total),
               error: () => (this.commentCounts[post.id] = 0),
             });
           });
 
           this.nextCursor = posts.nextCursor ?? null;
         },
-        error: () => {
-          console.error('Failed to load more posts');
-        },
+        error: () => console.error('Failed to load more posts'),
       });
   }
 
@@ -171,9 +237,7 @@ export class HomeComponent implements OnInit {
         this.trendingPosts = posts;
         this.injectLikesCount(this.trendingPosts);
       },
-      error: () => {
-        console.error('Failed to load trending posts');
-      },
+      error: () => console.error('Failed to load trending posts'),
     });
 
     this.postService.getRecommendedPostsForUser().subscribe({
@@ -205,26 +269,6 @@ export class HomeComponent implements OnInit {
         this.followingIds = this.followingIds.filter((id) => id !== userId);
       },
       error: () => this.toastr.error('Unfollow failed'),
-    });
-  }
-
-  private loadProfilesWithFollowStats(): void {
-    this.profileService.getAllProfiles().subscribe({
-      next: (profiles) => {
-        this.profiles = profiles;
-        this.profiles.forEach((profile) => {
-          if (profile.id) {
-            this.followService.getFollowStats(profile.id).subscribe({
-              next: (followStats) => {
-                profile.followersCount = followStats.followers;
-                profile.followingCount = followStats.following;
-              },
-              error: () => console.error('Error fetching follow stats'),
-            });
-          }
-        });
-      },
-      error: () => console.error('Error while loading profiles'),
     });
   }
 
@@ -293,9 +337,7 @@ export class HomeComponent implements OnInit {
     this.commentService.replyToComment(commentId, reply).subscribe({
       next: (newReply) => {
         this.replyInputs[commentId] = '';
-        if (!this.replies[commentId]) {
-          this.replies[commentId] = [];
-        }
+        if (!this.replies[commentId]) this.replies[commentId] = [];
         this.replies[commentId].push(newReply);
         this.toastr.success('Replied successfully');
       },
@@ -317,9 +359,7 @@ export class HomeComponent implements OnInit {
       : this.likeService.likePost(post.id);
 
     action$.subscribe({
-      next: () => {
-        this.likingInProgress.delete(post.id);
-      },
+      next: () => this.likingInProgress.delete(post.id),
       error: (error) => {
         const message = error?.error?.message || '';
         if (!wasLiked && message.includes('already liked')) {
@@ -381,13 +421,10 @@ export class HomeComponent implements OnInit {
           this.toastr.success('Post updated successfully');
           this.onCloseEditModal();
         },
-        error: () => {
-          this.toastr.error('Failed to update post');
-        },
+        error: () => this.toastr.error('Failed to update post'),
       });
   }
 
-  //  Toggles dropdown and closes others
   toggleActionMenu(event: MouseEvent, postId: string): void {
     event.stopPropagation();
     Object.keys(this.actionMenuOpen).forEach(
@@ -396,21 +433,12 @@ export class HomeComponent implements OnInit {
     this.actionMenuOpen[postId] = !this.actionMenuOpen[postId];
   }
 
-  // ✅ Detects outside click to close all menus
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const clickedInsideDropdown = target.closest('.post-dropdown');
-    if (!clickedInsideDropdown) {
-      this.actionMenuOpen = {};
-    }
+    if (!target.closest('.post-dropdown')) this.actionMenuOpen = {};
   }
 
-  // Delete modal controls
-  showDeleteModal = false;
-  postToDelete?: Post | null;
-
-  // Open delete modal
   openDeleteModal(post: Post): void {
     if (post.author.id !== this.loggedInUserId) {
       this.toastr.warning('You are not allowed to delete this post');
@@ -421,19 +449,19 @@ export class HomeComponent implements OnInit {
     this.actionMenuOpen = {};
   }
 
-  // Confirm delete
   confirmDelete(): void {
     if (!this.postToDelete) return;
 
     this.postService.deletePost(this.postToDelete.id).subscribe({
       next: () => {
-        this.posts = this.posts.filter((p) => p.id !== this.postToDelete?.id);
-        this.trendingPosts = this.trendingPosts.filter(
-          (p) => p.id !== this.postToDelete?.id
-        );
-        this.recommendedPosts = this.recommendedPosts.filter(
-          (p) => p.id !== this.postToDelete?.id
-        );
+        const deletedId = this.postToDelete?.id;
+        this.posts                    = this.posts.filter((p) => p.id !== deletedId);
+        this.trendingPosts            = this.trendingPosts.filter((p) => p.id !== deletedId);
+        this.recommendedPosts         = this.recommendedPosts.filter((p) => p.id !== deletedId);
+        this.recommendedResourcePosts = this.recommendedResourcePosts.filter((p) => p.id !== deletedId);
+        this.recommendedAcademicPosts = this.recommendedAcademicPosts.filter((p) => p.id !== deletedId);
+        this.recommendedOpportunityPosts = this.recommendedOpportunityPosts.filter((p) => p.id !== deletedId);
+        this.recommendedGeneralPosts  = this.recommendedGeneralPosts.filter((p) => p.id !== deletedId);
         this.toastr.success('Post deleted');
         this.showDeleteModal = false;
         this.postToDelete = null;
@@ -447,9 +475,7 @@ export class HomeComponent implements OnInit {
 
   private injectLikesCount(posts: Post[] | Post) {
     if (!posts) return;
-    if (!Array.isArray(posts)) {
-      posts = [posts];
-    }
+    if (!Array.isArray(posts)) posts = [posts];
     posts.forEach((post) => {
       this.likeService.getPostLikes(post.id).subscribe({
         next: (likeData) => (post.likesCount = likeData.likes.length),
@@ -473,21 +499,16 @@ export class HomeComponent implements OnInit {
 
   getPostPreview(postBody: string | undefined, postId: string): string {
     if (!postBody) return '';
-
     const words = postBody.split(' ');
-    if (words.length <= 10 || this.isExpanded(postId)) {
-      return postBody;
-    }
+    if (words.length <= 10 || this.isExpanded(postId)) return postBody;
     return words.slice(0, 10).join(' ') + '...';
   }
 
-  // Open modal when user clicks “Flag Post”
   openFlagModal(post: Post) {
     this.selectedPostToFlag = post;
     this.showFlagModal = true;
   }
 
-  // Handle modal submission
   onSubmitFlag(reason: string) {
     if (this.selectedPostToFlag) {
       this.flagPost(this.selectedPostToFlag, reason);
@@ -496,7 +517,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // Handle modal close
   onCloseFlagModal() {
     this.showFlagModal = false;
     this.selectedPostToFlag = undefined;
@@ -507,14 +527,9 @@ export class HomeComponent implements OnInit {
       this.toastr.warning('You must be logged in to flag a post');
       return;
     }
-
     this.postService.flagPost(post.id, reason).subscribe({
-      next: (response) => {
-        this.toastr.success('Post flagged successfully');
-        // console.log('Flag response:', response);
-      },
+      next: () => this.toastr.success('Post flagged successfully'),
       error: (err) => {
-        console.error(err);
         const message = err?.error?.message || 'Failed to flag post';
         this.toastr.error(message);
       },
@@ -529,7 +544,6 @@ export class HomeComponent implements OnInit {
     return comment.userId === this.loggedInUserId;
   }
 
-  // ------------------ MENU HANDLERS ------------------
   toggleMenu(id: string) {
     this.menuOpen[id] = !this.menuOpen[id];
     this.cdr.markForCheck();
@@ -540,17 +554,15 @@ export class HomeComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // ------------------ EDIT MODAL ------------------
-  // Update the openEditCommentModal method
   openEditCommentModal(comment: Comment) {
     if (!this.isMyComment(comment)) return;
     this.closeAllMenus();
     this.editedComment = comment.body;
     this.editingCommentId = comment.id;
-    this.showCommentEditModal = true; // Use separate modal
+    this.showCommentEditModal = true;
     this.cdr.markForCheck();
   }
-  // Also update the cancelEdit method to properly reset everything
+
   cancelEdit() {
     this.showCommentEditModal = false;
     this.editingCommentId = null;
@@ -558,71 +570,42 @@ export class HomeComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // In your component class, add a method to find and update comments
-  private updateCommentInLists(
-    commentId: string,
-    updatedComment: Comment
-  ): void {
-    // Update in main comments
+  private updateCommentInLists(commentId: string, updatedComment: Comment): void {
     Object.keys(this.comments).forEach((postId) => {
-      const commentIndex = this.comments[postId].findIndex(
-        (c) => c.id === commentId
-      );
-      if (commentIndex > -1) {
-        this.comments[postId][commentIndex] = {
-          ...this.comments[postId][commentIndex],
-          ...updatedComment,
-          body: updatedComment.body,
-        };
-        return; // Found and updated
+      const idx = this.comments[postId].findIndex((c) => c.id === commentId);
+      if (idx > -1) {
+        this.comments[postId][idx] = { ...this.comments[postId][idx], ...updatedComment, body: updatedComment.body };
       }
     });
 
-    // Update in replies
     Object.keys(this.replies).forEach((parentCommentId) => {
-      const replyIndex = this.replies[parentCommentId].findIndex(
-        (r) => r.id === commentId
-      );
-      if (replyIndex > -1) {
-        this.replies[parentCommentId][replyIndex] = {
-          ...this.replies[parentCommentId][replyIndex],
-          ...updatedComment,
-          body: updatedComment.body,
-        };
+      const idx = this.replies[parentCommentId].findIndex((r) => r.id === commentId);
+      if (idx > -1) {
+        this.replies[parentCommentId][idx] = { ...this.replies[parentCommentId][idx], ...updatedComment, body: updatedComment.body };
       }
     });
   }
 
-  // Update the saveEdit() method
   saveEdit() {
     if (!this.editingCommentId || !this.editedComment.trim()) return;
-    const updatedContent = this.editedComment.trim();
 
-    this.commentService
-      .editComment(this.editingCommentId, updatedContent)
-      .subscribe({
-        next: (res) => {
-          // Use the new update method
-          this.updateCommentInLists(this.editingCommentId!, res);
-
-          // Close edit modal and reset
-          this.showEditModal = false;
-          this.editingCommentId = null;
-          this.editedComment = '';
-
-          // Force change detection
-          this.cdr.detectChanges();
-          this.toastr.success('Comment updated successfully');
-        },
-        error: (err) => {
-          console.error('Edit failed', err);
-          this.toastr.error('Failed to update comment');
-          this.cancelEdit();
-        },
-      });
+    this.commentService.editComment(this.editingCommentId, this.editedComment.trim()).subscribe({
+      next: (res) => {
+        this.updateCommentInLists(this.editingCommentId!, res);
+        this.showEditModal = false;
+        this.editingCommentId = null;
+        this.editedComment = '';
+        this.cdr.detectChanges();
+        this.toastr.success('Comment updated successfully');
+      },
+      error: (err) => {
+        console.error('Edit failed', err);
+        this.toastr.error('Failed to update comment');
+        this.cancelEdit();
+      },
+    });
   }
 
-  // ------------------ DELETE COMMENT MODAL ------------------
   openDeleteCommentModal(comment: Comment) {
     if (!this.isMyComment(comment)) return;
     this.closeAllMenus();
@@ -661,25 +644,16 @@ export class HomeComponent implements OnInit {
 
   sharePost() {
     if (!this.post) return;
-
     const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
-
     if (navigator.share) {
-      navigator.share({
-        title: this.post.title,
-        text: this.post.body?.substring(0, 100),
-        url: shareUrl,
-      });
+      navigator.share({ title: this.post.title, text: this.post.body?.substring(0, 100), url: shareUrl });
     } else {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Link copied to clipboard!');
-      });
+      navigator.clipboard.writeText(shareUrl).then(() => alert('Link copied to clipboard!'));
     }
   }
 
   copyPostLink() {
     if (!this.post) return;
-
     const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert('Link copied to clipboard!');

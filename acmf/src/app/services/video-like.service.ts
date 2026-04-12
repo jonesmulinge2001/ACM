@@ -29,9 +29,9 @@ export class VideoLikeService {
     );
   }
 
-  /** Unlike a video */
-  unlikeVideo(videoId: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${videoId}`, {
+  // unlike a video
+  unLikeVideo(videoId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${videoId}/like`, {
       headers: this.getAuthHeaders(),
     });
   }

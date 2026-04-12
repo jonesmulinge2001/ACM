@@ -251,7 +251,7 @@
               let comment of comments[resource.id];
               trackBy: trackByCommentId
             " class="group flex items-start gap-3 hover:bg-gray-50/80 p-3 rounded-xl transition-colors duration-150">
-            <!-- User Avatar -->
+            <!-- User profileImage -->
             <div class="flex-shrink-0">
               <img [src]="
                   comment.user.profile?.profileImage ||
@@ -316,87 +316,83 @@
                 </div>
               </div>
 
-<!-- Comment Body -->
-<div class="mt-2">
-  <!-- Edit Mode -->
-  <div *ngIf="editingCommentId === comment.id; else commentView" class="space-y-3">
-    <textarea 
-      [(ngModel)]="editedComment" 
-      rows="3" 
-      [disabled]="commentEditingInProgress"
-      placeholder="Edit your comment..."
-      class="w-full px-4 py-3 text-sm border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none disabled:opacity-60 disabled:bg-gray-50 transition-all duration-200 bg-white shadow-sm focus:shadow-md placeholder:text-gray-400 text-gray-700 leading-relaxed"
-      #editTextarea 
-      (keydown.enter)="$event.preventDefault(); saveEdit()"
-      (keydown.escape)="cancelEdit()"></textarea>
+              <!-- Comment Body -->
+              <div class="mt-2">
+                <!-- Edit Mode -->
+                <div *ngIf="editingCommentId === comment.id; else commentView" class="space-y-3">
+                  <textarea [(ngModel)]="editedComment" rows="3" [disabled]="commentEditingInProgress"
+                    placeholder="Edit your comment..."
+                    class="w-full px-4 py-3 text-sm border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none disabled:opacity-60 disabled:bg-gray-50 transition-all duration-200 bg-white shadow-sm focus:shadow-md placeholder:text-gray-400 text-gray-700 leading-relaxed"
+                    #editTextarea (keydown.enter)="$event.preventDefault(); saveEdit()"
+                    (keydown.escape)="cancelEdit()"></textarea>
 
-    <!-- Edit Actions -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button 
-          (click)="saveEdit()" 
-          [disabled]="commentEditingInProgress || !editedComment.trim()"
-          class="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95">
-          <svg *ngIf="commentEditingInProgress" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
-          <span>{{ commentEditingInProgress ? "Saving..." : "Save changes" }}</span>
-        </button>
-        <button 
-          (click)="cancelEdit()" 
-          [disabled]="commentEditingInProgress"
-          class="px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 hover:shadow-sm">
-          Cancel
-        </button>
-      </div>
+                  <!-- Edit Actions -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <button (click)="saveEdit()" [disabled]="commentEditingInProgress || !editedComment.trim()"
+                        class="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95">
+                        <svg *ngIf="commentEditingInProgress" class="w-4 h-4 animate-spin" fill="none"
+                          viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                          </circle>
+                          <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                          </path>
+                        </svg>
+                        <span>{{ commentEditingInProgress ? "Saving..." : "Save changes" }}</span>
+                      </button>
+                      <button (click)="cancelEdit()" [disabled]="commentEditingInProgress"
+                        class="px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 hover:shadow-sm">
+                        Cancel
+                      </button>
+                    </div>
 
-      <!-- Character Count -->
-      <div class="flex items-center gap-1">
-        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-        </svg>
-        <span class="text-xs text-gray-400 font-medium">
-          {{ editedComment.length }}/1000
-        </span>
-      </div>
-    </div>
-  </div>
+                    <!-- Character Count -->
+                    <div class="flex items-center gap-1">
+                      <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h7"></path>
+                      </svg>
+                      <span class="text-xs text-gray-400 font-medium">
+                        {{ editedComment.length }}/1000
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-  <!-- View Mode -->
-  <ng-template #commentView>
-    <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words bg-gray-50/30 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
-      {{ comment.content }}
-    </p>
+                <!-- View Mode -->
+                <ng-template #commentView>
+                  <p
+                    class="text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words bg-gray-50/30 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                    {{ comment.content }}
+                  </p>
 
-    <!-- Comment Actions -->
-    <div class="flex items-center gap-4 mt-3">
-      <!-- Like Button -->
-      <button 
-        (click)="toggleCommentLike(comment)"
-        class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-blue-600 transition-all duration-200 group">
-        <span class="material-icons text-base transition-all duration-200 group-hover:scale-110 group-hover:rotate-12"
-          [class.text-blue-600]="comment.isLikedByCurrentUser">
-          {{ comment.isLikedByCurrentUser ? "thumb_up" : "thumb_up_off_alt" }}
-        </span>
-        <span class="group-hover:underline font-medium">
-          {{ comment.likesCount || 0 }} {{ (comment.likesCount || 0) === 1 ? 'Like' : 'Likes' }}
-        </span>
-      </button>
-      
-      <!-- Optional: Reply button (can be added later) -->
-      <!-- <button 
+                  <!-- Comment Actions -->
+                  <div class="flex items-center gap-4 mt-3">
+                    <!-- Like Button -->
+                    <button (click)="toggleCommentLike(comment)"
+                      class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-blue-600 transition-all duration-200 group">
+                      <span
+                        class="material-icons text-base transition-all duration-200 group-hover:scale-110 group-hover:rotate-12"
+                        [class.text-blue-600]="comment.isLikedByCurrentUser">
+                        {{ comment.isLikedByCurrentUser ? "thumb_up" : "thumb_up_off_alt" }}
+                      </span>
+                      <span class="group-hover:underline font-medium">
+                        {{ comment.likesCount || 0 }} {{ (comment.likesCount || 0) === 1 ? 'Like' : 'Likes' }}
+                      </span>
+                    </button>
+
+                    <!-- Optional: Reply button (can be added later) -->
+                    <!-- <button 
         class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 group">
         <svg class="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
         </svg>
         <span>Reply</span>
       </button> -->
-    </div>
-  </ng-template>
-</div>
+                  </div>
+                </ng-template>
+              </div>
             </div>
           </div>
         </div>
