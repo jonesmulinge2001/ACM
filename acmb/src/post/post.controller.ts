@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable prettier/prettier */
- 
+
 /* eslint-disable prettier/prettier */
 
 /* eslint-disable prettier/prettier */
@@ -32,8 +34,7 @@ import { UpdatePostDto } from '../dto/update-post.dto';
 import { PostType } from 'generated/prisma';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FlagPostDto } from '../dto/flag-post.dto';
-import type { Express } from 'express'; 
-
+import type { Express } from 'express';
 
 @Controller('post')
 export class PostController {
@@ -42,13 +43,33 @@ export class PostController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req, file, cb) => {
+      // Allowed file types
+      const allowedMimes = [
+        // Images
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        // Videos
+        'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm',
+        // PDFs
+        'application/pdf'
+      ];
+      
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new BadRequestException(`Unsupported file type: ${file.mimetype}`), false);
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB max
+    }
+  }))
   async createPost(
     @Req() req: RequestWithUser,
     @Body() dto: CreatePostDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    console.log('Received file:', file);
     return this.postService.createPost(req.user.id, dto, file);
   }
 
@@ -59,16 +80,13 @@ export class PostController {
     return this.postService.getAllPosts(req.user.id);
   }
 
-  
-
   @Get('trending')
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
   async getTrending(@Req() req: RequestWithUser) {
-    return this.postService.getTrendingPosts(req.user.id); 
+    return this.postService.getTrendingPosts(req.user.id);
   }
 
-  
   @Get('infinite')
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
@@ -77,7 +95,11 @@ export class PostController {
     @Query('limit') limit = 10,
     @Query('cursor') cursor?: string,
   ) {
-    return this.postService.getInfinitePosts(req.user.id, Number(limit), cursor);
+    return this.postService.getInfinitePosts(
+      req.user.id,
+      Number(limit),
+      cursor,
+    );
   }
 
   @Get(':postId')
@@ -104,11 +126,11 @@ export class PostController {
   @Patch(':postId')
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
-  @UseInterceptors(FileInterceptor('file')) 
+  @UseInterceptors(FileInterceptor('file'))
   async updatePost(
     @Req() req: RequestWithUser,
     @Param('postId') postId: string,
-    @UploadedFile() file: Express.Multer.File, 
+    @UploadedFile() file: Express.Multer.File,
     @Body() dto: UpdatePostDto,
   ) {
     // Parse tags if they come as JSON string
@@ -120,11 +142,9 @@ export class PostController {
     } else if (dto.tags) {
       throw new BadRequestException('Invalid tags format');
     }
-    
-  
+
     return this.postService.updatePost(req.user.id, postId, dto, file);
   }
-  
 
   @Get('general')
   @UseGuards(AuthGuard('jwt'))
@@ -165,7 +185,6 @@ export class PostController {
     return this.postService.getPostsByUser(userId, currentUserId);
   }
 
-
   @UseGuards(AuthGuard('jwt'))
   @RequirePermissions(Permission.CREATE_POST)
   @Post(':id/flag')
@@ -175,13 +194,15 @@ export class PostController {
     @Req() req: RequestWithUser,
   ) {
     const userId = req.user.id;
-    const flaggedPost = await this.postService.flagPost(userId, postId, body.reason);
+    const flaggedPost = await this.postService.flagPost(
+      userId,
+      postId,
+      body.reason,
+    );
 
     return {
       message: 'Post flagged successfully',
       flaggedPost,
     };
   }
-  
-
 }

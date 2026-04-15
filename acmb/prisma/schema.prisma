@@ -196,6 +196,10 @@ model Post {
   title         String
   body          String?
   fileUrl       String?
+  fileType      String?       // 'image', 'video', 'pdf'
+  fileName      String?       // Original filename
+  fileSize      Int?          // File size in bytes
+
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   type          PostType      @default(GENERAL)
@@ -239,11 +243,15 @@ model Comment {
   postId    String?
   parentId  String?
   deleted   Boolean       @default(false)
+  depth     Int      @default(0) 
   parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[]     @relation("CommentReplies")
   post      Post?         @relation(fields: [postId], references: [id])
   user      User          @relation(fields: [userId], references: [id])
   likes     CommentLike[]
+
+  @@index([postId, createdAt])  
+  @@index([parentId]) 
 }
 
 model PostFlag {

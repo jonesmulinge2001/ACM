@@ -34,66 +34,95 @@ export class PostService {
   ) {}
 
   // Create post
-  async createPost(
-    userId: string,
-    dto: CreatePostDto,
-    file?: Express.Multer.File,
-  ): Promise<PostDto> {
-    let fileUrl: string | undefined;
+// In post.service.ts
+async createPost(
+  userId: string,
+  dto: CreatePostDto,
+  file?: Express.Multer.File,
+): Promise<PostDto> {
+  let fileUrl: string | undefined;
+  let fileType: string | undefined;
+  let fileName: string | undefined;
+  let fileSize: number | undefined;
 
-    // Upload file to Cloudinary (if exists)
-    if (file) {
-      try {
-        const uploaded = await this.cloudinary.uploadMedia(
-          file,
-          AcademeetUploadType.POST_IMAGE,
-        );
-        console.log('Cloudinary response:', uploaded);
-        fileUrl = uploaded.secure_url;
-      } catch (err) {
-        console.error('File upload failed:', err);
+  // Upload file to Cloudinary (if exists)
+  if (file) {
+    try {
+      // Determine file type and upload accordingly
+      let uploadType: AcademeetUploadType;
+      
+      if (file.mimetype.startsWith('image/')) {
+        uploadType = AcademeetUploadType.POST_IMAGE;
+        fileType = 'image';
+      } else if (file.mimetype.startsWith('video/')) {
+        uploadType = AcademeetUploadType.POST_VIDEO;
+        fileType = 'video';
+      } else if (file.mimetype === 'application/pdf') {
+        uploadType = AcademeetUploadType.RESOURCE_FILE;
+        fileType = 'pdf';
+      } else {
+        throw new Error(`Unsupported file type: ${file.mimetype}`);
       }
+      
+      // Validate file size based on type
+      const maxSize = fileType === 'video' ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error(`${fileType} file size exceeds ${maxSize / (1024 * 1024)}MB limit`);
+      }
+      
+      const uploaded = await this.cloudinary.uploadMedia(file, uploadType);
+      fileUrl = uploaded.secure_url;
+      fileName = file.originalname;
+      fileSize = file.size;
+      
+    
+    } catch (err) {
+      
+      throw new InternalServerErrorException(`File upload failed: ${err.message}`);
     }
-
-    // Correctly structure the tag connections via PostTag
-    const createTags =
-      dto.tags?.map((tagName) => ({
-        tag: {
-          connectOrCreate: {
-            where: { name: tagName.toLowerCase() },
-            create: { name: tagName.toLowerCase() },
-          },
-        },
-      })) ?? [];
-
-    // Create the post and connect tags via PostTag
-    const post = await this.prisma.post.create({
-      data: {
-        title: dto.title,
-        body: dto.body,
-        fileUrl,
-        authorId: userId,
-        type: (dto.type?.toUpperCase() as PostType) || PostType.GENERAL,
-        tags: {
-          create: createTags,
-        },
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            profile: { select: { profileImage: true } },
-          },
-        },
-        tags: {
-          include: { tag: true },
-        },
-      },
-    });
-
-    return this.toPostDto(post);
   }
+
+  // Create tags structure
+  const createTags = dto.tags?.map((tagName) => ({
+    tag: {
+      connectOrCreate: {
+        where: { name: tagName.toLowerCase() },
+        create: { name: tagName.toLowerCase() },
+      },
+    },
+  })) ?? [];
+
+  // Create the post
+  const post = await this.prisma.post.create({
+    data: {
+      title: dto.title,
+      body: dto.body,
+      fileUrl,
+      fileType,
+      fileName,
+      fileSize,
+      authorId: userId,
+      type: (dto.type?.toUpperCase() as PostType) || PostType.GENERAL,
+      tags: {
+        create: createTags,
+      },
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          profile: { select: { profileImage: true } },
+        },
+      },
+      tags: {
+        include: { tag: true },
+      },
+    },
+  });
+
+  return this.toPostDto(post);
+}
 
   async getAllPosts(currentUserId: string): Promise<PostDto[]> {
     const posts = await this.prisma.post.findMany({
@@ -113,7 +142,6 @@ export class PostService {
           select: {
             id: true,
             name: true,
-
             profile: {
               select: {
                 profileImage: true,
@@ -128,35 +156,59 @@ export class PostService {
             tag: true,
           },
         },
+        likes: true,  // ADD THIS
+        _count: {     // ADD THIS
+          select: {
+            comments: {
+              where: {
+                parentId: null
+              }
+            }
+          }
+        }
       },
     });
-
+  
     return posts.map((post) => this.toPostDto(post, currentUserId));
   }
 
   // Helper method to convert Prisma post to PostDto
-  private toPostDto(post: any, currentUserId?: string): PostDto {
-    const likes = post.likes ?? [];
-    return {
-      id: post.id,
-      title: post.title,
-      body: post.body || undefined,
-      fileUrl: post.fileUrl || undefined,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      type: post.type,
-      author: {
-        id: post.author.id,
-        name: post.author.name,
-        profileImage: post.author.profile?.profileImage,
-        institution: post.author.profile?.institution,
-        academicLevel: post.author.profile?.academicLevel,
-      },
-      tags: post.tags?.map((pt) => pt.tag?.name) ?? [],
-      likesCount: likes.length,
-      likedByCurrentUser: !!likes.find((like) => like.userId === currentUserId),
-    };
+private toPostDto(post: any, currentUserId?: string): PostDto {
+  const likes = post.likes ?? [];
+  
+  // Calculate comments count (only top-level comments, not replies)
+  let commentsCount = 0;
+  if (post.comments) {
+    // If you're including comments, filter for top-level only
+    commentsCount = post.comments.filter(comment => !comment.parentId).length;
+  } else if (post._count?.comments) {
+    // If using Prisma's _count (better for performance)
+    commentsCount = post._count.comments;
   }
+  
+  return {
+    id: post.id,
+    title: post.title,
+    body: post.body || undefined,
+    fileUrl: post.fileUrl || undefined,
+    fileType: post.fileType || undefined, 
+    fileName: post.fileName || undefined, 
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+    type: post.type,
+    author: {
+      id: post.author.id,
+      name: post.author.name,
+      profileImage: post.author.profile?.profileImage,
+      institution: post.author.profile?.institution,
+      academicLevel: post.author.profile?.academicLevel,
+    },
+    tags: post.tags?.map((pt) => pt.tag?.name) ?? [],
+    likesCount: likes.length,
+    likedByCurrentUser: !!likes.find((like) => like.userId === currentUserId),
+    commentsCount,
+  };
+}
 
   async deletePost(userId: string, postId: string): Promise<void> {
     const post = await this.prisma.post.findUnique({
@@ -204,7 +256,19 @@ export class PostService {
             userId: true, // to check if current user liked
           },
         },
+        _count: {
+          select: {
+            comments: {
+              where: {
+                parentId: null // Only count top-level comments!
+              }
+            }
+          }
+        },
         comments: {
+          where: {
+            parentId: null, // Only fetch top-level comments
+          },
           orderBy: { createdAt: 'desc' },
           include: {
             user: {
@@ -354,6 +418,16 @@ export class PostService {
             tag: true,
           },
         },
+        likes: true,  // ADD THIS
+        _count: {     // ADD THIS
+          select: {
+            comments: {
+              where: {
+                parentId: null
+              }
+            }
+          }
+        }
       },
     });
     return posts.map((post) => this.toPostDto(post, currentUserId));
@@ -400,6 +474,16 @@ export class PostService {
             tag: true,
           },
         },
+        likes: true,  // ADD THIS
+        _count: {     // ADD THIS
+          select: {
+            comments: {
+              where: {
+                parentId: null
+              }
+            }
+          }
+        }
       },
     });
     return posts.map((post) => this.toPostDto(post, currentUserId));
@@ -437,9 +521,18 @@ export class PostService {
           },
         },
         likes: true,
+        _count: {  // ADD THIS
+          select: {
+            comments: {
+              where: {
+                parentId: null
+              }
+            }
+          }
+        }
       },
     });
-
+  
     return posts.map((post) => this.toPostDto(post, currentUserId));
   }
 
@@ -447,13 +540,13 @@ export class PostService {
   async getInfinitePosts(
     currentUserId: string,
     limit: number,
-    cursor?: string, // last post ID from previous page
+    cursor?: string,
   ): Promise<{ posts: PostDto[]; nextCursor?: string }> {
     const posts = await this.prisma.post.findMany({
       where: { isDeleted: false },
       orderBy: { createdAt: 'desc' },
-      take: limit + 1, // fetch one extra to check if there's more
-      skip: cursor ? 1 : 0, // skip the cursor item itself
+      take: limit + 1,
+      skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
       include: {
         author: {
@@ -471,15 +564,24 @@ export class PostService {
         },
         tags: { include: { tag: true } },
         likes: true,
+        _count: {  // ADD THIS
+          select: {
+            comments: {
+              where: {
+                parentId: null  // Only count top-level comments
+              }
+            }
+          }
+        }
       },
     });
-
+  
     let nextCursor: string | undefined = undefined;
     if (posts.length > limit) {
-      const nextItem = posts.pop(); // remove the extra item
+      const nextItem = posts.pop();
       nextCursor = nextItem?.id;
     }
-
+  
     return {
       posts: posts.map((post) => this.toPostDto(post, currentUserId)),
       nextCursor,

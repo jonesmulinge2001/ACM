@@ -7,6 +7,8 @@ export interface PostDto {
     title: string;
     body?: string;
     fileUrl?: string;
+    fileType?: 'image' | 'video' | 'pdf'; 
+    fileName?: string; 
     createdAt: Date;
     updatedAt: Date;
     type: PostType
@@ -23,5 +25,7 @@ export interface PostDto {
 
     likesCount: number;
     likedByCurrentUser: boolean;
+    commentsCount: number;
+    
   }
   
