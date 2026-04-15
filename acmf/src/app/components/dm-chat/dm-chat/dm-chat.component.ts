@@ -1,3 +1,4 @@
+import { MaxLength } from 'class-validator';
 import { RouterModule } from '@angular/router';
 import {
   Component,
@@ -15,6 +16,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription, filter } from 'rxjs';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import {
   Conversation,
   ConversationMessage,
@@ -27,6 +29,7 @@ import {
 } from '../../../services/conversations.service';
 import { DmSocketService } from '../../../services/dm-socket.service';
 import { TimeagoModule } from 'ngx-timeago';
+
 
 interface AttachmentUI {
   file: File;
@@ -48,6 +51,7 @@ interface MessageAttachmentUI extends MessageAttachment {
   templateUrl: './dm-chat.component.html',
   styleUrls: ['./dm-chat.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+ 
 })
 export class DmChatComponent implements OnInit, OnDestroy {
   @Input() participantId?: string;
@@ -87,10 +91,96 @@ export class DmChatComponent implements OnInit, OnDestroy {
 
   activeEmojiPicker: string | null = null;
 
+  maxMessageLength: number = 120; // determine readmore / readless
   // Emoji collections
-  commonEmojis: string[] = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣'];
-  smileyEmojis: string[] = ['😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰'];
-  gestureEmojis: string[] = ['👍', '👎', '👏', '🙌', '🤝', '✌️', '🤞', '👌'];
+
+  emojis: string[] = [
+    // Smileys & Faces
+    '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌',
+    '😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓',
+    '😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖',
+    '😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱',
+    '😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄',
+    '😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮',
+    '🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀',
+    '☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾',
+    
+    // Gestures & Body Parts
+    '👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','✋',
+    '🤚','🖐️','🖖','👋','🤙','💪','🦵','🦶','👂','🦻','👃','🧠','🦷','🦴',
+    '👀','👁️','👅','👄','💋','🫂','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿',
+    
+    // Hearts & Emotions
+    '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓',
+    '💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️',
+    '☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒',
+    '♓','🆔','⚛️',
+    
+    // Animals & Nature
+    '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷',
+    '🐸','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🐺','🐗','🐴','🦄','🐝',
+    '🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🕸️','🦂','🐢','🐍','🦎',
+    '🐙','🦑','🦐','🦞','🐠','🐟','🐡','🐬','🐳','🐋','🦈','🐊','🐅',
+    '🐆','🦓','🦍','🦧','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂',
+    '🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🦮','🐕‍🦺','🐈',
+    '🐈⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦦',
+    '🦥','🐁','🐀','🐿️','🦔',
+    
+    // Food & Drink
+    '🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥',
+    '🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔',
+    '🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗'
+    ,'🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕',
+    '🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥠','🥮','🍢',
+    '🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🧂','🥫','🍼',
+    '🥛','☕','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾',
+    
+    // Activities & Travel
+    '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑',
+    '🥍','🏏','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','⛸️','🎿','⛷️'
+    ,'🏂','🏋️','🤼','🤸','⛹️','🤾','🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🏊‍♂️','🏊‍♀️','🧗',
+    '🚵','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🏵️','🎗️','🎫','🎟️','🎪','🤹','🎭','🎨',
+    '🎬','🎤','🎧','🎷','🎸','🎹','🎺','🎻','🥁','🪘','🎲','♟️','🎯','🎳','🎮','🎰','🧩',
+    
+    // Travel & Places
+    '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🏍️','🛵','🚲',
+    '🛴','🛹','🚨','🚔','🚍','🚘','🚖','🚡','🚠','🚟','🚃','🚋','🚞','🚝','🚄','🚅','🚈',
+    '🚂','🚆','🚇','🚊','🚉','✈️','🛫','🛬','🛩️','💺','🛰️','🚀','🛸','🚁','🛶','⛵','🚤',
+    '🛥️','🛳️','⛴️','🚢','⚓','⛽','🚧','🚦','🚥','🚏','🗺️','🗿','🗽','🗼','🏰','🏯','🏟️','🎡',
+    '🎢','🎠','⛲','⛱️','🏖️','🏝️','🏜️','🌋','⛰️','🏔️','🗻','🏕️','⛺','🏠','🏡','🏘️','🏚️',
+    '🏗️','🏭','🏢','🏬','🏣','🏤','🏥','🏦','🏨','🏪','🏫','🏩','💒','🏛️','⛪','🕌','🕍',
+    '🛕','🕋','⛩️',
+    
+    // Objects & Symbols
+    '⌚','📱','📲','💻','⌨️','🖥️','🖨️','🖱️','🖲️','🕹️','🗜️','💽','💾','💿','📀','📼','📷','📸',
+    '📹','🎥','📽️','🎞️','📞','☎️','📟','📠','📺','📻','🎙️','🎚️','🎛️','🧭','⏰','⏲️','⏱️','🕰️'
+    ,'⌛','⏳','📡','🔋','🔌','💡','🔦','🕯️','🪔','🧯','🛢️','💸','💵','💴','💶','💷','💰','💳','💎'
+    ,'⚖️','🔧','🔨','⚒️','🛠️','⛏️','🔩','⚙️','⛓️','🧲','🔫','💣','🧨','🔪','🗡️','⚔️','🛡️','🚬',
+    '⚰️','⚱️','🏺','🔮','📿','🧿','💈','⚗️','🔭','🔬','🕳️','💊','💉','🩸','🩹','🩺','🌡️','🧹','🧺',
+    '🧻','🚽','🚰','🚿','🛁','🛀','🧼','🪒','🧽','🧴','🛎️','🔑','🗝️','🚪','🪑','🛋️','🛏️','🛌','🖼️',
+    '🛍️','🎁','🎈','🎏','🎀','🎄','🎃','🎗️','🎟️','🎫','🎖️','🏆','🏅','🥇','🥈','🥉',
+    
+    // Flags & Nation
+    '🏁','🚩','🎌','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇺🇳','🇦🇫','🇦🇽','🇦🇱','🇩🇿','🇦🇸','🇦🇩','🇦🇴','🇦🇮','🇦🇶','🇦🇬','🇦🇷',
+    '🇦🇲','🇦🇼','🇦🇺','🇦🇹','🇦🇿','🇧🇸','🇧🇭','🇧🇩','🇧🇧','🇧🇾','🇧🇪','🇧🇿','🇧🇯','🇧🇲','🇧🇹','🇧🇴','🇧🇦','🇧🇼','🇧🇷','🇮🇴','🇻🇬',
+    '🇧🇳','🇧🇬','🇧🇫','🇧🇮','🇰🇭','🇨🇲','🇨🇦','🇮🇨','🇨🇻','🇧🇶','🇰🇾','🇨🇫','🇹🇩','🇨🇱','🇨🇳','🇨🇽','🇨🇨','🇨🇴','🇰🇲','🇨🇬','🇨🇩',
+    '🇨🇰','🇨🇷','🇨🇮','🇭🇷','🇨🇺','🇨🇼','🇨🇾','🇨🇿','🇩🇰','🇩🇯','🇩🇲','🇩🇴','🇪🇨','🇪🇬','🇸🇻','🇬🇶','🇪🇷','🇪🇪','🇪🇹','🇪🇺','🇫🇰','🇫🇴'
+    ,'🇫🇯','🇫🇮','🇫🇷','🇬🇫','🇵🇫','🇹🇫','🇬🇦','🇬🇲','🇬🇪','🇩🇪','🇬🇭','🇬🇮','🇬🇷','🇬🇱','🇬🇩','🇬🇵','🇬🇺','🇬🇹','🇬🇬','🇬🇳','🇬🇼','🇬🇾'
+    ,'🇭🇹','🇭🇳','🇭🇰','🇭🇺','🇮🇸','🇮🇳','🇮🇩','🇮🇷','🇮🇶','🇮🇪','🇮🇲','🇮🇱','🇮🇹','🇯🇲','🇯🇵','🎌','🇯🇪','🇯🇴','🇰🇿','🇰🇪','🇰🇮','🇽🇰',
+    '🇰🇼','🇰🇬','🇱🇦','🇱🇻','🇱🇧','🇱🇸','🇱🇷','🇱🇾','🇱🇮','🇱🇹','🇱🇺','🇲🇴','🇲🇬','🇲🇼','🇲🇾','🇲🇻','🇲🇱','🇲🇹','🇲🇭','🇲🇶','🇲🇷',
+    '🇲🇺','🇾🇹','🇲🇽','🇫🇲','🇲🇩','🇲🇨','🇲🇳','🇲🇪','🇲🇸','🇲🇦','🇲🇿','🇲🇲','🇳🇦','🇳🇷','🇳🇵','🇳🇱','🇳🇨','🇳🇿','🇳🇮','🇳🇪','🇳🇬',
+    '🇳🇺','🇳🇫','🇰🇵','🇲🇰','🇲🇵','🇳🇴','🇴🇲','🇵🇰','🇵🇼','🇵🇸','🇵🇦','🇵🇬','🇵🇾','🇵🇪','🇵🇭','🇵🇳','🇵🇱','🇵🇹','🇵🇷','🇶🇦','🇷🇪','🇷🇴',
+    '🇷🇺','🇷🇼','🇧🇱','🇸🇭','🇰🇳','🇱🇨','🇵🇲','🇻🇨','🇼🇸','🇸🇲','🇸🇹','🇸🇦','🇸🇳','🇷🇸','🇸🇨','🇸🇱','🇸🇬','🇸🇽','🇸🇰','🇸🇮','🇬🇸','🇸🇧','🇸🇴',
+    '🇿🇦','🇰🇷','🇸🇸','🇪🇸','🇱🇰','🇸🇩','🇸🇷','🇸🇯','🇸🇿','🇸🇪','🇨🇭','🇸🇾','🇹🇼','🇹🇯','🇹🇿','🇹🇭','🇹🇱','🇹🇬','🇹🇰','🇹🇴','🇹🇹','🇹🇳','🇹🇷','🇹🇲',
+    '🇹🇨','🇹🇻','🇺🇬','🇺🇦','🇦🇪','🇬🇧','🇺🇸','🇻🇮','🇺🇾','🇺🇿','🇻🇺','🇻🇦','🇻🇪','🇻🇳','🇼🇫','🇪🇭','🇾🇪','🇿🇲','🇿🇼',
+    
+    // Additional Symbols & Pictographs
+    '🔟','🔠','🔡','🔢','🔣','🔤','🅰️','🆎','🅱️','🆑','🆒','🆓','ℹ️','🆔','Ⓜ️','🆕','🆖','🅾️',
+    '🆗','🅿️','🆘','🆙','🆚','🈁','🈂️','🈷️','🈶','🈯','🉐','🈹','🈚','🈲','🉑','🈸','🈴','🈳',
+    '㊗️','㊙️','🈺','🈵','🔴','🟠','🟡','🟢','🔵','🟣','🟤','⚫','⚪','🟥','🟧','🟨','🟩','🟦',
+    '🟪','🟫','⬛','⬜','◼️','◻️','◾','◽','▪️','▫️','🔶','🔷','🔸','🔹','🔺','🔻','💠','🔘','🔳','🔲',
+    '🏴‍☠️'
+  ];
 
   constructor(
     private convos: ConversationsService,
@@ -99,7 +189,12 @@ export class DmChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('conversationId:', this.conversationId, 'participantId:', this.participantId);
+    console.log(
+      'conversationId:',
+      this.conversationId,
+      'participantId:',
+      this.participantId
+    );
 
     this.myId = localStorage.getItem('userId')!;
     this.socket.connect();
@@ -149,26 +244,27 @@ export class DmChatComponent implements OnInit, OnDestroy {
   private setupParticipantInfo(convo: Conversation): void {
     console.log('Conversation participants:', convo.participants);
     console.log('My ID:', this.myId);
-    
+
     const other = convo.participants.find((p) => {
       return p.id.toString() !== this.myId.toString();
     });
-    
+
     console.log('Other participant found:', other);
-    
+
     if (other) {
       this.participantName = other.name || 'Unknown User';
-      this.participantImage = other.profileImage || 'https://via.placeholder.com/40';
+      this.participantImage =
+        other.profileImage || 'https://via.placeholder.com/40';
     } else {
       this.participantName = 'User';
       this.participantImage = 'https://via.placeholder.com/40';
     }
-    
+
     console.log('Participant info set:', {
       name: this.participantName,
-      image: this.participantImage
+      image: this.participantImage,
     });
-    
+
     this.cdr.markForCheck();
   }
 
@@ -242,7 +338,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
     this.previewFile = {
       url: attachment.url,
       type: attachment.type,
-      name: attachment.name
+      name: attachment.name,
     };
     this.cdr.markForCheck();
   }
@@ -258,11 +354,11 @@ export class DmChatComponent implements OnInit, OnDestroy {
     if (!this.newMessage.trim() && this.selectedAttachments.length === 0)
       return;
     if (!this.conversation) return;
-  
+
     const convoId = this.conversation.id;
     const content = this.newMessage.trim();
     const files = this.selectedAttachments.map((a) => a.file);
-  
+
     const tempMsg: ConversationMessage = {
       id: 'temp-' + Date.now(),
       conversationId: convoId,
@@ -281,18 +377,18 @@ export class DmChatComponent implements OnInit, OnDestroy {
         profileImage: localStorage.getItem('profileImage') || undefined,
       },
     };
-  
+
     this.messages = [...this.messages, tempMsg];
     this.newMessage = '';
     this.selectedAttachments = [];
     this.cdr.markForCheck();
     this.scrollToBottom();
-  
+
     this.socket.sendMessage({
       conversationId: convoId,
       content,
     });
-  
+
     this.sub.add(
       this.convos
         .sendMessageWithFiles(convoId, content, files, (progress) => {
@@ -313,7 +409,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
           },
         })
     );
-  
+
     this.socket.sendTyping(convoId, false);
   }
 
@@ -447,7 +543,7 @@ export class DmChatComponent implements OnInit, OnDestroy {
   isMenuOpen(id: string): boolean {
     return !!this.menuOpen[id];
   }
-  
+
   closeMenu(id?: string) {
     if (id) {
       this.menuOpen[id] = false;
@@ -456,7 +552,6 @@ export class DmChatComponent implements OnInit, OnDestroy {
     }
     this.cdr.markForCheck();
   }
-  
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
@@ -465,5 +560,43 @@ export class DmChatComponent implements OnInit, OnDestroy {
     if (!clickedInsideMenu) {
       this.closeAllMenus();
     }
+  }
+
+  // check if message needs read more
+  shouldShowReadMore(content: string): boolean {
+    return !!content && content.length > this.maxMessageLength;
+  }
+
+  // get displayed text
+  getMessageDisplay(content: string, messageId: string): string {
+    if (!this.shouldShowReadMore(content)) return content;
+
+    return this.expandedMessages[messageId]
+      ? content
+      : content.substring(0, this.maxMessageLength) + '...';
+  }
+
+  // track expanded messages per message
+  expandedMessages: Record<string, boolean> = {};
+
+  // toggle
+  toggleReadMore(messageId: string): void {
+    const current = this.expandedMessages[messageId] ?? false;
+    this.expandedMessages[messageId] = !current;
+    this.cdr.markForCheck();
+  }
+
+ 
+  addEmoji(emoji: string) {
+    this.newMessage += emoji;
+    this.activeEmojiPicker = null; // auto-close picker
+    this.cdr.markForCheck();
+  }
+
+  toggleEmojiPicker(target: string = 'input'): void {
+    this.activeEmojiPicker =
+      this.activeEmojiPicker === target ? null : target;
+  
+    this.cdr.markForCheck();
   }
 }

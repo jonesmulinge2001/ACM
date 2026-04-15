@@ -49,7 +49,7 @@ export class HomeComponent implements OnInit {
   recommendedGeneralPosts: Post[] = [];
 
   // Recommender: profile suggestions
-  profiles: Profile[] = [];                     // skill-matched profiles (replaces getAllProfiles)
+  profiles: Profile[] = []; // skill-matched profiles (replaces getAllProfiles)
   profilesByInterests: Profile[] = [];
   profilesByCourse: Profile[] = [];
   profilesByAcademicLevel: Profile[] = [];
@@ -113,7 +113,7 @@ export class HomeComponent implements OnInit {
     private eRef: ElementRef,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private recommenderService: RecommenderService,
+    private recommenderService: RecommenderService
   ) {}
 
   ngOnInit(): void {
@@ -144,11 +144,11 @@ export class HomeComponent implements OnInit {
     // Full recommendations: skill+interest scored profiles + posts by category
     this.recommenderService.getRecommendations().subscribe({
       next: ({ profiles, resources }) => {
-        this.profiles                  = profiles;
-        this.recommendedResourcePosts  = resources.resource;
-        this.recommendedAcademicPosts  = resources.academic;
+        this.profiles = profiles;
+        this.recommendedResourcePosts = resources.resource;
+        this.recommendedAcademicPosts = resources.academic;
         this.recommendedOpportunityPosts = resources.opportunity;
-        this.recommendedGeneralPosts   = resources.general;
+        this.recommendedGeneralPosts = resources.general;
 
         // inject like counts into all recommended post lists
         [
@@ -212,18 +212,29 @@ export class HomeComponent implements OnInit {
       posts: this.postService.getInfinitePosts(this.limit, this.nextCursor),
       delay: timer(2000),
     })
-      .pipe(finalize(() => { this.isLoading = false; this.loading = false; }))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.loading = false;
+        })
+      )
       .subscribe({
         next: ({ posts }) => {
           this.posts = [...this.posts, ...posts.posts];
           this.injectLikesCount(posts.posts);
 
-          posts.posts.forEach((post) => {
-            this.commentService.getCommentCount(post.id).subscribe({
-              next: (response) => (this.commentCounts[post.id] = response.total),
-              error: () => (this.commentCounts[post.id] = 0),
-            });
+          // No need to fetch comment counts separately anymore
+          // Use the commentsCount from the backend response
+        // Log each post's commentsCount
+        posts.posts.forEach((post, index) => {
+          console.log(`Post ${index + 1}:`, {
+            id: post.id,
+            title: post.title,
+            commentsCount: post.commentsCount,
+            hasProperty: 'commentsCount' in post,
+            type: typeof post.commentsCount
           });
+        });
 
           this.nextCursor = posts.nextCursor ?? null;
         },
@@ -279,7 +290,9 @@ export class HomeComponent implements OnInit {
       this.commentService.getComments(postId).subscribe({
         next: (response) => {
           this.comments[postId] = response.comments;
-          this.commentCounts[postId] = response.total;
+          if (response.total !== undefined) {
+            this.commentCounts[postId] = response.total;
+          }
           this.commentLoading[postId] = false;
 
           for (const comment of response.comments) {
@@ -319,10 +332,17 @@ export class HomeComponent implements OnInit {
     this.commentService.createComment(postId, content).subscribe({
       next: () => {
         this.newComments[postId] = '';
+        this.commentCounts[postId] = (this.commentCounts[postId] || 0) + 1;
+
+        const post = this.posts.find((p) => p.id === postId);
+        if (post) {
+          post.commentsCount = (post.commentsCount || 0) + 1;
+        }
+
         this.commentService.getComments(postId).subscribe({
           next: (response) => {
             this.comments[postId] = response.comments;
-            this.commentCounts[postId] = response.total;
+            this.cdr.detectChanges();
           },
         });
       },
@@ -339,6 +359,7 @@ export class HomeComponent implements OnInit {
         this.replyInputs[commentId] = '';
         if (!this.replies[commentId]) this.replies[commentId] = [];
         this.replies[commentId].push(newReply);
+        this.cdr.detectChanges();
         this.toastr.success('Replied successfully');
       },
       error: () => this.toastr.error('Reply failed'),
@@ -455,13 +476,24 @@ export class HomeComponent implements OnInit {
     this.postService.deletePost(this.postToDelete.id).subscribe({
       next: () => {
         const deletedId = this.postToDelete?.id;
-        this.posts                    = this.posts.filter((p) => p.id !== deletedId);
-        this.trendingPosts            = this.trendingPosts.filter((p) => p.id !== deletedId);
-        this.recommendedPosts         = this.recommendedPosts.filter((p) => p.id !== deletedId);
-        this.recommendedResourcePosts = this.recommendedResourcePosts.filter((p) => p.id !== deletedId);
-        this.recommendedAcademicPosts = this.recommendedAcademicPosts.filter((p) => p.id !== deletedId);
-        this.recommendedOpportunityPosts = this.recommendedOpportunityPosts.filter((p) => p.id !== deletedId);
-        this.recommendedGeneralPosts  = this.recommendedGeneralPosts.filter((p) => p.id !== deletedId);
+        this.posts = this.posts.filter((p) => p.id !== deletedId);
+        this.trendingPosts = this.trendingPosts.filter(
+          (p) => p.id !== deletedId
+        );
+        this.recommendedPosts = this.recommendedPosts.filter(
+          (p) => p.id !== deletedId
+        );
+        this.recommendedResourcePosts = this.recommendedResourcePosts.filter(
+          (p) => p.id !== deletedId
+        );
+        this.recommendedAcademicPosts = this.recommendedAcademicPosts.filter(
+          (p) => p.id !== deletedId
+        );
+        this.recommendedOpportunityPosts =
+          this.recommendedOpportunityPosts.filter((p) => p.id !== deletedId);
+        this.recommendedGeneralPosts = this.recommendedGeneralPosts.filter(
+          (p) => p.id !== deletedId
+        );
         this.toastr.success('Post deleted');
         this.showDeleteModal = false;
         this.postToDelete = null;
@@ -570,18 +602,31 @@ export class HomeComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  private updateCommentInLists(commentId: string, updatedComment: Comment): void {
+  private updateCommentInLists(
+    commentId: string,
+    updatedComment: Comment
+  ): void {
     Object.keys(this.comments).forEach((postId) => {
       const idx = this.comments[postId].findIndex((c) => c.id === commentId);
       if (idx > -1) {
-        this.comments[postId][idx] = { ...this.comments[postId][idx], ...updatedComment, body: updatedComment.body };
+        this.comments[postId][idx] = {
+          ...this.comments[postId][idx],
+          ...updatedComment,
+          body: updatedComment.body,
+        };
       }
     });
 
     Object.keys(this.replies).forEach((parentCommentId) => {
-      const idx = this.replies[parentCommentId].findIndex((r) => r.id === commentId);
+      const idx = this.replies[parentCommentId].findIndex(
+        (r) => r.id === commentId
+      );
       if (idx > -1) {
-        this.replies[parentCommentId][idx] = { ...this.replies[parentCommentId][idx], ...updatedComment, body: updatedComment.body };
+        this.replies[parentCommentId][idx] = {
+          ...this.replies[parentCommentId][idx],
+          ...updatedComment,
+          body: updatedComment.body,
+        };
       }
     });
   }
@@ -589,21 +634,23 @@ export class HomeComponent implements OnInit {
   saveEdit() {
     if (!this.editingCommentId || !this.editedComment.trim()) return;
 
-    this.commentService.editComment(this.editingCommentId, this.editedComment.trim()).subscribe({
-      next: (res) => {
-        this.updateCommentInLists(this.editingCommentId!, res);
-        this.showEditModal = false;
-        this.editingCommentId = null;
-        this.editedComment = '';
-        this.cdr.detectChanges();
-        this.toastr.success('Comment updated successfully');
-      },
-      error: (err) => {
-        console.error('Edit failed', err);
-        this.toastr.error('Failed to update comment');
-        this.cancelEdit();
-      },
-    });
+    this.commentService
+      .editComment(this.editingCommentId, this.editedComment.trim())
+      .subscribe({
+        next: (res) => {
+          this.updateCommentInLists(this.editingCommentId!, res);
+          this.showEditModal = false;
+          this.editingCommentId = null;
+          this.editedComment = '';
+          this.cdr.detectChanges();
+          this.toastr.success('Comment updated successfully');
+        },
+        error: (err) => {
+          console.error('Edit failed', err);
+          this.toastr.error('Failed to update comment');
+          this.cancelEdit();
+        },
+      });
   }
 
   openDeleteCommentModal(comment: Comment) {
@@ -646,9 +693,15 @@ export class HomeComponent implements OnInit {
     if (!this.post) return;
     const shareUrl = `${window.location.origin}/posts/${this.post.id}`;
     if (navigator.share) {
-      navigator.share({ title: this.post.title, text: this.post.body?.substring(0, 100), url: shareUrl });
+      navigator.share({
+        title: this.post.title,
+        text: this.post.body?.substring(0, 100),
+        url: shareUrl,
+      });
     } else {
-      navigator.clipboard.writeText(shareUrl).then(() => alert('Link copied to clipboard!'));
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => alert('Link copied to clipboard!'));
     }
   }
 
@@ -660,4 +713,42 @@ export class HomeComponent implements OnInit {
       this.showMoreOptions = false;
     });
   }
+
+    // Helper method to determine file type
+    getFileType(post: Post): 'image' | 'video' | 'pdf' | 'unknown' {
+      if (post.fileType) {
+        return post.fileType as 'image' | 'video' | 'pdf';
+      }
+      
+      // Fallback: detect from URL if fileType not provided
+      if (post.fileUrl) {
+        const url = post.fileUrl.toLowerCase();
+        if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          return 'image';
+        }
+        if (url.match(/\.(mp4|mov|avi|mkv|webm)$/i)) {
+          return 'video';
+        }
+        if (url.match(/\.pdf$/i)) {
+          return 'pdf';
+        }
+      }
+      
+      return 'unknown';
+    }
+  
+    // Check if post has image
+    isImagePost(post: Post): boolean {
+      return this.getFileType(post) === 'image';
+    }
+  
+    // Check if post has video
+    isVideoPost(post: Post): boolean {
+      return this.getFileType(post) === 'video';
+    }
+  
+    // Check if post has PDF
+    isPdfPost(post: Post): boolean {
+      return this.getFileType(post) === 'pdf';
+    }
 }

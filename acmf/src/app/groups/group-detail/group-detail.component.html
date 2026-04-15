@@ -1,258 +1,257 @@
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-7xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-      <ng-container *ngIf="group$ | async as group">
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <ng-container *ngIf="group$ | async as group">
 
-        <!-- GROUP HEADER - LinkedIn Style -->
-        <div class="relative">
-          <!-- Cover Image -->
-          <div class="relative h-40 sm:h-48 md:h-56 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 overflow-hidden">
-            <img *ngIf="group.coverImage" 
-                 [src]="group.coverImage" 
-                 alt="Group cover" 
-                 class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
-          </div>
+      <!-- ═══════════════════════ HEADER CARD ═══════════════════════ -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-4">
 
-          <!-- Group Info Overlay -->
-          <div class="absolute -bottom-12 left-4 sm:left-6 md:left-8">
-            <div class="flex items-end gap-3 sm:gap-4">
-              <!-- Group Avatar -->
-              <div class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl bg-white shadow-xl p-1 flex items-center justify-center overflow-hidden border-4 border-white">
-                <img *ngIf="group.coverImage" 
-                     [src]="group.coverImage" 
-                     alt="Group avatar" 
-                     class="w-full h-full object-cover rounded-xl">
-                <div *ngIf="!group.coverImage" 
-                     class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <span class="material-icons text-white text-3xl sm:text-4xl">groups</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <!-- Cover strip -->
+        <div class="h-32 sm:h-40 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
+          <img *ngIf="group.coverImage"
+            [src]="group.coverImage"
+            alt="Group cover"
+            class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+
+          <!-- Visibility badge -->
+          <span class="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/85 text-gray-700 backdrop-blur-sm">
+            <span class="material-icons text-xs align-middle mr-0.5">{{ group.visibility === 'PUBLIC' ? 'public' : 'lock' }}</span>
+            {{ group.visibility === 'PUBLIC' ? 'Public' : 'Private' }}
+          </span>
         </div>
 
-        <!-- Group Details Section -->
-        <div class="pt-16 sm:pt-20 px-4 sm:px-6 md:px-8 pb-6 border-b border-gray-200">
-          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            
-            <!-- Left: Info -->
-            <div class="flex-1">
-              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {{ group.name }}
-              </h1>
-              
-              <p class="text-gray-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-3">
-                {{ group.description || 'No description provided' }}
-              </p>
-              
-              <div class="flex items-center gap-4 text-sm text-gray-500">
-                <div class="flex items-center gap-1">
-                  <span class="material-icons text-base">group</span>
-                  <span>{{ group.members?.length || 0 }} members</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <span class="material-icons text-base">folder</span>
-                  <span>{{ group.resources?.length || 0 }} resources</span>
-                </div>
-                <div *ngIf="group.createdAt" class="flex items-center gap-1">
-                  <span class="material-icons text-base">calendar_today</span>
-                  <span>Created {{ formatDate(group.createdAt) }}</span>
+        <!-- Avatar + name row -->
+        <div class="px-5 sm:px-6 pb-5">
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+
+            <!-- Group avatar overlapping the strip -->
+            <div class="-mt-10 flex-shrink-0">
+              <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-white">
+                <img *ngIf="group.coverImage"
+                  [src]="group.coverImage"
+                  alt="Group avatar"
+                  class="w-full h-full object-cover"/>
+                <div *ngIf="!group.coverImage"
+                  class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <span class="text-white text-3xl font-bold">{{ group.name.charAt(0).toUpperCase() }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Right: Actions -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <!-- Join Button -->
-              <button *ngIf="!joined" 
-                      (click)="join()"
-                      class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-wrap sm:pb-1">
+              <button *ngIf="!joined"
+                (click)="join()"
+                class="flex items-center gap-1.5 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition shadow-sm">
                 <span class="material-icons text-sm">person_add</span>
-                Join Group
+                Join group
               </button>
-
-              <!-- Leave Button -->
-              <button *ngIf="joined" 
-                      (click)="openLeaveModal()"
-                      class="px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full hover:bg-gray-200 transition-all duration-200 flex items-center gap-2 border border-gray-200">
+              <button *ngIf="joined"
+                (click)="openLeaveModal()"
+                class="flex items-center gap-1.5 px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-full transition border border-gray-200">
                 <span class="material-icons text-sm">exit_to_app</span>
                 Leave
               </button>
-
-              <!-- Edit Button (Admin/Owner only) -->
               <ng-container *ngIf="auth.currentUser$ | async as user">
-                <button *ngIf="isGroupAdminOrOwner(group, user?.userId)" 
-                        (click)="editing = true"
-                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-full hover:bg-gray-50 transition-all duration-200 flex items-center gap-2">
+                <button *ngIf="isGroupAdminOrOwner(group, user?.userId)"
+                  (click)="editing = true"
+                  class="flex items-center gap-1.5 px-5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-full transition">
                   <span class="material-icons text-sm">edit</span>
                   Edit
                 </button>
               </ng-container>
             </div>
           </div>
-        </div>
 
-        <!-- Edit Modal -->
-        <app-edit-group *ngIf="editing && group" 
-                        [group]="group" 
-                        (updated)="onGroupUpdated($event)"
-                        (cancel)="editing = false">
-        </app-edit-group>
+          <!-- Name -->
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mt-3 mb-1">{{ group.name }}</h1>
 
-        <!-- Enhanced Tabs - LinkedIn Style -->
-        <div class="border-b border-gray-200 bg-white sticky top-0">
-          <div class="flex overflow-x-auto scrollbar-hide">
-            <!-- Feed Tab -->
-            <button (click)="activeTab = 'feed'"
-                    class="group relative px-4 sm:px-6 py-3 sm:py-4 transition-all duration-200 whitespace-nowrap"
-                    [class]="activeTab === 'feed' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'">
-              <div class="flex items-center gap-2">
-                <span class="material-icons text-base sm:text-lg">dynamic_feed</span>
-                <span class="text-sm sm:text-base font-medium">Feed</span>
-              </div>
-              <div *ngIf="activeTab === 'feed'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-              <div *ngIf="activeTab !== 'feed'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-gray-300 transition-all duration-200"></div>
-            </button>
+          <!-- Description with read-more -->
+          <div *ngIf="group.description" class="mb-3">
+            <p class="text-sm text-gray-600 leading-relaxed">
+              {{ showFullDesc ? group.description : (group.description | slice:0:160) }}<span *ngIf="!showFullDesc && group.description.length > 160">…</span>
+              <button *ngIf="group.description.length > 160"
+                (click)="showFullDesc = !showFullDesc"
+                class="text-blue-600 hover:underline font-medium ml-1 text-xs">
+                {{ showFullDesc ? 'see less' : 'see more' }}
+              </button>
+            </p>
+          </div>
+          <p *ngIf="!group.description" class="text-sm text-gray-400 italic mb-3">No description provided.</p>
 
-            <!-- Chat Tab -->
-            <!-- <button (click)="activeTab = 'chat'"
-                    class="group relative px-4 sm:px-6 py-3 sm:py-4 transition-all duration-200 whitespace-nowrap"
-                    [class]="activeTab === 'chat' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'">
-              <div class="flex items-center gap-2">
-                <span class="material-icons text-base sm:text-lg">chat</span>
-                <span class="text-sm sm:text-base font-medium">Chat</span>
-              </div>
-              <div *ngIf="activeTab === 'chat'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-              <div *ngIf="activeTab !== 'chat'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-gray-300 transition-all duration-200"></div>
-            </button> -->
+          <!-- Stats row -->
+          <div class="flex items-center gap-5 text-xs text-gray-500 flex-wrap">
+            <span class="flex items-center gap-1">
+              <span class="material-icons text-sm text-gray-400">group</span>
+              <span class="font-semibold text-gray-800">{{ group.members?.length || 0 }}</span> members
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="material-icons text-sm text-gray-400">folder</span>
+              <span class="font-semibold text-gray-800">{{ group.resources?.length || 0 }}</span> resources
+            </span>
+            <span *ngIf="group.createdAt" class="flex items-center gap-1">
+              <span class="material-icons text-sm text-gray-400">calendar_today</span>
+              Created {{ formatDate(group.createdAt) }}
+            </span>
+          </div>
 
-            <!-- Members Tab -->
-            <button (click)="activeTab = 'members'"
-                    class="group relative px-4 sm:px-6 py-3 sm:py-4 transition-all duration-200 whitespace-nowrap"
-                    [class]="activeTab === 'members' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'">
-              <div class="flex items-center gap-2 relative">
-                <span class="material-icons text-base sm:text-lg">group</span>
-                <span class="text-sm sm:text-base font-medium">Members</span>
-                <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full ml-1">
-                  {{ group.members?.length || 0 }}
-                </span>
-              </div>
-              <div *ngIf="activeTab === 'members'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-              <div *ngIf="activeTab !== 'members'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-gray-300 transition-all duration-200"></div>
-            </button>
-
-            <!-- Resources Tab -->
-            <button (click)="activeTab = 'resources'"
-                    class="group relative px-4 sm:px-6 py-3 sm:py-4 transition-all duration-200 whitespace-nowrap"
-                    [class]="activeTab === 'resources' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'">
-              <div class="flex items-center gap-2 relative">
-                <span class="material-icons text-base sm:text-lg">folder</span>
-                <span class="text-sm sm:text-base font-medium">Resources</span>
-                <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full ml-1">
-                  {{ group.resources?.length || 0 }}
-                </span>
-              </div>
-              <div *ngIf="activeTab === 'resources'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-              <div *ngIf="activeTab !== 'resources'" 
-                   class="absolute bottom-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-gray-300 transition-all duration-200"></div>
-            </button>
+          <!-- Member avatars strip -->
+          <div *ngIf="group.members && group.members.length > 0" class="flex items-center gap-2 mt-4">
+            <div class="flex -space-x-2">
+              <img *ngFor="let m of group.members.slice(0,6)"
+                [src]="m.user?.profile?.profileImage || 'https://ui-avatars.com/api/?name=' + (m.user?.name || 'U') + '&background=e2e8f0&color=64748b&size=32'"
+                class="w-7 h-7 rounded-full border-2 border-white object-cover"
+                [title]="m.user?.name || ''"/>
+            </div>
+            <span *ngIf="(group.members?.length || 0) > 6" class="text-xs text-gray-500">
+              +{{ (group.members?.length || 0) - 6 }} more
+            </span>
           </div>
         </div>
+      </div>
 
-        <!-- Tab Content - Scrollable Area -->
-        <div class="p-4 sm:p-6 md:p-8 min-h-[400px]">
-          <!-- FEED Tab -->
+      <!-- Edit modal -->
+      <app-edit-group *ngIf="editing && group"
+        [group]="group"
+        (updated)="onGroupUpdated($event)"
+        (cancel)="editing = false">
+      </app-edit-group>
+
+      <!-- ═══════════════════════ TABS ═══════════════════════ -->
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+        <!-- Tab nav -->
+        <nav class="flex border-b border-gray-100 overflow-x-auto scrollbar-hide">
+          <button
+            (click)="activeTab = 'feed'"
+            class="relative flex items-center gap-2 px-5 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors"
+            [ngClass]="activeTab === 'feed' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
+            <span class="material-icons text-base">dynamic_feed</span>
+            Feed
+            <div *ngIf="activeTab === 'feed'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
+          </button>
+
+          <button
+            (click)="activeTab = 'members'"
+            class="relative flex items-center gap-2 px-5 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors"
+            [ngClass]="activeTab === 'members' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
+            <span class="material-icons text-base">group</span>
+            Members
+            <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+              [ngClass]="activeTab === 'members' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+              {{ group.members?.length || 0 }}
+            </span>
+            <div *ngIf="activeTab === 'members'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
+          </button>
+
+          <button
+            (click)="activeTab = 'resources'"
+            class="relative flex items-center gap-2 px-5 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors"
+            [ngClass]="activeTab === 'resources' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
+            <span class="material-icons text-base">folder_open</span>
+            Resources
+            <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+              [ngClass]="activeTab === 'resources' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+              {{ group.resources?.length || 0 }}
+            </span>
+            <div *ngIf="activeTab === 'resources'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
+          </button>
+        </nav>
+
+        <!-- Tab content -->
+        <div class="p-4 sm:p-6 min-h-96">
+
+          <!-- Feed -->
           <ng-container *ngIf="activeTab === 'feed'">
-            <div *ngIf="joined" class="animate-fadeIn">
+            <div *ngIf="joined">
               <app-group-feed [groupId]="group.id"></app-group-feed>
             </div>
-            <div *ngIf="!joined" class="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
-              <span class="material-icons text-5xl text-gray-300 mb-3">lock</span>
-              <p class="text-gray-500 text-sm">Join the community to view and post in the feed.</p>
-              <button (click)="join()" class="mt-4 px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-sm font-medium hover:shadow-lg transition">
-                Join Group
+            <div *ngIf="!joined" class="flex flex-col items-center justify-center py-16 text-center">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <span class="material-icons text-3xl text-gray-300">lock</span>
+              </div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Members only</h3>
+              <p class="text-xs text-gray-500 mb-5 max-w-xs">Join this community to view and post in the feed.</p>
+              <button (click)="join()"
+                class="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition shadow-sm">
+                <span class="material-icons text-sm">person_add</span>
+                Join group
               </button>
             </div>
           </ng-container>
 
-          <!-- CHAT Tab -->
+          <!-- Chat (kept for future use) -->
           <ng-container *ngIf="activeTab === 'chat'">
-            <app-group-chat [groupId]="group.id" *ngIf="joined" class="animate-fadeIn"></app-group-chat>
-            <div *ngIf="!joined" class="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
-              <span class="material-icons text-5xl text-gray-300 mb-3">lock</span>
-              <p class="text-gray-500 text-sm">Join to participate in chat & resources.</p>
-              <button (click)="join()" class="mt-4 px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-sm font-medium hover:shadow-lg transition">
-                Join Group
+            <app-group-chat [groupId]="group.id" *ngIf="joined"></app-group-chat>
+            <div *ngIf="!joined" class="flex flex-col items-center justify-center py-16 text-center">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <span class="material-icons text-3xl text-gray-300">lock</span>
+              </div>
+              <p class="text-xs text-gray-500 mb-5">Join to participate in group chat.</p>
+              <button (click)="join()"
+                class="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full transition">
+                <span class="material-icons text-sm">person_add</span> Join group
               </button>
             </div>
           </ng-container>
 
-          <!-- MEMBERS Tab -->
+          <!-- Members -->
           <ng-container *ngIf="activeTab === 'members'">
-            <app-group-members [members]="(members$ | async) ?? []" 
-                               (message)="openDm($event)"
-                               class="animate-fadeIn">
+            <app-group-members
+              [members]="(members$ | async) ?? []"
+              (message)="openDm($event)">
             </app-group-members>
-            <app-dm-chat *ngIf="dmUserId" 
-                         [participantId]="dmUserId"
-                         class="fixed bottom-4 right-4 z-50">
+            <app-dm-chat *ngIf="dmUserId"
+              [participantId]="dmUserId"
+              class="fixed bottom-4 right-4 z-50">
             </app-dm-chat>
           </ng-container>
 
-          <!-- RESOURCES Tab -->
+          <!-- Resources -->
           <ng-container *ngIf="activeTab === 'resources'">
-            <app-group-resources [groupId]="group.id" class="animate-fadeIn"></app-group-resources>
+            <app-group-resources [groupId]="group.id"></app-group-resources>
           </ng-container>
         </div>
+      </div>
 
-        <app-dm-popup-host #dmHost></app-dm-popup-host>
-      </ng-container>
-    </div>
+      <app-dm-popup-host #dmHost></app-dm-popup-host>
+
+    </ng-container>
   </div>
 </div>
 
-<!-- Leave Confirmation Modal - LinkedIn Style -->
-<div *ngIf="showLeaveModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn" (click)="closeLeaveModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-modalSlideUp overflow-hidden" (click)="$event.stopPropagation()">
-    <!-- Red Accent Bar -->
+
+<!-- ═══════════════════════ LEAVE MODAL ═══════════════════════ -->
+<div *ngIf="showLeaveModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+  (click)="closeLeaveModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+    (click)="$event.stopPropagation()">
     <div class="h-1 bg-red-500"></div>
-    
     <div class="p-6 text-center">
-      <!-- Warning Icon -->
-      <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-red-100">
+      <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="material-icons text-red-500 text-3xl">exit_to_app</span>
       </div>
-      
-      <h3 class="text-xl font-bold text-gray-900 mb-2">Leave Group?</h3>
-      
-      <p class="text-gray-600 mb-4">
-        Are you sure you want to leave <span class="font-semibold text-gray-900">{{ groupToLeave?.name }}</span>?
+      <h3 class="text-lg font-bold text-gray-900 mb-1">Leave group?</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Are you sure you want to leave
+        <span class="font-semibold text-gray-900">{{ groupToLeave?.name }}</span>?
       </p>
-      
-      <div class="bg-amber-50 rounded-lg p-3 mb-6 flex items-start gap-2 border border-amber-100">
-        <span class="material-icons text-amber-600 text-sm mt-0.5 flex-shrink-0">info</span>
-        <p class="text-xs text-amber-800 text-left">
-          You'll lose access to all group content, including posts, chats, and resources. You can rejoin later if the group is public.
+      <div class="bg-amber-50 rounded-xl p-3 mb-6 flex items-start gap-2 border border-amber-100 text-left">
+        <span class="material-icons text-amber-500 text-sm mt-0.5 flex-shrink-0">info</span>
+        <p class="text-xs text-amber-800">
+          You'll lose access to all group content. You can rejoin later if the group is public.
         </p>
       </div>
-      
       <div class="flex gap-3">
-        <button (click)="closeLeaveModal()" 
-                class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
+        <button (click)="closeLeaveModal()"
+          class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition">
           Cancel
         </button>
-        <button (click)="confirmLeave()" 
-                class="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2">
+        <button (click)="confirmLeave()"
+          class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-1.5">
           <span class="material-icons text-sm">exit_to_app</span>
-          Leave Group
+          Leave group
         </button>
       </div>
     </div>

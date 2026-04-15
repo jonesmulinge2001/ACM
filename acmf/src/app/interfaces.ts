@@ -112,6 +112,8 @@ export interface Post {
   title: string;
   body?: string;
   fileUrl?: string;
+  fileType?: 'image' | 'video' | 'pdf'; 
+  fileName?: string;  
   createdAt: string;
   updatedAt: string;
   type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
@@ -121,6 +123,7 @@ export interface Post {
   readTime?: string;
   likesCount?: number;
   likedByCurrentUser?: boolean;
+  commentsCount?: number;
   comments?: Comment[];
 }
 
@@ -168,6 +171,7 @@ export interface Comment {
   likes?: number;
   isLikedByCurrentUser?: boolean;
   replies?: Comment[];
+  
 }
 
 export interface CommentResponse {

@@ -1,1 +1,180 @@
-<p>notifications works!</p>
+<!-- Bell button -->
+<div class="relative inline-block">
+  <button
+    (click)="toggleMenu()"
+    [ngClass]="menuOpen ? 'bg-black/10' : 'hover:bg-black/5'"
+    class="relative p-2 rounded-full flex items-center justify-center text-[rgba(0,0,0,0.6)] transition-colors duration-150 hover:bg-[rgba(0,0,0,0.08)] hover:text-[rgba(0,0,0,0.9)]"
+  >
+    <span class="material-icons text-[24px]">notifications</span>
+    <span
+      *ngIf="unreadCount > 0"
+      class="absolute top-1 right-1 min-w-[16px] h-[16px] bg-[#CC1016] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none border-[1.5px] border-[#f3f2ef]"
+    >
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
+  </button>
+
+  <!-- Dropdown panel -->
+  <div
+    *ngIf="menuOpen"
+    #notificationMenu
+    class="absolute right-0 mt-1 w-[360px] bg-white rounded-lg border border-[#e0ddd8] shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-50 flex flex-col overflow-hidden max-md:fixed max-md:top-[60px] max-md:left-4 max-md:right-4 max-md:w-auto"
+  >
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 pb-[10px] border-b border-[#e0ddd8] flex-shrink-0">
+      <h3 class="text-[16px] font-semibold text-[rgba(0,0,0,0.9)] m-0">Notifications</h3>
+      <div class="flex items-center gap-0.5">
+
+        <button
+          *ngIf="unreadCount > 0"
+          (click)="markAllAsRead($event)"
+          [disabled]="markingAllAsRead"
+          class="flex items-center gap-1 px-[10px] py-[6px] text-[12px] font-semibold text-[rgba(0,0,0,0.6)] rounded hover:bg-[rgba(0,0,0,0.08)] hover:text-[rgba(0,0,0,0.9)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Mark all as read"
+        >
+          <span class="material-icons text-[16px]">done_all</span>
+          <span class="max-md:hidden">Mark all read</span>
+        </button>
+
+        <button
+          (click)="refresh()"
+          [disabled]="loading"
+          [ngClass]="loading ? 'animate-spin opacity-50 cursor-not-allowed' : ''"
+          class="w-8 h-8 rounded-full flex items-center justify-center text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)] transition-colors"
+          title="Refresh"
+        >
+          <span class="material-icons text-[18px]">refresh</span>
+        </button>
+
+        <button
+          (click)="closeMenu()"
+          class="w-8 h-8 rounded-full flex items-center justify-center text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)] transition-colors md:hidden"
+        >
+          <span class="material-icons text-[18px]">close</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- List -->
+    <div
+      #notificationList
+      class="overflow-y-auto flex-1 max-h-[460px] max-md:max-h-[calc(100vh-140px)]"
+      (scroll)="onScroll($event)"
+    >
+      <ng-container *ngIf="notifications.length > 0; else noNotifications">
+
+        <div
+          *ngFor="let notification of notifications"
+          (click)="handleNotificationClick(notification, $event)"
+          class="relative flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-[#e0ddd8] transition-colors duration-100 last:border-b-0"
+          [ngClass]="notification.seen
+            ? 'bg-white hover:bg-[rgba(0,0,0,0.04)]'
+            : 'bg-[#EEF3F8] hover:bg-[#dce6f0]'"
+        >
+          <!-- Unread accent bar -->
+          <span
+            *ngIf="!notification.seen"
+            class="absolute left-0 top-0 bottom-0 w-[3px] bg-[#0A66C2] rounded-none"
+          ></span>
+
+          <!-- Icon -->
+          <div
+            class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+            [ngClass]="getIconBgClass(notification.type)"
+          >
+            <span
+              class="material-icons text-[20px]"
+              [ngClass]="getIconColorClass(notification.type)"
+            >
+              {{ getNotificationIcon(notification.type) }}
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-[14px] leading-snug text-[rgba(0,0,0,0.9)] m-0 mb-1 line-clamp-2"
+              [ngClass]="notification.seen ? 'font-normal' : 'font-semibold'"
+            >
+              {{ notification.message }}
+            </p>
+
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span
+                class="text-[12px] font-semibold"
+                [ngClass]="notification.seen ? 'text-[rgba(0,0,0,0.4)]' : 'text-[#0A66C2]'"
+              >
+                {{ formatTime(notification.createdAt) }}
+              </span>
+              <span
+                *ngIf="notification.count > 1"
+                class="text-[11px] px-1.5 py-0.5 rounded-full font-semibold"
+                [ngClass]="notification.seen
+                  ? 'bg-[rgba(0,0,0,0.07)] text-[rgba(0,0,0,0.5)]'
+                  : 'bg-[#dce6f0] text-[#0A66C2]'"
+              >
+                +{{ notification.count - 1 }}
+              </span>
+            </div>
+
+            <div *ngIf="notification.actorNames.length > 0" class="text-[12px] text-[rgba(0,0,0,0.45)]">
+              <span class="font-semibold text-[rgba(0,0,0,0.7)]">{{ notification.actorNames[0] }}</span>
+              <span *ngIf="notification.actorNames.length > 1">
+                &nbsp;and {{ notification.count - 1 }} other{{ notification.count > 2 ? 's' : '' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Mark as read -->
+          <button
+            *ngIf="!notification.seen"
+            (click)="markAsRead(notification.id, $event)"
+            [disabled]="markingAsRead[notification.id]"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-[#0A66C2] hover:bg-[#dce6f0] transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Mark as read"
+          >
+            <span class="material-icons text-[18px]">check_circle</span>
+          </button>
+        </div>
+
+        <!-- Load more -->
+        <div *ngIf="loadingMore" class="flex flex-col items-center gap-2 py-4 text-[12px] text-[rgba(0,0,0,0.4)]">
+          <div class="w-5 h-5 border-2 border-[#e0ddd8] border-t-[#0A66C2] rounded-full animate-spin"></div>
+          <span>Loading more…</span>
+        </div>
+
+      </ng-container>
+
+      <!-- Empty state -->
+      <ng-template #noNotifications>
+        <div class="py-14 px-6 text-center text-[rgba(0,0,0,0.4)]">
+          <span class="material-icons text-[48px] text-[rgba(0,0,0,0.2)] block mb-3">notifications_off</span>
+          <p class="text-[14px] font-semibold text-[rgba(0,0,0,0.6)] m-0">No notifications yet</p>
+          <p class="text-[12px] mt-1 m-0">When you get notifications, they'll appear here</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 py-[10px] border-t border-[#e0ddd8] text-center flex-shrink-0">
+      <button
+        routerLink="/notifications"
+        (click)="closeMenu()"
+        class="w-full text-[14px] font-semibold text-[rgba(0,0,0,0.6)] py-1.5 rounded transition-colors hover:bg-[rgba(0,0,0,0.08)] hover:text-[rgba(0,0,0,0.9)]"
+      >
+        View all notifications
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile backdrop -->
+  <div
+    *ngIf="menuOpen"
+    class="fixed inset-0 z-40 md:hidden bg-black/50"
+    (click)="closeMenu()"
+  ></div>
+
+</div>

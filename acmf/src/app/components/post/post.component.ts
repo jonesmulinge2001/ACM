@@ -18,6 +18,7 @@ export class PostComponent implements OnInit {
   postForm!: FormGroup;
   selectedFile?: File;
   selectedFilePreview?: string;
+  selectedFileType?: 'image' | 'video' | 'pdf' | 'document';
   tags: string[] = [];
   showModal: boolean = true;
   isSubmitting = false;
@@ -76,23 +77,35 @@ export class PostComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: Event, type: 'image' | 'file') {
+  onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       this.selectedFile = input.files[0];
       
-      // Create preview for images
-      if (type === 'image' && this.selectedFile.type.startsWith('image/')) {
+      // Determine file type
+      if (this.selectedFile.type.startsWith('image/')) {
+        this.selectedFileType = 'image';
+        // Create preview for images
         const reader = new FileReader();
         reader.onload = (e) => {
           this.selectedFilePreview = e.target?.result as string;
         };
         reader.readAsDataURL(this.selectedFile);
+      } else if (this.selectedFile.type.startsWith('video/')) {
+        this.selectedFileType = 'video';
+        this.selectedFilePreview = undefined;
+        // Create video preview
+        const videoUrl = URL.createObjectURL(this.selectedFile);
+        this.selectedFilePreview = videoUrl;
+      } else if (this.selectedFile.type === 'application/pdf') {
+        this.selectedFileType = 'pdf';
+        this.selectedFilePreview = undefined;
       } else {
+        this.selectedFileType = 'document';
         this.selectedFilePreview = undefined;
       }
       
-      this.showInlineMessage('info', `${this.selectedFile.name} selected`);
+      this.showInlineMessage('info', `${this.selectedFile.name} selected (${this.getFileTypeLabel()})`);
       
       // Auto-hide info message after 3 seconds
       setTimeout(() => {
@@ -101,13 +114,26 @@ export class PostComponent implements OnInit {
     }
   }
 
+  getFileTypeLabel(): string {
+    switch(this.selectedFileType) {
+      case 'image': return 'Image';
+      case 'video': return 'Video';
+      case 'pdf': return 'PDF Document';
+      default: return 'File';
+    }
+  }
+
   triggerFileUpload() {
     this.fileInput.nativeElement.click();
   }
 
   removeFile() {
+    if (this.selectedFilePreview && this.selectedFileType === 'video') {
+      URL.revokeObjectURL(this.selectedFilePreview);
+    }
     this.selectedFile = undefined;
     this.selectedFilePreview = undefined;
+    this.selectedFileType = undefined;
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
@@ -266,6 +292,7 @@ export class PostComponent implements OnInit {
     this.tags = [];
     this.selectedFile = undefined;
     this.selectedFilePreview = undefined;
+    this.selectedFileType = undefined;
     this.isSubmitting = false;
     this.clearMessages();
     

@@ -122,3 +122,40 @@ textarea::-webkit-scrollbar-thumb:hover {
   .animate-scaleIn { animation: scaleIn 0.25s ease-out; }
   .animate-slideUp { animation: slideUp 0.35s ease-out; }
   .animate-bounce-slow { animation: bounceSlow 1.8s infinite ease-in-out; }
+
+  /* Video styling */
+video {
+  max-height: 400px;
+  width: 100%;
+  background-color: #000;
+  outline: none;
+}
+
+video:focus {
+  outline: none;
+}
+
+/* Custom video controls styling */
+video::-webkit-media-controls-panel {
+  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+}
+
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-timeline {
+  cursor: pointer;
+}
+
+/* Responsive video container */
+.video-container {
+  position: relative;
+  background: #000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* For very tall videos, maintain aspect ratio */
+video {
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}

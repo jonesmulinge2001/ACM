@@ -1,115 +1,82 @@
-<div class="sm:p-6 w-full overflow-x-hidden">
+<div class="sm:p-6 w-full" style="overflow-x: clip;">
 
-  <!-- Tabs -->
-  <div class="relative">
-    <!-- Fade edges on mobile to hint scrollability -->
-    <div class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
-    <div class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none sm:hidden"></div>
+  <!-- ── Header ── -->
+  <div class="mb-6 px-1">
+    <h1 class="text-lg font-semibold text-gray-900">Grow your network</h1>
+    <p class="text-sm text-gray-500 mt-0.5">People you may know, based on what you have in common.</p>
+  </div>
+  <!-- ── Tab nav ── -->
+  <div class="relative border-b border-gray-100 mb-5">
 
-    <nav
-      #tabNav
-      class="flex gap-1 sm:gap-2 border-b border-gray-100 overflow-x-auto py-2 scroll-smooth"
-      style="-webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;"
-    >
-      <button
-        *ngFor="let tab of tabs"
-        #tabBtn
-        (click)="selectTab(tab.key)"
-        class="group relative flex-shrink-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 rounded-lg overflow-hidden flex items-center gap-1.5"
-        [ngClass]="
-          selectedTab === tab.key
-            ? 'text-white shadow-md'
-            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-        "
-      >
-        <!-- Active gradient pill -->
-        <div
-          *ngIf="selectedTab === tab.key"
-          class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 z-0 animate-fadeIn"
-        ></div>
+    <!-- fade hints — only visible when scrolling on sm+ -->
+    <div
+      class="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 hidden sm:block">
+    </div>
+    <div
+      class="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 hidden sm:block">
+    </div>
 
-        <i [class]="tab.icon + ' relative z-10 text-base'"></i>
-        <span class="relative z-10">{{ tab.label }}</span>
-
-        <!-- Hover underline for inactive tabs -->
-        <span
-          *ngIf="selectedTab !== tab.key"
-          class="absolute bottom-1 left-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 group-hover:w-1/2 group-hover:-translate-x-1/2"
-        ></span>
+    <nav class="flex flex-wrap sm:flex-nowrap gap-1 sm:overflow-x-auto pb-0 scroll-smooth"
+      style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
+      <button *ngFor="let tab of tabs" (click)="selectedTab = tab.key; scrollTabIntoView($event)"
+        class="relative flex items-center gap-1 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors rounded-t-lg sm:flex-shrink-0"
+        [ngClass]="selectedTab === tab.key
+        ? 'text-blue-600'
+        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'">
+        <span class="material-icons text-sm sm:text-base">{{ tab.icon }}</span>
+        {{ tab.label }}
+        <span *ngIf="getProfiles(tab.key).length > 0" class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+          [ngClass]="selectedTab === tab.key ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+          {{ getProfiles(tab.key).length }}
+        </span>
+        <div *ngIf="selectedTab === tab.key" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full">
+        </div>
       </button>
     </nav>
   </div>
 
-  <!-- Tab context header -->
-  <div class="mt-4 mb-3 flex items-center justify-between" *ngIf="!loading">
-    <div>
-      <p class="text-xs text-gray-400 font-semibold uppercase tracking-widest">
-        {{ activeTab.description }}
-      </p>
-      <p class="text-xs text-gray-300 mt-0.5">
-        {{ displayedProfiles.length }} {{ displayedProfiles.length === 1 ? 'person' : 'people' }} found
-      </p>
-    </div>
-  </div>
-
-  <!-- Skeleton Loader -->
-  <div
-    *ngIf="loading"
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"
-  >
-    <div
-      *ngFor="let i of [1, 2, 3, 4, 5, 6]"
-      class="p-5 border border-gray-100 rounded-xl shadow-sm animate-pulse bg-white"
-    >
-      <div class="flex items-center gap-3 mb-4">
+  <!-- ── Skeleton ── -->
+  <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let _ of [1,2,3,4,5,6]"
+      class="p-4 border border-gray-200 rounded-xl shadow-sm animate-pulse space-y-3">
+      <div class="flex items-center gap-3">
         <div class="w-14 h-14 rounded-full bg-gray-200 flex-shrink-0"></div>
-        <div class="flex-1">
-          <div class="h-3.5 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3.5 bg-gray-200 rounded w-3/4"></div>
+          <div class="h-2.5 bg-gray-100 rounded w-1/2"></div>
         </div>
       </div>
-      <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
-      <div class="h-3 bg-gray-200 rounded w-5/6 mb-4"></div>
+      <div class="h-3 bg-gray-100 rounded w-full"></div>
       <div class="flex gap-2">
-        <div class="h-6 bg-gray-200 rounded-full w-16"></div>
-        <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+        <div class="h-6 bg-gray-100 rounded-full w-16"></div>
+        <div class="h-6 bg-gray-100 rounded-full w-20"></div>
       </div>
-      <div class="h-8 bg-gray-200 rounded-full w-full mt-4"></div>
+      <div class="h-8 bg-gray-200 rounded-full w-full mt-2"></div>
     </div>
   </div>
 
-  <!-- Empty State -->
-  <div
-    *ngIf="!loading && displayedProfiles.length === 0"
-    class="flex flex-col items-center justify-center py-20 text-center"
-  >
-    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-      <i class="ri-user-search-line text-3xl text-gray-300"></i>
-    </div>
-    <p class="text-sm font-semibold text-gray-500 mb-1">No suggestions found</p>
-    <p class="text-xs text-gray-400 max-w-xs leading-relaxed">
-      Complete your profile with your skills, interests, and course details to unlock better connections.
-    </p>
-    <button
-      (click)="invalidateCacheAndReload()"
-      class="mt-4 text-xs text-blue-500 font-medium hover:underline flex items-center gap-1"
-    >
-      <i class="ri-refresh-line"></i> Refresh
-    </button>
+  <!-- ── Tab description strip ── -->
+  <div *ngIf="!loading" class="mb-4 flex items-center gap-2">
+    <span class="material-icons text-blue-500 text-sm">{{ activeTab?.icon }}</span>
+    <p class="text-xs text-gray-500">{{ activeTab?.description }}</p>
   </div>
 
-  <!-- Profiles Grid -->
-  <div
-    *ngIf="!loading && displayedProfiles.length > 0"
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-1"
-  >
-    <app-student-card
-      *ngFor="let profile of displayedProfiles; trackBy: trackByUserId"
-      [profile]="profile"
-      [isFollowing]="isUserFollowing(profile.userId)"
-      (follow)="followUser($event)"
-      (unfollow)="unfollowUser($event)"
-    ></app-student-card>
+  <!-- ── Profiles grid ── -->
+  <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <ng-container *ngIf="getProfiles(selectedTab).length > 0; else empty">
+      <app-student-card *ngFor="let profile of getProfiles(selectedTab); trackBy: trackByUserId" [profile]="profile"
+        [isFollowing]="isUserFollowing(profile.userId)" (follow)="followUser($event)" (unfollow)="unfollowUser($event)">
+      </app-student-card>
+    </ng-container>
   </div>
+
+  <!-- ── Empty state ── -->
+  <ng-template #empty>
+    <div *ngIf="!loading" class="col-span-full flex flex-col items-center justify-center py-20 text-center">
+      <span class="material-icons text-5xl text-gray-200 mb-3">{{ activeTab?.emptyIcon }}</span>
+      <p class="text-sm font-medium text-gray-500">{{ activeTab?.emptyTitle }}</p>
+      <p class="text-xs text-gray-400 mt-1">{{ activeTab?.emptySubtitle }}</p>
+    </div>
+  </ng-template>
 
 </div>

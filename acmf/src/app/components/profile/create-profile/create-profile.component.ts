@@ -42,6 +42,7 @@ export class CreateProfileComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       institutionId: ['', Validators.required],
       academicLevel: ['', [Validators.required, Validators.maxLength(100)]],
+      course: ['', [Validators.required, Validators.maxLength(200)]],
       skills: ['', [Validators.required, Validators.maxLength(500)]],
       bio: ['', [Validators.required, Validators.maxLength(500)]],
       interests: ['', [Validators.required, Validators.maxLength(500)]],
@@ -109,6 +110,8 @@ export class CreateProfileComponent implements OnInit {
         this.toastr.error('Please select your institution');
       } else if (this.profileForm.get('academicLevel')?.errors?.['required']) {
         this.toastr.error('Please enter your academic level');
+      } else if(this.profileForm.get('course')?.errors?.['required']) {
+        this.toastr.error('Please enter your course');
       } else if (this.profileForm.get('skills')?.errors?.['required']) {
         this.toastr.error('Please enter your skills');
       } else if (this.profileForm.get('interests')?.errors?.['required']) {
@@ -126,6 +129,7 @@ export class CreateProfileComponent implements OnInit {
     
     const payload = {
       ...formData,
+      course: formData.course,
       skills: formData.skills.split(',').map((skill: string) => skill.trim()).filter((s: string) => s),
       interests: formData.interests
         .split(',')

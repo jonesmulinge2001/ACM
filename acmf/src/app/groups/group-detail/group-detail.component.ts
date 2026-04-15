@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map, take, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { Group, Profile } from '../../interfaces';
 import { AuthService } from '../../services/auth.service';
@@ -18,7 +18,7 @@ import { GroupChatComponent } from '../group-chat/group-chat.component';
 import { GroupMembersComponent } from '../group-members/group-members.component';
 import { GroupResourcesComponent } from '../group-resources/group-resources.component';
 import { EditGroupComponent } from '../edit-group/edit-group.component';
-import { DmChatComponent } from "../../components/dm-chat/dm-chat/dm-chat.component";
+import { DmChatComponent } from '../../components/dm-chat/dm-chat/dm-chat.component';
 import { DmPopupHostComponent } from '../../components/dm-popup-host/dm-popup-host.component';
 import { GroupFeedComponent } from '../group-feed-component/group-feed-component.component';
 
@@ -42,19 +42,21 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   group$!: Observable<Group>;
   members$!: Observable<Profile[]>;
   resources$!: Observable<Group['resources']>;
-  private sub = new Subscription();
-  joined = false;
-  
-  // Use BehaviorSubject for immediate updates
-  private groupSubject = new BehaviorSubject<Group | null>(null);
-  group: Group | null = null;
 
+  private sub = new Subscription();
+  private groupSubject = new BehaviorSubject<Group | null>(null);
+
+  group: Group | null = null;
+  joined = false;
   editing = false;
   activeTab: 'feed' | 'chat' | 'members' | 'resources' = 'feed';
   dmUserId: string | null = null;
-  
-  // Leave Modal Properties
-  showLeaveModal: boolean = false;
+
+  // Description read-more toggle
+  showFullDesc = false;
+
+  // Leave modal
+  showLeaveModal = false;
   groupToLeave: Group | null = null;
 
   @ViewChild('dmHost') dmPopupHost!: DmPopupHostComponent;
@@ -64,37 +66,36 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     private groups: GroupsService,
     private socket: SocketService,
     public auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     const groupId = this.route.snapshot.paramMap.get('id')!;
     this.loadGroupData(groupId);
-    
-    this.members$ = this.group$.pipe(
-      map(group => (group.members ?? []).map(m => this.toProfile(m.user?.profile)))
-    );
 
-    this.resources$ = this.group$.pipe(map(group => group.resources ?? []));
+    this.members$ = this.group$.pipe(
+      map((group) => (group.members ?? []).map((m) => this.toProfile(m.user?.profile))),
+    );
+    this.resources$ = this.group$.pipe(map((group) => group.resources ?? []));
 
     this.socket.connect();
   }
 
   loadGroupData(groupId: string) {
     this.group$ = this.groups.getGroupById(groupId);
-    
+
     this.sub.add(
-      this.group$.subscribe(group => {
+      this.group$.subscribe((group) => {
         if (group) {
           this.group = group;
           this.groupSubject.next(group);
           const currentUserId = this.auth.getUserId();
           this.joined = !!group.members?.some(
-            m => m.userId === currentUserId && !m.isDeleted
+            (m) => m.userId === currentUserId && !m.isDeleted,
           );
-          this.cdr.detectChanges(); // Force change detection
+          this.cdr.detectChanges();
         }
-      })
+      }),
     );
   }
 
@@ -122,11 +123,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return 'Recently';
     const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -135,24 +135,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     return `${Math.floor(diffDays / 365)} years ago`;
   }
 
-  // Fixed: Proper join with immediate UI update
   join() {
     const groupId = this.route.snapshot.paramMap.get('id')!;
     this.groups.joinGroup(groupId).subscribe({
       next: () => {
         this.socket.join(groupId);
         this.joined = true;
-        // Immediately update the group data
         this.loadGroupData(groupId);
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error joining group:', err);
-      }
+      error: (err) => console.error('Error joining group:', err),
     });
   }
 
-  // Fixed: Proper open leave modal with single click
   openLeaveModal(): void {
     if (this.group) {
       this.groupToLeave = this.group;
@@ -161,32 +156,28 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Close leave modal
   closeLeaveModal(): void {
     this.showLeaveModal = false;
     this.groupToLeave = null;
     this.cdr.detectChanges();
   }
 
-  // Confirm leave with immediate UI update
   confirmLeave(): void {
-    if (this.groupToLeave) {
-      const groupId = this.route.snapshot.paramMap.get('id')!;
-      this.groups.leaveGroup(groupId).subscribe({
-        next: () => {
-          this.socket.leave(groupId);
-          this.joined = false;
-          // Immediately update the group data
-          this.loadGroupData(groupId);
-          this.closeLeaveModal();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Error leaving group:', err);
-          this.closeLeaveModal();
-        }
-      });
-    }
+    if (!this.groupToLeave) return;
+    const groupId = this.route.snapshot.paramMap.get('id')!;
+    this.groups.leaveGroup(groupId).subscribe({
+      next: () => {
+        this.socket.leave(groupId);
+        this.joined = false;
+        this.loadGroupData(groupId);
+        this.closeLeaveModal();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error leaving group:', err);
+        this.closeLeaveModal();
+      },
+    });
   }
 
   onGroupUpdated(updated: Group) {
@@ -199,7 +190,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   isGroupAdminOrOwner(group: Group, userId: string | null | undefined): boolean {
     if (!userId) return false;
     if (group.creatorId === userId) return true;
-    const member = group.members?.find(m => m.userId === userId);
+    const member = group.members?.find((m) => m.userId === userId);
     return member?.role === 'OWNER' || member?.role === 'ADMIN';
   }
 

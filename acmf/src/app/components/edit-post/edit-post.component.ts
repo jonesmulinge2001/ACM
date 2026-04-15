@@ -18,6 +18,7 @@ export class EditPostComponent implements OnInit, OnChanges {
   editForm!: FormGroup;
   selectedFile: File | null = null;
   selectedFilePreview: string | null = null;
+  selectedFileType?: 'image' | 'video' | 'pdf' | 'document';
   isSubmitting = false;
   
   // Message states
@@ -37,7 +38,27 @@ export class EditPostComponent implements OnInit, OnChanges {
       this.patchForm();
       // Reset file preview when post changes
       if (this.post?.fileUrl) {
-        this.selectedFilePreview = this.post.fileUrl;
+        this.selectedFilePreview = null;
+        // Determine file type from URL or fileType property
+        this.determineFileType();
+      } else {
+        this.selectedFilePreview = null;
+        this.selectedFileType = undefined;
+      }
+    }
+  }
+
+  private determineFileType(): void {
+    if (this.post.fileType) {
+      this.selectedFileType = this.post.fileType as 'image' | 'video' | 'pdf';
+    } else if (this.post.fileUrl) {
+      const url = this.post.fileUrl.toLowerCase();
+      if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        this.selectedFileType = 'image';
+      } else if (url.match(/\.(mp4|mov|avi|mkv|webm)$/i)) {
+        this.selectedFileType = 'video';
+      } else if (url.match(/\.pdf$/i)) {
+        this.selectedFileType = 'pdf';
       }
     }
   }
@@ -62,36 +83,69 @@ export class EditPostComponent implements OnInit, OnChanges {
     });
   }
 
+  getFileTypeLabel(): string {
+    switch(this.selectedFileType) {
+      case 'image': return 'Image';
+      case 'video': return 'Video';
+      case 'pdf': return 'PDF Document';
+      default: return 'File';
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
       const file = input.files[0];
       
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        this.showInlineMessage('error', 'File size must be less than 10MB');
+      // Validate file size (max 50MB for videos, 10MB for others)
+      const maxSize = file.type.startsWith('video/') ? 50 : 10;
+      if (file.size > maxSize * 1024 * 1024) {
+        this.showInlineMessage('error', `File size must be less than ${maxSize}MB`);
         input.value = '';
         return;
       }
       
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        this.showInlineMessage('error', 'Only JPEG, PNG, GIF, and WEBP images are allowed');
+      // Determine file type
+      if (file.type.startsWith('image/')) {
+        // Validate image formats
+        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedImageTypes.includes(file.type)) {
+          this.showInlineMessage('error', 'Only JPEG, PNG, GIF, and WEBP images are allowed');
+          input.value = '';
+          return;
+        }
+        this.selectedFileType = 'image';
+        
+        // Create image preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.selectedFilePreview = e.target?.result as string || null;
+        };
+        reader.readAsDataURL(file);
+      } 
+      else if (file.type.startsWith('video/')) {
+        // Validate video formats
+        const allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+        if (!allowedVideoTypes.includes(file.type)) {
+          this.showInlineMessage('error', 'Only MP4, MOV, AVI, and WEBM videos are allowed');
+          input.value = '';
+          return;
+        }
+        this.selectedFileType = 'video';
+        this.selectedFilePreview = URL.createObjectURL(file);
+      } 
+      else if (file.type === 'application/pdf') {
+        this.selectedFileType = 'pdf';
+        this.selectedFilePreview = null;
+      } 
+      else {
+        this.showInlineMessage('error', 'Only images, videos, and PDF files are allowed');
         input.value = '';
         return;
       }
       
       this.selectedFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.selectedFilePreview = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-      
-      this.showInlineMessage('info', `${file.name} selected for upload`);
+      this.showInlineMessage('info', `${file.name} selected (${this.getFileTypeLabel()})`);
       
       // Auto-hide info message after 3 seconds
       setTimeout(() => {
@@ -101,12 +155,18 @@ export class EditPostComponent implements OnInit, OnChanges {
   }
 
   removeFile(): void {
+    if (this.selectedFilePreview && this.selectedFileType === 'video') {
+      URL.revokeObjectURL(this.selectedFilePreview);
+    }
     this.selectedFile = null;
-    this.selectedFilePreview = this.post?.fileUrl || null;
+    this.selectedFilePreview = null;
+    this.selectedFileType = undefined;
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
+    // Re-determine file type from existing post
+    this.determineFileType();
   }
 
   onSave(): void {

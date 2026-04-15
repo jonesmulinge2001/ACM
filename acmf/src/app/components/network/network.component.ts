@@ -1,208 +1,181 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { Follow, Profile } from '../../interfaces';
+import { ProfileService } from '../../services/profile.service';
 import { CommonModule } from '@angular/common';
-import { Profile } from '../../interfaces';
 import { StudentCardComponent } from '../shared/student-card/student-card.component';
-import { RecommenderService } from '../../services/recommender.service';
 import { FollowService } from '../../services/follow.service';
-import { Follow } from '../../interfaces';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { RecommenderService } from '../../services/recommender.service';
+import { forkJoin } from 'rxjs';
 
-type TabKey = 'all' | 'skills' | 'interests' | 'course' | 'academicLevel' | 'institution';
+export type NetworkTab =
+  | 'skills'
+  | 'interests'
+  | 'course'
+  | 'academic-level'
+  | 'institution';
 
-interface Tab {
-  key: TabKey;
+export interface TabConfig {
+  key: NetworkTab;
   label: string;
   icon: string;
   description: string;
+  emptyIcon: string;
+  emptyTitle: string;
+  emptySubtitle: string;
 }
 
 @Component({
   imports: [CommonModule, StudentCardComponent],
   selector: 'app-network',
   templateUrl: './network.component.html',
-  styleUrls: ['./network.component.css']
+  styleUrls: ['./network.component.css'],
 })
 export class NetworkComponent implements OnInit {
   currentUserId: string = '';
-  selectedTab: TabKey = 'all';
+  selectedTab: NetworkTab = 'skills';
 
-  @ViewChild('tabNav') tabNav!: ElementRef<HTMLElement>;
-@ViewChildren('tabBtn') tabBtns!: QueryList<ElementRef<HTMLElement>>;
+  // Recommender buckets
+  bySkills: Profile[] = [];
+  byInterests: Profile[] = [];
+  byCourse: Profile[] = [];
+  byAcademicLevel: Profile[] = [];
+  byInstitution: Profile[] = [];
 
-  tabs: Tab[] = [
-    {
-      key: 'all',
-      label: 'All Profiles',
-      icon: 'ri-team-line',
-      description: 'Suggested connections for you'
-    },
+  // For follow state
+  following: Follow[] = [];
+
+  loading = false;
+
+  @Input() profile!: Profile;
+
+  readonly tabs: TabConfig[] = [
     {
       key: 'skills',
-      label: 'By Skills',
-      icon: 'ri-tools-line',
-      description: 'People who share your skills'
+      label: 'Skills',
+      icon: 'psychology',
+      description: 'People who share your skills — great for collaboration and study groups.',
+      emptyIcon: 'psychology',
+      emptyTitle: 'No skill matches yet',
+      emptySubtitle: 'Add skills to your profile to find peers who share your expertise.',
     },
     {
       key: 'interests',
-      label: 'By Interests',
-      icon: 'ri-heart-line',
-      description: 'People with similar interests'
+      label: 'Interests',
+      icon: 'favorite_border',
+      description: 'People who share your interests and passions.',
+      emptyIcon: 'favorite_border',
+      emptyTitle: 'No interest matches yet',
+      emptySubtitle: 'Add interests to your profile to discover like-minded peers.',
     },
     {
       key: 'course',
-      label: 'By Course',
-      icon: 'ri-book-open-line',
-      description: 'People in your course'
+      label: 'Same Course',
+      icon: 'school',
+      description: 'Classmates studying the same course as you.',
+      emptyIcon: 'school',
+      emptyTitle: 'No coursemates found',
+      emptySubtitle: 'Make sure your course is set in your profile.',
     },
     {
-      key: 'academicLevel',
-      label: 'By Level',
-      icon: 'ri-graduation-cap-line',
-      description: 'People at your academic level'
+      key: 'academic-level',
+      label: 'Academic Level',
+      icon: 'military_tech',
+      description: 'Peers at the same academic level as you.',
+      emptyIcon: 'military_tech',
+      emptyTitle: 'No matches at your level',
+      emptySubtitle: 'Ensure your academic level is set in your profile.',
     },
     {
       key: 'institution',
-      label: 'By Institution',
-      icon: 'ri-building-line',
-      description: 'People from your institution'
+      label: 'Institution',
+      icon: 'account_balance',
+      description: 'People from your institution — build your local network.',
+      emptyIcon: 'account_balance',
+      emptyTitle: 'No institution matches',
+      emptySubtitle: 'Make sure your institution is set in your profile.',
     },
   ];
 
-  profileCache: Partial<Record<TabKey, Profile[]>> = {};
-  displayedProfiles: Profile[] = [];
-  following: Follow[] = [];
-  loading = false;
-
-  get activeTab(): Tab {
-    return this.tabs.find(t => t.key === this.selectedTab)!;
+  get activeTab(): TabConfig | undefined {
+    return this.tabs.find((t) => t.key === this.selectedTab);
   }
 
   constructor(
+    private profileService: ProfileService,
+    private followService: FollowService,
     private recommenderService: RecommenderService,
-    private followService: FollowService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.currentUserId = localStorage.getItem('userId') || '';
-    this.loadFollowing();
-    this.loadTab('all');
+    this.fetchAllData();
   }
 
-  loadFollowing(): void {
-    this.followService.getFollowing(this.currentUserId).subscribe({
-      next: (follows: Follow[]) => {
-        this.following = follows;
-      }
-    });
-  }
-
-  selectTab(key: TabKey): void {
-    if (this.selectedTab === key) return;
-    this.selectedTab = key;
-    this.loadTab(key);
-    this.scrollTabIntoView(key);
-  }
-  
-  private scrollTabIntoView(key: TabKey): void {
-    const index = this.tabs.findIndex(t => t.key === key);
-    if (index === -1) return;
-  
-    // Allow DOM to update before scrolling
-    setTimeout(() => {
-      const nav = this.tabNav?.nativeElement;
-      const btn = this.tabBtns?.toArray()[index]?.nativeElement;
-      if (!nav || !btn) return;
-  
-      const btnLeft = btn.offsetLeft;
-      const btnWidth = btn.offsetWidth;
-      const navWidth = nav.offsetWidth;
-  
-      // Center the active tab in the scroll container
-      nav.scrollTo({
-        left: btnLeft - navWidth / 2 + btnWidth / 2,
-        behavior: 'smooth'
-      });
-    }, 0);
-  }
-
-  loadTab(key: TabKey): void {
-    if (this.profileCache[key]) {
-      this.displayedProfiles = this.profileCache[key]!;
-      return;
-    }
-
+  fetchAllData() {
     this.loading = true;
-    this.displayedProfiles = [];
 
-    this.getTabSource(key).subscribe({
-      next: (profiles: Profile[]) => {
-        const filtered = profiles.filter((p: Profile) => p.userId !== this.currentUserId);
-        this.profileCache[key] = filtered;
-        this.displayedProfiles = filtered;
-        this.loading = false;
+    const start = Date.now();
+
+    forkJoin({
+      skills:        this.recommenderService.suggestProfilesBySkills(),
+      interests:     this.recommenderService.suggestProfilesByInterests(),
+      course:        this.recommenderService.suggestProfilesByCourse(),
+      academicLevel: this.recommenderService.suggestProfilesByAcademicLevel(),
+      institution:   this.recommenderService.suggestProfilesByInstitution(),
+      following:     this.followService.getFollowing(this.currentUserId),
+    }).subscribe({
+      next: ({ skills, interests, course, academicLevel, institution, following }) => {
+        this.bySkills        = skills;
+        this.byInterests     = interests;
+        this.byCourse        = course;
+        this.byAcademicLevel = academicLevel;
+        this.byInstitution   = institution;
+        this.following       = following;
+
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1500 - elapsed);
+        setTimeout(() => (this.loading = false), delay);
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => (this.loading = false),
     });
   }
 
-  private getTabSource(key: TabKey): Observable<Profile[]> {
-    switch (key) {
-      case 'skills':
-        return this.recommenderService.suggestProfilesBySkills();
-      case 'interests':
-        return this.recommenderService.suggestProfilesByInterests();
-      case 'course':
-        return this.recommenderService.suggestProfilesByCourse();
-      case 'academicLevel':
-        return this.recommenderService.suggestProfilesByAcademicLevel();
-      case 'institution':
-        return this.recommenderService.suggestProfilesByInstitution();
-      default:
-        return this.recommenderService.getRecommendations().pipe(
-          map(response => response.profiles)
-        );
+  getProfiles(tab: NetworkTab): Profile[] {
+    switch (tab) {
+      case 'skills':         return this.bySkills;
+      case 'interests':      return this.byInterests;
+      case 'course':         return this.byCourse;
+      case 'academic-level': return this.byAcademicLevel;
+      case 'institution':    return this.byInstitution;
+      default:               return [];
     }
   }
 
   isUserFollowing(userId: string): boolean {
-    return this.following.some((f: Follow) => f.followingId === userId);
+    return this.following.some((f) => f.followingId === userId);
   }
 
-  followUser(userId: string): void {
-    this.followService.followUser(userId).subscribe({
-      next: () => {
-        // Optimistically update local following list
-        const tempFollow: Follow = {
-          id: '',
-          followerId: this.currentUserId,
-          followingId: userId,
-          createdAt: new Date().toISOString()
-        };
-        this.following = [...this.following, tempFollow];
-        // Refresh following list from server
-        this.loadFollowing();
-      }
+  followUser(userId: string) {
+    this.followService.followUser(userId);
+  
+    this.followService.followUser(userId).subscribe({ 
+      error: () => this.followService.unFollowUser(userId)
     });
   }
-
-  unfollowUser(userId: string): void {
+  
+  unfollowUser(userId: string) {
+    this.followService.unFollowUser(userId);
+  
     this.followService.unFollowUser(userId).subscribe({
-      next: () => {
-        // Optimistically remove from local following list
-        this.following = this.following.filter((f: Follow) => f.followingId !== userId);
-      }
+      error: () => this.followService.followUser(userId)
     });
   }
-
-  trackByUserId(_index: number, profile: Profile): string {
+  trackByUserId(index: number, profile: Profile): string {
     return profile.userId;
   }
 
-  invalidateCacheAndReload(): void {
-    this.profileCache = {};
-    this.loadTab(this.selectedTab);
+  scrollTabIntoView(event: MouseEvent) {
+    const btn = event.currentTarget as HTMLElement;
+    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 }
