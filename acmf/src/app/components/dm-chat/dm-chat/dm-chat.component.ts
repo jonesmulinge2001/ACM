@@ -1,4 +1,4 @@
-import { MaxLength } from 'class-validator';
+
 import { RouterModule } from '@angular/router';
 import {
   Component,
@@ -16,7 +16,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription, filter } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import {
   Conversation,
   ConversationMessage,
