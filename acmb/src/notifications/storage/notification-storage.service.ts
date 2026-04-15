@@ -17,7 +17,7 @@ export class NotificationStorageService {
   constructor(private readonly realtime: NotificationRealtimeService) {}
 
   async store(event: NotificationEvent, aggregatable: boolean) {
-    console.log('STORE CALLED', event, aggregatable); // debug
+    // console.log('STORE CALLED', event, aggregatable); 
     let notification;
 
     if (!aggregatable) {

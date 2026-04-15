@@ -1,3 +1,5 @@
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
 import {
   BadRequestException,
@@ -40,6 +42,7 @@ export class ProfileService {
         name: dto.name,
         bio: dto.bio,
         academicLevel: dto.academicLevel,
+        course: dto.course,
         skills: dto.skills,
         userId,
         institutionId: dto.institutionId,
@@ -111,6 +114,7 @@ async getProfileById(id: string) {
       name: dto.name,
       bio: dto.bio,
       academicLevel: dto.academicLevel,
+      course: dto.course,
       skills: dto.skills,
       ...(dto.institutionId && { institutionId: dto.institutionId }),
     };
@@ -178,6 +182,7 @@ async getProfileById(id: string) {
                 },
               },
               { skills: { hasSome: [search] } },
+              {course: { contains: search, mode: 'insensitive'}}
             ],
           }
         : {},

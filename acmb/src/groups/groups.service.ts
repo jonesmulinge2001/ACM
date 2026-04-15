@@ -962,7 +962,6 @@ export class GroupsService {
       },
     });
 
-    // In getGroupFeed method, update the return mapping:
     return resources.map((r) => ({
       id: r.id,
       content: r.content,
@@ -1042,7 +1041,6 @@ export class GroupsService {
   }
 
   // edit post
-// edit post
 async editResource(
   userId: string,
   resourceId: string,
@@ -1143,7 +1141,6 @@ async editResource(
           profileImage: c.user.profile?.profileImage || null,
         },
       },
-      likesCount: 0, // You might want to add comment likes count if needed
       isLikedByCurrentUser: false,
     })),
   };

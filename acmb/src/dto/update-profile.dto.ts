@@ -27,6 +27,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
+  course?: string;
+
+  @IsOptional()
+  @IsString()
   profileImage?: string;
 
   @IsOptional()

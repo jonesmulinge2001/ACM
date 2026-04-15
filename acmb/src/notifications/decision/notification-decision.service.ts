@@ -14,7 +14,7 @@ export class NotificationDecisionService {
     private readonly storage: NotificationStorageService
   ) {}
   async process(event: NotificationEvent): Promise<void> {
-    console.log('DECISION SERVICE CALLED', event); 
+    // console.log('DECISION SERVICE CALLED', event); 
     // Ignore self-events
     if (event.actorId === event.recipientId) {
       return;
@@ -22,7 +22,7 @@ export class NotificationDecisionService {
 
     // Always-notify events
     if (ALWAYS_NOTIFY_EVENTS.includes(event.type)) {
-      console.log('ALWAYS_NOTIFY — storing event', event); 
+      // console.log('ALWAYS_NOTIFY — storing event', event); 
         await this.storage.store(event, false);
         return;
       }

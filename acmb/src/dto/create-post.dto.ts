@@ -23,4 +23,8 @@ export class CreatePostDto {
   @IsOptional()
   @IsString()
   fileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  fileType?: string;
 }

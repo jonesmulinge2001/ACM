@@ -8,9 +8,9 @@ export class NotificationService {
   private prisma = new PrismaClient();
 
   async getNotifications(userId: string, cursor?: string, limit = 20) {
-    const MAX_NAMES_DISPLAY = 2;
+    const MAX_NAMES_DISPLAY = 2; // number of names displayed
   
-    // 1️⃣ Fetch notifications
+    // 1. Fetch notifications
     const notifications = await this.prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -21,7 +21,7 @@ export class NotificationService {
   
     if (notifications.length === 0) return [];
   
-    // 2️⃣ Fetch all actors' info in one query
+    // 2️. Fetch all actors' info in one query 
     const allActorIds = notifications.flatMap(n => n.actorIds);
     const uniqueActorIds = Array.from(new Set(allActorIds));
   
@@ -32,7 +32,7 @@ export class NotificationService {
   
     const actorMap = new Map(actors.map(a => [a.id, a.name]));
   
-    // 3️⃣ Map notifications for friendly display
+    // 3️. Map notifications for friendly display
     const mapped = notifications.map(n => {
       const actorNames = n.actorIds.map(id => actorMap.get(id) || 'Unknown');
   
