@@ -19,7 +19,6 @@ export class UpdateProfileComponent implements OnInit {
   isLoading = true;
   profilePreview: string | null = null;
   coverPreview: string | null | undefined = null;
-  showProfileModal = true;
   institutions: { id: string; name: string }[] = [];
 
   constructor(
@@ -41,6 +40,7 @@ export class UpdateProfileComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       institutionId: ['', Validators.required],
       academicLevel: ['', [Validators.required, Validators.maxLength(100)]],
+      course: ['', [Validators.required, Validators.maxLength(200)]], 
       skills: ['', [Validators.required, Validators.maxLength(500)]],
       bio: ['', [Validators.required, Validators.maxLength(500)]],
       interests: ['', [Validators.maxLength(500)]]
@@ -62,6 +62,7 @@ export class UpdateProfileComponent implements OnInit {
           name: profile.name,
           institutionId: profile.institutionId,
           academicLevel: profile.academicLevel,
+          course: profile.course || '', 
           skills: profile.skills?.join(', ') || '',
           bio: profile.bio,
           interests: profile.interests?.join(', ') || ''
@@ -77,8 +78,7 @@ export class UpdateProfileComponent implements OnInit {
     });
   }
 
-  closeProfileModal(): void {
-    this.showProfileModal = false;
+  goBack(): void {
     this.router.navigate(['/my-profile']);
   }
 
@@ -92,6 +92,8 @@ export class UpdateProfileComponent implements OnInit {
         this.toastr.error('Please select your institution');
       } else if (this.profileForm.get('academicLevel')?.errors?.['required']) {
         this.toastr.error('Please enter your academic level');
+      } else if (this.profileForm.get('course')?.errors?.['required']) { 
+        this.toastr.error('Please enter your course');
       } else if (this.profileForm.get('skills')?.errors?.['required']) {
         this.toastr.error('Please enter your skills');
       } else if (this.profileForm.get('bio')?.errors?.['required']) {
@@ -111,7 +113,7 @@ export class UpdateProfileComponent implements OnInit {
       next: () => {
         this.toastr.success('Profile updated successfully! 🎉');
         setTimeout(() => {
-          this.closeProfileModal();
+          this.goBack();
         }, 1500);
       },
       error: (err) => {

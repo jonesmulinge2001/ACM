@@ -21,8 +21,7 @@ export class MyProfileComponent implements OnInit {
   followers: Follow[] = [];
   following: Follow[] = [];
   profileViews: ProfileView[] = [];
-  showProfileModal = true;
-
+  
   // Toggle tab: 'followers' or 'following'
   selectedTab: 'followers' | 'following' = 'followers';
 
@@ -34,11 +33,6 @@ export class MyProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
-  }
-
-  closeProfileModal() {
-    this.showProfileModal = false;
-    this.router.navigate(['/'])
   }
 
   // Load your own profile + followers/following
@@ -76,13 +70,29 @@ export class MyProfileComponent implements OnInit {
   onCoverPhotoSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastr.error('Cover image must be less than 5MB');
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+        return;
+      }
+      
       this.coverPreview = URL.createObjectURL(file);
       this.profileService.uploadCoverPhoto(file).subscribe({
         next: (updated) => {
           this.profile = updated;
           this.toastr.success('Cover photo updated');
         },
-        error: () => console.error('Failed to upload cover photo'),
+        error: () => {
+          console.error('Failed to upload cover photo');
+          this.toastr.error('Failed to upload cover photo');
+        },
       });
     }
   }
@@ -90,13 +100,29 @@ export class MyProfileComponent implements OnInit {
   onProfileImageSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        this.toastr.error('Profile image must be less than 2MB');
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+        return;
+      }
+      
       this.profilePreview = URL.createObjectURL(file);
       this.profileService.uploadProfileImage(file).subscribe({
         next: (updated) => {
           this.profile = updated;
           this.toastr.success('Profile image updated');
         },
-        error: () => console.error('Failed to upload profile image'),
+        error: () => {
+          console.error('Failed to upload profile image');
+          this.toastr.error('Failed to upload profile image');
+        },
       });
     }
   }

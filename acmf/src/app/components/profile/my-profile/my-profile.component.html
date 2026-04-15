@@ -1,322 +1,334 @@
-<!-- Profile Modal - Enhanced LinkedIn Style -->
-<div
-  class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 animate-fadeIn"
-  *ngIf="showProfileModal"
-  (click)="closeProfileModal()"
->
-  <!-- Modal Container -->
-  <div
-    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative transform transition-all duration-300 animate-modalSlideUp"
-    (click)="$event.stopPropagation()"
-  >
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16 px-4">
-      <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-      <p class="text-gray-500 text-sm">Loading your profile...</p>
+<!-- LinkedIn Style Profile Page -->
+<div class="min-h-screen bg-[#f3f2ef]">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center min-h-screen">
+    <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+    <p class="text-gray-500 text-sm">Loading your profile...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!isLoading && profile">
+    
+    <!-- Cover Photo Section -->
+    <div class="relative h-48 sm:h-56 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 overflow-hidden">
+      <img
+        *ngIf="coverPreview"
+        [src]="coverPreview"
+        alt="Cover Photo"
+        class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+
+      <!-- Change Cover Button -->
+      <label
+        for="cover-upload"
+        class="absolute top-4 right-4 bg-white/90 hover:bg-white transition-colors px-3 py-1.5 text-xs font-semibold text-gray-700 rounded-full shadow cursor-pointer flex items-center gap-1.5 z-10"
+      >
+        <span class="material-icons text-sm">photo_camera</span>
+        Change Cover
+      </label>
+      <input
+        id="cover-upload"
+        type="file"
+        (change)="onCoverPhotoSelected($event)"
+        hidden
+      />
     </div>
 
-    <!-- Profile Content -->
-    <ng-container *ngIf="!isLoading && profile">
-      <!-- Cover Photo Section -->
-      <div class="relative h-48 sm:h-56 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden">
-        <img
-          *ngIf="coverPreview"
-          [src]="coverPreview"
-          alt="Cover Photo"
-          class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        
-        <!-- Change Cover Button -->
-        <label
-          for="cover-upload"
-          class="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 text-sm rounded-full shadow-md cursor-pointer hover:bg-white transition-all duration-200 flex items-center gap-1.5"
-        >
-          <span class="material-icons text-sm">photo_camera</span>
-          Change Cover
-        </label>
-        <input
-          id="cover-upload"
-          type="file"
-          (change)="onCoverPhotoSelected($event)"
-          hidden
-        />
+    <!-- Profile Info Section - No padding/margin on sides for small screens -->
+    <div class="bg-white px-4 sm:px-6 pb-4 relative border-b border-gray-200 shadow-sm">
+      <!-- Profile Image -->
+      <div class="absolute -top-14 left-4 sm:left-6">
+        <div class="relative group">
+          <div class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
+            <img
+              *ngIf="profilePreview"
+              [src]="profilePreview"
+              alt="Profile"
+              class="w-full h-full object-cover"
+            />
+            <div *ngIf="!profilePreview" class="w-full h-full flex items-center justify-center text-white">
+              <span class="material-icons text-3xl sm:text-4xl md:text-5xl">person</span>
+            </div>
+          </div>
 
-        <!-- Close Modal Button -->
-        <button
-          (click)="closeProfileModal()"
-          class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-all duration-200"
+          <!-- Change Profile Image Button -->
+          <label
+            for="profile-upload"
+            class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          >
+            <span class="material-icons text-white text-base sm:text-xl">edit</span>
+          </label>
+          <input
+            id="profile-upload"
+            type="file"
+            (change)="onProfileImageSelected($event)"
+            hidden
+          />
+        </div>
+      </div>
+
+      <!-- User Details -->
+      <div class="pt-14 sm:pt-16 md:pt-18 flex flex-col sm:flex-row items-start justify-between gap-3">
+        <div class="flex-1 min-w-0 w-full">
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-tight">{{ profile.name }}</h2>
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-1.5 mt-1">
+            <span class="text-xs sm:text-sm text-gray-600">{{ profile.academicLevel }}</span>
+            <span class="hidden sm:inline text-gray-400">•</span>
+            <span class="text-xs sm:text-sm text-gray-600">{{ profile.course || 'Course not specified' }}</span>
+            <span class="hidden sm:inline text-gray-400">•</span>
+            <span class="text-xs sm:text-sm text-gray-600">{{ profile.institution?.name }}</span>
+          </div>
+        </div>
+
+        <!-- Edit Profile Button -->
+        <div class="mt-2 sm:mt-1 w-full sm:w-auto">
+          <a
+            routerLink="/update-profile"
+            class="inline-flex items-center justify-center gap-1.5 px-4 py-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors rounded-full text-sm font-bold w-full sm:w-auto"
+          >
+            <span class="material-icons text-sm">edit</span>
+            Edit Profile
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="flex items-center justify-around sm:justify-start sm:gap-6 mt-4 pt-3 border-t border-gray-100">
+        <button class="text-center sm:text-left hover:opacity-70 transition-opacity flex-1 sm:flex-none" (click)="setTab('followers')">
+          <p class="text-base font-bold text-gray-900">{{ followers.length }}</p>
+          <p class="text-xs text-blue-600 font-semibold">Followers</p>
+        </button>
+        <div class="hidden sm:block w-px h-7 bg-gray-200"></div>
+        <div class="block sm:hidden w-px h-7 bg-gray-200"></div>
+        <button class="text-center sm:text-left hover:opacity-70 transition-opacity flex-1 sm:flex-none" (click)="setTab('following')">
+          <p class="text-base font-bold text-gray-900">{{ following.length }}</p>
+          <p class="text-xs text-blue-600 font-semibold">Following</p>
+        </button>
+        <div class="w-px h-7 bg-gray-200"></div>
+        <div class="text-center sm:text-left flex-1 sm:flex-none">
+          <p class="text-base font-bold text-gray-900">{{ profileViews.length }}</p>
+          <p class="text-xs text-gray-500 font-semibold">Profile Views</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Section - Full width on mobile -->
+    <div class="bg-white shadow-sm mt-3 p-4 sm:p-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="material-icons text-gray-500 text-base sm:text-lg">description</span>
+        <h3 class="text-sm sm:text-base font-bold text-gray-900">About</h3>
+      </div>
+      <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">
+        {{ profile.bio || "No bio added yet. Tell others about yourself!" }}
+      </p>
+    </div>
+
+    <!-- Skills Section - Full width on mobile -->
+    <div *ngIf="profile.skills?.length" class="bg-white shadow-sm mt-3 p-4 sm:p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-icons text-gray-500 text-base sm:text-lg">psychology</span>
+        <h3 class="text-sm sm:text-base font-bold text-gray-900">Skills</h3>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <span
+          *ngFor="let skill of profile.skills"
+          class="border border-blue-300 bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full hover:bg-blue-100 transition-colors cursor-pointer"
         >
-          <span class="material-icons text-gray-600 text-lg">close</span>
+          {{ skill }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Academic Information - Full width on mobile -->
+    <div class="bg-white shadow-sm mt-3 p-4 sm:p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-icons text-gray-500 text-base sm:text-lg">school</span>
+        <h3 class="text-sm sm:text-base font-bold text-gray-900">Academic Information</h3>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+        <!-- Institution Card -->
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 hover:shadow-sm transition-all duration-200 flex items-start gap-3">
+          <span class="material-icons text-blue-500 text-lg">school</span>
+          <div>
+            <p class="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+              Institution
+            </p>
+            <p class="font-semibold text-gray-800 text-xs sm:text-sm mt-1">
+              {{ profile.institution?.name || 'Not specified' }}
+            </p>
+          </div>
+        </div>
+      
+        <!-- Academic Level Card -->
+        <div class="bg-green-50 border border-green-100 rounded-xl p-3 hover:shadow-sm transition-all duration-200 flex items-start gap-3">
+          <span class="material-icons text-green-500 text-lg">bar_chart</span>
+          <div>
+            <p class="text-[10px] sm:text-[11px] font-bold text-green-600 uppercase tracking-wider">
+              Academic Level
+            </p>
+            <p class="font-semibold text-gray-800 text-xs sm:text-sm mt-1">
+              {{ profile.academicLevel || 'Not specified' }}
+            </p>
+          </div>
+        </div>
+      
+        <!-- Course Card -->
+        <div class="bg-purple-50 border border-purple-100 rounded-xl p-3 hover:shadow-sm transition-all duration-200 flex items-start gap-3">
+          <span class="material-icons text-purple-500 text-lg">menu_book</span>
+          <div>
+            <p class="text-[10px] sm:text-[11px] font-bold text-purple-600 uppercase tracking-wider">
+              Course/Program
+            </p>
+            <p class="font-semibold text-gray-800 text-xs sm:text-sm mt-1">
+              {{ profile.course || 'Not specified' }}
+            </p>
+          </div>
+        </div>
+      
+        <!-- Email Card -->
+        <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 hover:shadow-sm transition-all duration-200 flex items-start gap-3">
+          <span class="material-icons text-amber-500 text-lg">email</span>
+          <div class="min-w-0">
+            <p class="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider">
+              Email
+            </p>
+            <p class="font-semibold text-gray-800 text-xs sm:text-sm mt-1 break-words">
+              {{ profile.email || 'Not specified' }}
+            </p>
+          </div>
+        </div>
+      
+      </div>
+    </div>
+
+    <!-- Tabs Navigation - - Full width on mobile -->
+    <div class="bg-white shadow-sm mt-3 overflow-hidden">
+      <div class="flex border-b border-gray-200">
+        <button
+          class="relative flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold transition-all duration-200"
+          [ngClass]="selectedTab === 'followers'
+            ? 'text-blue-600'
+            : 'text-gray-500 hover:text-gray-700'"
+          (click)="setTab('followers')"
+        >
+          <span class="material-icons text-sm sm:text-base">people</span>
+          Followers
+          <span class="text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded-full"
+            [class.bg-blue-100]="selectedTab === 'followers'"
+            [class.text-blue-700]="selectedTab === 'followers'"
+            [class.bg-gray-100]="selectedTab !== 'followers'"
+            [class.text-gray-500]="selectedTab !== 'followers'">{{ followers.length }}</span>
+          <div *ngIf="selectedTab === 'followers'"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
+        </button>
+
+        <button
+          class="relative flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold transition-all duration-200"
+          [ngClass]="selectedTab === 'following'
+            ? 'text-blue-600'
+            : 'text-gray-500 hover:text-gray-700'"
+          (click)="setTab('following')"
+        >
+          <span class="material-icons text-sm sm:text-base">group_add</span>
+          Following
+          <span class="text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded-full"
+            [class.bg-blue-100]="selectedTab === 'following'"
+            [class.text-blue-700]="selectedTab === 'following'"
+            [class.bg-gray-100]="selectedTab !== 'following'"
+            [class.text-gray-500]="selectedTab !== 'following'">{{ following.length }}</span>
+          <div *ngIf="selectedTab === 'following'"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"></div>
         </button>
       </div>
 
-      <!-- Profile Info Section -->
-      <div class="px-6 pb-6 relative">
-        <!-- Profile Image -->
-        <div class="absolute -top-16 left-6">
-          <div class="relative group">
-            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
-              <img
-                *ngIf="profilePreview"
-                [src]="profilePreview"
-                alt="Profile"
-                class="w-full h-full object-cover"
-              />
-              <div *ngIf="!profilePreview" class="w-full h-full flex items-center justify-center text-white">
-                <span class="material-icons text-5xl">person</span>
-              </div>
-            </div>
-            
-            <!-- Change Profile Image Button -->
-            <label
-              for="profile-upload"
-              class="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-blue-700 transition-all duration-200 opacity-0 group-hover:opacity-100"
-            >
-              <span class="material-icons text-sm">edit</span>
-            </label>
-            <input
-              id="profile-upload"
-              type="file"
-              (change)="onProfileImageSelected($event)"
-              hidden
-            />
-          </div>
-        </div>
-
-        <!-- User Details -->
-        <div class="pt-16 sm:pt-20 text-left">
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">{{ profile.name }}</h2>
-          <div class="flex items-center gap-2 mt-1 flex-wrap">
-            <span class="text-sm text-gray-600">{{ profile.academicLevel }}</span>
-            <span class="text-gray-400">•</span>
-            <span class="text-sm text-gray-600">{{ profile.institution?.name }}</span>
-          </div>
-          
-          <!-- Edit Profile Button -->
-          <div class="mt-4">
-            <a
-              routerLink="/update-profile"
-              class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-sm font-semibold hover:shadow-md transition-all duration-200"
-            >
-              <span class="material-icons text-sm">edit</span>
-              Edit Profile
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- About Section -->
-      <div class="px-6 py-5 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="material-icons text-blue-500 text-sm">description</span>
-          <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">About</h3>
-        </div>
-        <p class="text-gray-700 text-sm leading-relaxed">
-          {{ profile.bio || "No bio added yet. Tell others about yourself!" }}
-        </p>
-      </div>
-
-      <!-- Skills Section -->
-      <div *ngIf="profile.skills?.length" class="px-6 py-5 border-t border-gray-100">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="material-icons text-purple-500 text-sm">psychology</span>
-          <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Skills</h3>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <span
-            *ngFor="let skill of profile.skills"
-            class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full hover:bg-gray-200 transition cursor-pointer"
-          >
-            {{ skill }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Academic Information -->
-      <div class="px-6 py-5 border-t border-gray-100">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="material-icons text-green-500 text-sm">school</span>
-          <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Academic Information</h3>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Institution Card -->
-          <div class="bg-blue-50 rounded-xl p-3 hover:shadow-md transition-all duration-200">
-            <p class="text-xs font-medium text-blue-600 uppercase tracking-wider">Institution</p>
-            <p class="font-semibold text-gray-800 text-sm mt-1">{{ profile.institution?.name || 'Not specified' }}</p>
-          </div>
-
-          <!-- Academic Level Card -->
-          <div class="bg-green-50 rounded-xl p-3 hover:shadow-md transition-all duration-200">
-            <p class="text-xs font-medium text-green-600 uppercase tracking-wider">Academic Level</p>
-            <p class="font-semibold text-gray-800 text-sm mt-1">{{ profile.academicLevel || 'Not specified' }}</p>
-          </div>
-
-          <!-- Course Card -->
-          <div class="bg-purple-50 rounded-xl p-3 hover:shadow-md transition-all duration-200">
-            <p class="text-xs font-medium text-purple-600 uppercase tracking-wider">Course</p>
-            <p class="font-semibold text-gray-800 text-sm mt-1">{{ profile.course || 'Not specified' }}</p>
-          </div>
-
-          <!-- Email Card -->
-          <div class="bg-amber-50 rounded-xl p-3 hover:shadow-md transition-all duration-200">
-            <p class="text-xs font-medium text-amber-600 uppercase tracking-wider">Email</p>
-            <p class="font-semibold text-gray-800 text-sm mt-1 break-words">{{ profile.email || 'Not specified' }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Section -->
-      <div class="px-6 py-4 border-t border-b border-gray-100 bg-white">
-        <div class="grid grid-cols-3 gap-4 text-center">
-          <div class="p-2 hover:bg-gray-50 rounded-lg transition cursor-pointer">
-            <p class="text-xl font-bold text-gray-900">{{ followers.length }}</p>
-            <p class="text-xs text-gray-500 font-medium">Followers</p>
-          </div>
-          <div class="p-2 hover:bg-gray-50 rounded-lg transition cursor-pointer">
-            <p class="text-xl font-bold text-gray-900">{{ following.length }}</p>
-            <p class="text-xs text-gray-500 font-medium">Following</p>
-          </div>
-          <div class="p-2 hover:bg-gray-50 rounded-lg transition cursor-pointer">
-            <p class="text-xl font-bold text-gray-900">{{ profileViews.length }}</p>
-            <p class="text-xs text-gray-500 font-medium">Profile Views</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs Navigation - LinkedIn Style -->
-      <div class="px-6 pt-4 bg-white">
-        <div class="flex gap-1 border-b border-gray-200">
-          <button
-            class="relative px-4 py-2 text-sm font-semibold transition-all duration-200"
-            [ngClass]="selectedTab === 'followers' 
-              ? 'text-blue-600' 
-              : 'text-gray-500 hover:text-gray-700'"
-            (click)="setTab('followers')"
-          >
-            <span class="flex items-center gap-2">
-              <span class="material-icons text-base">people</span>
-              Followers
-              <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{{ followers.length }}</span>
-            </span>
-            <div *ngIf="selectedTab === 'followers'" 
-                 class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-          </button>
-          
-          <button
-            class="relative px-4 py-2 text-sm font-semibold transition-all duration-200"
-            [ngClass]="selectedTab === 'following' 
-              ? 'text-blue-600' 
-              : 'text-gray-500 hover:text-gray-700'"
-            (click)="setTab('following')"
-          >
-            <span class="flex items-center gap-2">
-              <span class="material-icons text-base">group_add</span>
-              Following
-              <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{{ following.length }}</span>
-            </span>
-            <div *ngIf="selectedTab === 'following'" 
-                 class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
-          </button>
-        </div>
-      </div>
-
       <!-- Tab Content -->
-      <div class="px-6 py-6 bg-gray-50/30 space-y-3 max-h-[400px] overflow-y-auto">
-        
+      <div class="max-h-[500px] overflow-y-auto">
         <!-- Followers List -->
         <ng-container *ngIf="selectedTab === 'followers'">
-          <div *ngIf="followers.length > 0; else noFollowers" class="space-y-3">
-            <div *ngFor="let f of followers" 
-                 class="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-all duration-200">
-              <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="relative">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5">
-                      <img
-                        [src]="f.follower?.profile?.profileImage || 'https://via.placeholder.com/48'"
-                        class="w-full h-full rounded-full object-cover"
-                        alt="Follower"
-                      />
-                    </div>
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+          <div *ngIf="followers.length > 0; else noFollowers" class="divide-y divide-gray-100">
+            <div *ngFor="let f of followers"
+              class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors gap-3">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="relative flex-shrink-0">
+                  <img
+                    [src]="f.follower?.profile?.profileImage || 'https://ui-avatars.com/api/?name=' + (f.follower?.profile?.name || 'U') + '&background=0A66C2&color=fff&bold=true'"
+                    class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-gray-100"
+                    alt="Follower"
+                  />
+                  <div class="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-xs sm:text-sm text-gray-900 truncate">
+                    {{ f.follower?.profile?.name }}
                   </div>
-                  <div class="min-w-0">
-                    <div class="font-semibold text-gray-900 truncate">
-                      {{ f.follower?.profile?.name }}
-                    </div>
-                    <div class="text-xs text-gray-500 truncate">
-                      {{ f.follower?.profile?.institution?.name || 'Student' }}
-                    </div>
+                  <div class="text-[10px] sm:text-xs text-gray-500 truncate">
+                    {{ f.follower?.profile?.course || 'Student' }}
                   </div>
                 </div>
-                <button
-                  *ngIf="canFollow(f.follower?.profile?.userId)"
-                  (click)="follow(f.follower?.profile?.userId!)"
-                  class="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-xs font-medium hover:shadow-md transition-all duration-200 whitespace-nowrap"
-                >
-                  Follow
-                </button>
               </div>
+              <button
+                *ngIf="canFollow(f.follower?.profile?.userId)"
+                (click)="follow(f.follower?.profile?.userId!)"
+                class="flex-shrink-0 px-2 sm:px-3 py-1 sm:py-1.5 border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap"
+              >
+                + Follow
+              </button>
             </div>
           </div>
-          
+
           <ng-template #noFollowers>
-            <div class="text-center py-12 bg-white rounded-xl border border-gray-100">
-              <span class="material-icons text-5xl text-gray-300 mb-3">people_outline</span>
-              <p class="text-gray-500 text-sm">No followers yet</p>
-              <p class="text-gray-400 text-xs mt-1">When people follow, you'll see them here</p>
+            <div class="text-center py-8 sm:py-12">
+              <span class="material-icons text-4xl sm:text-5xl text-gray-300 mb-3">people_outline</span>
+              <p class="text-gray-500 text-xs sm:text-sm font-semibold">No followers yet</p>
+              <p class="text-gray-400 text-[10px] sm:text-xs mt-1">When people follow you, they'll appear here</p>
             </div>
           </ng-template>
         </ng-container>
 
         <!-- Following List -->
         <ng-container *ngIf="selectedTab === 'following'">
-          <div *ngIf="following.length > 0; else noFollowing" class="space-y-3">
-            <div *ngFor="let f of following" 
-                 class="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-all duration-200">
-              <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="relative">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-0.5">
-                      <img
-                        [src]="f.following?.profile?.profileImage || 'https://via.placeholder.com/48'"
-                        class="w-full h-full rounded-full object-cover"
-                        alt="Following"
-                      />
-                    </div>
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+          <div *ngIf="following.length > 0; else noFollowing" class="divide-y divide-gray-100">
+            <div *ngFor="let f of following"
+              class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition-colors gap-3">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="relative flex-shrink-0">
+                  <img
+                    [src]="f.following?.profile?.profileImage || 'https://ui-avatars.com/api/?name=' + (f.following?.profile?.name || 'U') + '&background=0A66C2&color=fff&bold=true'"
+                    class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-gray-100"
+                    alt="Following"
+                  />
+                  <div class="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-xs sm:text-sm text-gray-900 truncate">
+                    {{ f.following?.profile?.name }}
                   </div>
-                  <div class="min-w-0">
-                    <div class="font-semibold text-gray-900 truncate">
-                      {{ f.following?.profile?.name }}
-                    </div>
-                    <div class="text-xs text-gray-500 truncate">
-                      {{ f.following?.profile?.institution?.name || 'Student' }}
-                    </div>
+                  <div class="text-[10px] sm:text-xs text-gray-500 truncate">
+                    {{ f.following?.profile?.course || 'Student' }}
                   </div>
                 </div>
-                <button
-                  (click)="unFollow(f.following?.profile?.userId!)"
-                  class="px-4 py-1.5 bg-red-500 text-white rounded-full text-xs font-medium hover:bg-red-600 transition-all duration-200 whitespace-nowrap"
-                >
-                  Unfollow
-                </button>
               </div>
+              <button
+                (click)="unFollow(f.following?.profile?.userId!)"
+                class="flex-shrink-0 px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 text-gray-600 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap"
+              >
+                Following
+              </button>
             </div>
           </div>
-          
+
           <ng-template #noFollowing>
-            <div class="text-center py-12 bg-white rounded-xl border border-gray-100">
-              <span class="material-icons text-5xl text-gray-300 mb-3">group_add</span>
-              <p class="text-gray-500 text-sm">Not following anyone yet</p>
-              <p class="text-gray-400 text-xs mt-1">Discover and connect with peers</p>
+            <div class="text-center py-8 sm:py-12">
+              <span class="material-icons text-4xl sm:text-5xl text-gray-300 mb-3">group_add</span>
+              <p class="text-gray-500 text-xs sm:text-sm font-semibold">Not following anyone yet</p>
+              <p class="text-gray-400 text-[10px] sm:text-xs mt-1">Discover and connect with peers</p>
             </div>
           </ng-template>
         </ng-container>
       </div>
-    </ng-container>
+    </div>
   </div>
 </div>
-

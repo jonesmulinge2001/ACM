@@ -1,0 +1,8 @@
+/* Smooth follow button pulse on click */
+.linkedin-follow-btn:active {
+    transform: scale(0.97);
+  }
+  
+  .linkedin-following-btn:active {
+    transform: scale(0.97);
+  }
