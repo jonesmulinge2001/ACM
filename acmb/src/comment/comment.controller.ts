@@ -106,4 +106,27 @@ export class CommentController {
     return this.commentService.unLikeComment(commentId, req.user.id);
   }
 
+    //>>> delete reply
+    @Delete(':replyId/reply')
+    @UseGuards(AuthGuard('jwt'))
+    @RequirePermissions(Permission.CREATE_COMMENT)
+    async deleteReply(
+      @Param('replyId') replyId: string,
+      @Req() req: RequestWithUser,
+    ) {
+      return this.commentService.deleteReply(replyId, req.user.id);
+    }
+
+      //>>> edit reply
+  @Patch(':replyId/reply')
+  @UseGuards(AuthGuard('jwt'))
+  @RequirePermissions(Permission.CREATE_COMMENT)
+  async editReply(
+    @Param('replyId') replyId: string,
+    @Req() req: RequestWithUser,
+    @Body() body: { content: string },
+  ) {
+    return this.commentService.editReply(replyId, req.user.id, body.content);
+  }
+
 }

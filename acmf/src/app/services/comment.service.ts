@@ -71,6 +71,20 @@ export class CommentService {
       { headers: this.getAuthHeaders() }
     );
   }
+
+    //>>> edit reply
+    editReply(replyId: string, content: string): Observable<Comment> {
+      return this.http.patch<Comment>(`${this.baseUrl}/${replyId}/reply`, { content }, {
+        headers: this.getAuthHeaders()
+      });
+    }
+  
+    //>>> delete reply
+    deleteReply(replyId: string): Observable<Comment> {
+      return this.http.delete<Comment>(`${this.baseUrl}/${replyId}/reply`, {
+        headers: this.getAuthHeaders()
+      });
+    }
   
 }
 

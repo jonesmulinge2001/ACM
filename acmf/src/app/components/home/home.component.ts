@@ -225,16 +225,16 @@ export class HomeComponent implements OnInit {
 
           // No need to fetch comment counts separately anymore
           // Use the commentsCount from the backend response
-        // Log each post's commentsCount
-        posts.posts.forEach((post, index) => {
-          console.log(`Post ${index + 1}:`, {
-            id: post.id,
-            title: post.title,
-            commentsCount: post.commentsCount,
-            hasProperty: 'commentsCount' in post,
-            type: typeof post.commentsCount
+          // Log each post's commentsCount
+          posts.posts.forEach((post, index) => {
+            console.log(`Post ${index + 1}:`, {
+              id: post.id,
+              title: post.title,
+              commentsCount: post.commentsCount,
+              hasProperty: 'commentsCount' in post,
+              type: typeof post.commentsCount,
+            });
           });
-        });
 
           this.nextCursor = posts.nextCursor ?? null;
         },
@@ -653,6 +653,64 @@ export class HomeComponent implements OnInit {
       });
   }
 
+  // Edit Reply
+  editReply(replyId: string, content: string) {
+    this.commentService.editReply(replyId, content).subscribe({
+      next: (updatedReply) => {
+        // Update the reply in the replies object
+        Object.keys(this.replies).forEach((parentCommentId) => {
+          const replyIndex = this.replies[parentCommentId].findIndex(
+            (r) => r.id === replyId
+          );
+          if (replyIndex !== -1) {
+            this.replies[parentCommentId][replyIndex] = updatedReply;
+            this.cdr.detectChanges();
+          }
+        });
+      },
+      error: (err) => {
+        // console.error('Edit reply failed', err);
+      },
+    });
+  }
+
+  // Delete Reply
+  deleteReply(replyId: string) {
+    this.commentService.deleteReply(replyId).subscribe({
+      next: () => {
+        // Remove the reply from the replies object
+        Object.keys(this.replies).forEach((parentCommentId) => {
+          this.replies[parentCommentId] = this.replies[parentCommentId].filter(
+            (r) => r.id !== replyId
+          );
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        // console.error('Delete reply failed', err);
+      },
+    });
+  }
+
+  // Open Edit Reply Modal
+  openEditReplyModal(reply: Comment) {
+    if (!this.isMyComment(reply)) return;
+    this.closeAllMenus();
+    this.editedComment = reply.body;
+    this.editingCommentId = reply.id;
+    this.showCommentEditModal = true;
+    this.cdr.markForCheck();
+  }
+
+  // Open Delete Reply Modal
+  openDeleteReplyModal(reply: Comment) {
+    if (!this.isMyComment(reply)) return;
+    this.closeAllMenus();
+    this.commentToDelete = reply;
+    this.showCommentDeleteModal = true;
+    this.cdr.markForCheck();
+  }
+
   openDeleteCommentModal(comment: Comment) {
     if (!this.isMyComment(comment)) return;
     this.closeAllMenus();
@@ -714,41 +772,41 @@ export class HomeComponent implements OnInit {
     });
   }
 
-    // Helper method to determine file type
-    getFileType(post: Post): 'image' | 'video' | 'pdf' | 'unknown' {
-      if (post.fileType) {
-        return post.fileType as 'image' | 'video' | 'pdf';
+  // Helper method to determine file type
+  getFileType(post: Post): 'image' | 'video' | 'pdf' | 'unknown' {
+    if (post.fileType) {
+      return post.fileType as 'image' | 'video' | 'pdf';
+    }
+
+    // Fallback: detect from URL if fileType not provided
+    if (post.fileUrl) {
+      const url = post.fileUrl.toLowerCase();
+      if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        return 'image';
       }
-      
-      // Fallback: detect from URL if fileType not provided
-      if (post.fileUrl) {
-        const url = post.fileUrl.toLowerCase();
-        if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-          return 'image';
-        }
-        if (url.match(/\.(mp4|mov|avi|mkv|webm)$/i)) {
-          return 'video';
-        }
-        if (url.match(/\.pdf$/i)) {
-          return 'pdf';
-        }
+      if (url.match(/\.(mp4|mov|avi|mkv|webm)$/i)) {
+        return 'video';
       }
-      
-      return 'unknown';
+      if (url.match(/\.pdf$/i)) {
+        return 'pdf';
+      }
     }
-  
-    // Check if post has image
-    isImagePost(post: Post): boolean {
-      return this.getFileType(post) === 'image';
-    }
-  
-    // Check if post has video
-    isVideoPost(post: Post): boolean {
-      return this.getFileType(post) === 'video';
-    }
-  
-    // Check if post has PDF
-    isPdfPost(post: Post): boolean {
-      return this.getFileType(post) === 'pdf';
-    }
+
+    return 'unknown';
+  }
+
+  // Check if post has image
+  isImagePost(post: Post): boolean {
+    return this.getFileType(post) === 'image';
+  }
+
+  // Check if post has video
+  isVideoPost(post: Post): boolean {
+    return this.getFileType(post) === 'video';
+  }
+
+  // Check if post has PDF
+  isPdfPost(post: Post): boolean {
+    return this.getFileType(post) === 'pdf';
+  }
 }

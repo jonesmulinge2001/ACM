@@ -44,13 +44,13 @@ if (!post) {
   
     if (post.authorId !== userId) { // skip self-comments
       this.notificationEvents.emit({
-        type: NotificationEventType.POST_COMMENTED, // notice the type
+        type: NotificationEventType.POST_COMMENTED, 
         actorId: userId,
         recipientId: post.authorId,
         entityId: postId,
         createdAt: new Date(),
       });
-      console.log('COMMENT EVENT EMITTED'); // debug log
+      // console.log('COMMENT EVENT EMITTED'); 
     }
   
     // fetch enriched comment with user and profile
@@ -224,5 +224,69 @@ if (!post) {
     });
     return count;
   }
+
+    //>>> edit a reply
+    async editReply(replyId: string, userId: string, content: string) {
+      const existing = await this.prisma.comment.findUnique({
+        where: { id: replyId, userId, deleted: false },
+      });
+      
+      if (!existing) {
+        throw new NotFoundException('Reply not found');
+      }
+      
+      if (existing.userId !== userId) {
+        throw new BadRequestException('You can only edit your own reply');
+      }
+      
+      if (!existing.parentId) {
+        throw new BadRequestException('This is not a reply');
+      }
+      
+      const updatedReply = await this.prisma.comment.update({
+        where: { id: replyId },
+        data: { body: content },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profile: {
+                select: {
+                  profileImage: true,
+                  institution: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      
+      return updatedReply;
+    }
+
+    //>>> delete reply
+    async deleteReply(replyId: string, userId: string) {
+      const existing = await this.prisma.comment.findUnique({
+        where: { id: replyId },
+      });
+      
+      if (!existing) {
+        throw new NotFoundException('Reply not found');
+      }
+      
+      if (existing.userId !== userId) {
+        throw new BadRequestException('You can only delete your own reply');
+      }
+      
+      if (!existing.parentId) {
+        throw new BadRequestException('This is not a reply');
+      }
+      
+      return this.prisma.comment.update({
+        where: { id: replyId },
+        data: { deleted: true },
+      });
+    }
 
 }

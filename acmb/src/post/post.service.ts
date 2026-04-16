@@ -21,7 +21,7 @@ import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
 } from '../shared/cloudinary/cloudinary/cloudinary.service';
-import type { Express } from 'express'; 
+
 import { NotificationEventsService } from '../notifications/events/notification-events.service';
 
 @Injectable()

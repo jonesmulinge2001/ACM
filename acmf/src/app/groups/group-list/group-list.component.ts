@@ -84,7 +84,6 @@ export class GroupListComponent implements OnInit, OnDestroy {
   }
 
   getActiveGroups(): number {
-    // This is a placeholder - you can implement actual active groups logic
     return this.allGroups.filter(group => group.members && group.members.length > 0).length;
   }
 
