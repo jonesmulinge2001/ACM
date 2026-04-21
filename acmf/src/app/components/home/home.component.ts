@@ -42,14 +42,14 @@ export class HomeComponent implements OnInit {
   trendingPosts: Post[] = [];
   recommendedPosts: Post[] = [];
 
-  // Recommender: broken-out post categories from getRecommendations()
+  // Recommender
   recommendedResourcePosts: Post[] = [];
   recommendedAcademicPosts: Post[] = [];
   recommendedOpportunityPosts: Post[] = [];
   recommendedGeneralPosts: Post[] = [];
 
   // Recommender: profile suggestions
-  profiles: Profile[] = []; // skill-matched profiles (replaces getAllProfiles)
+  profiles: Profile[] = []; 
   profilesByInterests: Profile[] = [];
   profilesByCourse: Profile[] = [];
   profilesByAcademicLevel: Profile[] = [];
