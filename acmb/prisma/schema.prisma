@@ -300,28 +300,9 @@ model CommentLike {
   @@unique([userId, commentId])
 }
 
-model AcademicResource {
-  id            String                 @id @default(uuid())
-  title         String
-  description   String
-  course        String
-  unitName      String
-  semester      String
-  year          String
-  institution   String
-  fileUrl       String?
-  uploadedAt    DateTime               @default(now())
-  uploaderId    String
-  downloadCount Int                    @default(0)
-  deletedAt     DateTime?
-  isDeleted     Boolean                @default(false)
-  approvedAt    DateTime?
-  approvedBy    String?
-  isApproved    Boolean                @default(false)
-  uploader      Profile                @relation(fields: [uploaderId], references: [id])
-  flags         AcademicResourceFlag[]
-  activityLogs  ResourceActivityLog[]
-}
+
+
+
 
 model AcademicResourceFlag {
   id           String           @id @default(cuid())
@@ -642,3 +623,120 @@ enum NotificationStatus {
   UNREAD
   READ
 }
+
+model AcademicResource {
+  id            String   @id @default(uuid())
+
+  title         String
+  fileUrl       String
+  fileType      String? 
+
+  uploaderId    String
+  uploader      Profile @relation(fields: [uploaderId], references: [id])
+
+  institutionId String
+  course        String
+
+  isApproved    Boolean @default(false)
+  approvedAt    DateTime?
+
+  isDeleted     Boolean @default(false)
+
+  downloadCount Int @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  flags        AcademicResourceFlag[]
+  activityLogs ResourceActivityLog[]
+  processing   AcademicResourceProcessing?
+  extraction   AcademicResourceExtraction?
+  moderation   AcademicResourceModeration?
+  classification AcademicResourceClassification?
+  summary AcademicResourceSummary?
+}
+
+
+model AcademicResourceProcessing {
+  id         String   @id @default(uuid())
+
+  resourceId String   @unique
+  resource   AcademicResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  status     ProcessingStatus @default(QUEUED)
+
+  error      String?
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AcademicResourceClassification {
+  id         String   @id @default(uuid())
+
+  resourceId String   @unique
+  resource   AcademicResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  subject    String?
+  topic      String?
+  difficulty String? // beginner | intermediate | advanced
+
+  tags       String[] @default([])
+
+  createdAt  DateTime @default(now())
+}
+
+enum ProcessingStatus {
+  QUEUED
+  EXTRACTING
+  MODERATING
+  CLASSIFYING
+  SUMMARIZING 
+  DONE
+  FAILED
+}
+
+model AcademicResourceExtraction {
+  id         String   @id @default(uuid())
+
+  resourceId String   @unique
+  resource   AcademicResource @relation(fields: [resourceId], references: [id])
+
+  rawText    String
+  wordCount  Int
+
+  createdAt  DateTime @default(now())
+}
+
+model AcademicResourceModeration {
+  id         String   @id @default(uuid())
+
+  resourceId String   @unique
+  resource   AcademicResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  isAcademic Boolean
+  confidence Float
+
+  reason     String?
+
+  flaggedKeywords String[] @default([])
+
+  createdAt  DateTime @default(now())
+}
+
+model AcademicResourceSummary {
+  id         String   @id @default(uuid())
+  resourceId String   @unique
+  resource   AcademicResource @relation(fields: [resourceId], references: [id])
+
+  summary    String
+  keyPoints  String[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+

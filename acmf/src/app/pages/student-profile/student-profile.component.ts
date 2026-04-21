@@ -242,9 +242,38 @@ export class StudentProfileComponent implements OnInit {
   closeInlineChat() {
     this.activeChatUserId = undefined;
   
-    // 🔔 notify layout
+    // notify layout
     this.chatClosed.emit();
   }
   
+  getFileType(post: Post): 'image' | 'video' | 'pdf' | 'unknown' {
+    if (post.fileType) {
+      const ft = post.fileType.toLowerCase();
+      if (ft === 'image' || ft.match(/^(jpg|jpeg|png|gif|webp|bmp|svg)$/)) return 'image';
+      if (ft === 'video' || ft.match(/^(mp4|mov|avi|mkv|webm|ogg)$/)) return 'video';
+      if (ft === 'pdf') return 'pdf';
+    }
+  
+    if (post.fileUrl) {
+      const url = post.fileUrl.toLowerCase();
+      if (url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/)) return 'image';
+      if (url.match(/\.(mp4|mov|avi|mkv|webm|ogg)(\?|$)/)) return 'video';
+      if (url.match(/\.pdf(\?|$)/)) return 'pdf';
+    }
+  
+    return post.fileUrl ? 'unknown' : 'unknown';
+  }
+  
+  isImagePost(post: Post): boolean {
+    return this.getFileType(post) === 'image';
+  }
+  
+  isVideoPost(post: Post): boolean {
+    return this.getFileType(post) === 'video';
+  }
+  
+  isPdfPost(post: Post): boolean {
+    return this.getFileType(post) === 'pdf';
+  }
   
 }

@@ -1,0 +1,359 @@
+<!-- Normal Template (Non-Modal) -->
+<div class="w-full bg-white rounded-2xl shadow-2xl transition-all duration-300">
+
+    <!-- Loading state -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 px-10 text-gray-500">
+      <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-5"></div>
+      <p class="text-sm">Loading...</p>
+    </div>
+  
+    <!-- Error state -->
+    <div *ngIf="error" class="flex flex-col items-center justify-center py-16 px-10 text-center">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <h3 class="text-red-600 font-semibold mt-4 mb-2">Unable to load post</h3>
+      <p class="text-sm text-gray-500">{{ error }}</p>
+      <button (click)="loadPost()"
+        class="mt-5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+        Try Again
+      </button>
+    </div>
+  
+    <!-- Post content -->
+    <div *ngIf="!loading && post" class="p-4 sm:p-6 md:p-8">
+  
+      <!-- ── Author header ── -->
+      <div class="flex items-start justify-between mb-6 relative">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <img
+            [src]="post.author.profileImage || 'assets/default-avatar.png'"
+            [alt]="post.author.name"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-100 flex-shrink-0"
+            (error)="handleImageError($event)"/>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-base font-bold text-gray-900 leading-tight truncate">{{ post.author.name }}</h3>
+            <div class="flex flex-wrap items-center gap-1 text-xs text-gray-500 mt-0.5">
+              <span *ngIf="post.author.institution" class="truncate">{{ post.author.institution.name }}</span>
+              <span *ngIf="post.author.academicLevel"> · {{ post.author.academicLevel }}</span>
+              <span class="whitespace-nowrap"> · {{ formatTime(post.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Header actions -->
+        <div class="flex items-center gap-1 relative flex-shrink-0">
+          <button (click)="toggleBookmark()"
+            class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+            <svg width="16" height="16" sm:width="18" sm:height="18" viewBox="0 0 24 24"
+              [attr.fill]="isBookmarked ? '#2563eb' : 'none'"
+              [attr.stroke]="isBookmarked ? '#2563eb' : '#6b7280'"
+              stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+            </svg>
+          </button>
+          <button (click)="showMoreOptions = !showMoreOptions"
+            class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+            <svg width="16" height="16" sm:width="18" sm:height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+              <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+          </button>
+  
+          <!-- Dropdown -->
+          <div *ngIf="showMoreOptions"
+            class="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden py-1">
+            <button (click)="copyPostLink()"
+              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              Copy link to post
+            </button>
+            <button *ngIf="canEditPost()" (click)="editPost()"
+              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit post
+            </button>
+            <button (click)="reportPost()"
+              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Report post
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- ── Post body ── -->
+      <div class="mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-snug mb-3">{{ post.title }}</h2>
+  
+        <div class="relative">
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap break-words"
+            [class.line-clamp-4]="!showFullText && post.body && post.body.length > 300">
+            {{ post.body }}
+          </p>
+          <!-- Fade overlay when collapsed -->
+          <div *ngIf="!showFullText && post.body && post.body.length > 300"
+            class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent pointer-events-none">
+          </div>
+        </div>
+  
+        <button *ngIf="post.body && post.body.length > 300"
+          (click)="showFullText = !showFullText"
+          class="text-blue-600 hover:underline text-sm font-medium mt-1">
+          {{ showFullText ? 'Show less' : '...read more' }}
+        </button>
+  
+        <!-- Tags -->
+        <div *ngIf="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mt-4">
+          <span *ngFor="let tag of post.tags"
+            class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+            {{ tag }}
+          </span>
+        </div>
+  
+        <!-- ── Media (Using the SAME technique as your working template) ── -->
+        <div *ngIf="post.fileUrl" class="mt-5 -mx-4 sm:mx-0 bg-gray-100 overflow-hidden flex justify-center rounded-xl">
+          <ng-container [ngSwitch]="getFileType(post.fileUrl)">
+    
+            <!-- Image - Same technique as working template -->
+            <img *ngSwitchCase="'image'"
+              [src]="post.fileUrl"
+              [alt]="post.title"
+              class="w-full max-h-[70vh] object-contain cursor-zoom-in"
+              (click)="openMediaViewer(post.fileUrl!)"
+              (error)="handleMediaError($event)"/>
+    
+            <!-- Video - Same technique as working template -->
+            <video *ngSwitchCase="'video'"
+              controls
+              preload="metadata"
+              playsinline
+              class="w-full max-h-[65vh] object-contain"
+              (error)="handleMediaError($event)">
+              <source [src]="post.fileUrl" type="video/mp4"/>
+              Your browser does not support the video tag.
+            </video>
+    
+            <!-- File / doc -->
+            <div *ngSwitchDefault
+              class="flex items-center gap-4 p-5 bg-blue-50 border border-blue-100 rounded-xl w-full">
+              <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">Attached Document</p>
+                <p class="text-xs text-gray-500 mt-0.5">Click to open</p>
+              </div>
+              <a [href]="post.fileUrl" target="_blank" rel="noopener"
+                class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-full transition-colors flex-shrink-0">
+                Open
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+            </div>
+    
+          </ng-container>
+        </div>
+      </div>
+  
+      <!-- ── Stats row ── -->
+      <div class="flex flex-wrap items-center gap-4 sm:gap-6 py-3 border-t border-b border-gray-100 text-xs text-gray-500 mb-3">
+        <div class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span>{{ post.likesCount || 0 }} likes</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          <span>{{ post.comments?.length || 0 }} comments</span>
+        </div>
+        <div class="flex items-center gap-1.5 sm:ml-auto">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>{{ viewCount }} views</span>
+        </div>
+      </div>
+  
+      <!-- ── Action buttons ── -->
+      <div class="flex flex-wrap items-center justify-around gap-2 border-b border-gray-100 pb-3 mb-6">
+        <button (click)="toggleLike()"
+          class="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
+          [class.text-red-500]="post.likedByCurrentUser"
+          [class.text-gray-500]="!post.likedByCurrentUser">
+          <svg width="18" height="18" viewBox="0 0 24 24"
+            [attr.fill]="post.likedByCurrentUser ? '#ef4444' : 'none'"
+            [attr.stroke]="post.likedByCurrentUser ? '#ef4444' : 'currentColor'"
+            stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          {{ post.likedByCurrentUser ? 'Liked' : 'Like' }}
+        </button>
+  
+        <button (click)="focusCommentInput()"
+          class="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          Comment
+        </button>
+  
+        <button (click)="sharePost()"
+          class="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Share
+        </button>
+      </div>
+  
+      <!-- ── Comments section ── -->
+      <div>
+        <h3 class="text-base font-bold text-gray-900 mb-4">
+          Comments ({{ post.comments?.length || 0 }})
+        </h3>
+  
+        <!-- New comment input -->
+        <div class="flex gap-3 mb-7">
+          <img
+            [src]="currentUserProfileImage || 'assets/default-avatar.png'"
+            alt="Your avatar"
+            class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover flex-shrink-0 mt-1 ring-2 ring-gray-100"
+            (error)="handleImageError($event)"/>
+          <div class="flex-1 relative">
+            <textarea
+              #commentInput
+              [(ngModel)]="newComment"
+              placeholder="Add a comment..."
+              rows="3"
+              class="comment-input w-full px-4 py-3 pr-20 border border-gray-200 rounded-2xl text-sm resize-none focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+              (keydown.enter)="addComment($event)">
+            </textarea>
+            <button
+              (click)="addComment()"
+              [disabled]="!newComment.trim() || postingComment"
+              class="absolute bottom-3 right-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-full transition-colors">
+              {{ postingComment ? 'Posting…' : 'Post' }}
+            </button>
+          </div>
+        </div>
+  
+        <!-- Comments list -->
+        <div *ngIf="post.comments && post.comments.length > 0" class="space-y-5">
+          <div *ngFor="let comment of post.comments" class="flex gap-3">
+            <img
+              [src]="comment.user.profile.profileImage || 'assets/default-avatar.png'"
+              [alt]="comment.user.name"
+              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-gray-100 mt-0.5"
+              (error)="handleImageError($event)"/>
+            <div class="flex-1 min-w-0">
+              <!-- Bubble -->
+              <div class="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3">
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <span class="text-xs font-bold text-gray-900">{{ comment.user.name }}</span>
+                  <span class="text-[10px] text-gray-400">{{ formatTime(comment.createdAt) }}</span>
+                </div>
+                <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-line break-words">
+                  {{ comment.body }}
+                </p>
+              </div>
+  
+              <!-- Comment actions -->
+              <div class="flex items-center gap-4 mt-1.5 pl-2">
+                <button (click)="toggleCommentLike(comment)"
+                  class="flex items-center gap-1 text-[11px] font-semibold transition-colors"
+                  [class.text-red-500]="comment.isLikedByCurrentUser"
+                  [class.text-gray-500]="!comment.isLikedByCurrentUser">
+                  <svg width="12" height="12" viewBox="0 0 24 24"
+                    [attr.fill]="comment.isLikedByCurrentUser ? '#ef4444' : 'none'"
+                    [attr.stroke]="comment.isLikedByCurrentUser ? '#ef4444' : 'currentColor'"
+                    stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span *ngIf="(comment.likes || 0) > 0">{{ comment.likes }}</span>
+                  Like
+                </button>
+                <button (click)="startReply(comment)"
+                  class="text-[11px] font-semibold text-gray-500 hover:text-blue-600 transition-colors">
+                  Reply
+                </button>
+              </div>
+  
+              <!-- Replies -->
+              <div *ngIf="comment.replies && comment.replies.length > 0"
+                class="mt-3 ml-2 sm:ml-4 pl-2 sm:pl-4 border-l-2 border-gray-200 space-y-3">
+                <div *ngFor="let reply of comment.replies" class="flex gap-2.5">
+                  <img
+                    [src]="reply.user.profile.profileImage || 'assets/default-avatar.png'"
+                    [alt]="reply.user.name"
+                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover flex-shrink-0 mt-0.5"
+                    (error)="handleImageError($event)"/>
+                  <div class="flex-1 min-w-0">
+                    <div class="bg-gray-100 rounded-2xl rounded-tl-sm px-3 py-2">
+                      <div class="flex flex-wrap items-center gap-2 mb-0.5">
+                        <span class="text-[11px] font-bold text-gray-900">{{ reply.user.name }}</span>
+                        <span class="text-[10px] text-gray-400">{{ formatTime(reply.createdAt) }}</span>
+                      </div>
+                      <p class="text-xs text-gray-800 leading-relaxed break-words">{{ reply.body }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- No comments -->
+        <div *ngIf="(!post.comments || post.comments.length === 0) && !loading"
+          class="flex flex-col items-center justify-center py-10 text-center">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" class="mb-3">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          <p class="text-sm font-medium text-gray-400">No comments yet</p>
+          <p class="text-xs text-gray-400 mt-1">Be the first to comment!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ── Media viewer modal ── -->
+  <div *ngIf="showMediaViewer"
+    class="fixed inset-0 bg-black/95 flex items-center justify-center z-[2000]"
+    (click)="closeMediaViewer()">
+    <div class="relative max-w-[90vw] max-h-[90vh]" (click)="$event.stopPropagation()">
+      <button (click)="closeMediaViewer()"
+        class="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <img *ngIf="getFileType(currentMediaUrl) === 'image'"
+        [src]="currentMediaUrl"
+        alt="Media"
+        class="max-w-full max-h-[90vh] object-contain rounded-lg"/>
+    </div>
+  </div>

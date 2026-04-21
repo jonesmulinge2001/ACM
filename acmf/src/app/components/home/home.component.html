@@ -576,11 +576,11 @@
                   class="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-100 mt-0.5" />
                 <div class="bg-gray-50 rounded-2xl px-3 py-1.5 flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-2 mb-0.5">
-                    <div class="flex items-center gap-2">
-                      <span class="text-[11px] font-semibold text-gray-800">{{ reply.user.name }}</span>
-                      <span class="text-[10px] text-gray-400">{{ reply.createdAt | timeago }}</span>
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="text-[11px] font-semibold text-gray-800 truncate">{{ reply.user.name }}</span>
+                      <span class="text-[10px] text-gray-400 flex-shrink-0">{{ reply.createdAt | timeago }}</span>
                     </div>
-                    <div *ngIf="isMyComment(reply)" class="relative">
+                    <div *ngIf="isMyComment(reply)" class="relative flex-shrink-0">
                       <button (click)="toggleMenu(reply.id)"
                         class="p-0.5 rounded-full hover:bg-gray-200 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
                         <span class="material-icons text-gray-400 text-sm">more_vert</span>
@@ -601,15 +601,17 @@
                   <p class="text-[11px] text-gray-600 break-words leading-relaxed">{{ reply.body }}</p>
                 </div>
               </div>
-              <div class="flex gap-2 mt-2">
+
+              <!-- Reply Input Section - Responsive -->
+              <div class="flex flex-col sm:flex-row gap-2 mt-2">
                 <img [src]="userProfile?.profileImage || 'assets/default-avatar.png'"
-                  class="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-                <div class="flex-1 flex gap-1.5">
+                  class="w-6 h-6 rounded-full object-cover flex-shrink-0 hidden sm:block" />
+                <div class="flex-1 flex flex-col sm:flex-row gap-1.5">
                   <textarea [(ngModel)]="replyInputs[comment.id]" placeholder="Write a reply…"
                     class="flex-1 rounded-lg px-3 py-2 text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400 transition resize-none"
                     rows="2"></textarea>
                   <button (click)="submitReply(comment.id)" [disabled]="!replyInputs[comment.id]?.trim()"
-                    class="material-icons px-3 py-1.5 bg-blue-500 text-white rounded-full text-xs font-semibold hover:bg-blue-600 disabled:opacity-40 transition">
+                    class="material-icons px-3 py-1.5 bg-blue-500 text-white rounded-full text-xs font-semibold hover:bg-blue-600 disabled:opacity-40 transition sm:self-start sm:mt-0 mt-1">
                     reply
                   </button>
                 </div>
@@ -619,20 +621,18 @@
         </div>
       </ng-container>
 
-      <!-- New comment input -->
-      <div class="flex gap-2.5 mt-3 pt-3 border-t border-gray-50">
-        <img [src]="userProfile?.profileImage || 'assets/default-avatar.png'"
-          class="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-
-        <div class="flex-1 flex gap-2">
+      <!-- New comment input - Most compact -->
+      <div class="flex flex-col gap-2 mt-3 pt-3 border-t border-gray-50">
+        <div class="flex gap-2.5">
+          <img [src]="userProfile?.profileImage || 'assets/default-avatar.png'"
+            class="w-8 h-8 rounded-full object-cover flex-shrink-0" />
           <textarea [(ngModel)]="newComments[post.id]" placeholder="Add a comment…" rows="1"
             class="flex-1 rounded-2xl px-4 py-2 text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"></textarea>
-
-          <button (click)="submitComment(post.id)" [disabled]="!newComments[post.id]?.trim()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition shadow-sm">
-            Comment
-          </button>
         </div>
+        <button (click)="submitComment(post.id)" [disabled]="!newComments[post.id]?.trim()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition shadow-sm w-full">
+          Comment
+        </button>
       </div>
 
     </div><!-- /comments -->

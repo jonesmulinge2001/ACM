@@ -725,10 +725,10 @@ savePostEdit(): void {
     autoResizeCommentInput(event: any): void {
       const textarea = event.target;
       textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'; // Max height 120px
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     }
   
-    // Update your addComment method to ensure it doesn't submit on Enter
+
     addComment(resource: GroupResource): void {
       const content = (this.newComment[resource.id] ?? '').trim();
       if (!content) return;
@@ -767,5 +767,7 @@ savePostEdit(): void {
           },
         });
     }
+
+    
   }
 

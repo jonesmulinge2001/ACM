@@ -156,8 +156,8 @@ async createPost(
             tag: true,
           },
         },
-        likes: true,  // ADD THIS
-        _count: {     // ADD THIS
+        likes: true,  
+        _count: {     
           select: {
             comments: {
               where: {

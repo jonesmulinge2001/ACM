@@ -113,16 +113,30 @@
       </div>
     </div>
 
-    <!-- About Section - Full width on mobile -->
-    <div class="bg-white shadow-sm mt-3 p-4 sm:p-6">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="material-icons text-gray-500 text-base sm:text-lg">description</span>
-        <h3 class="text-sm sm:text-base font-bold text-gray-900">About</h3>
-      </div>
-      <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">
-        {{ profile.bio || "No bio added yet. Tell others about yourself!" }}
-      </p>
-    </div>
+<!-- About Section - Full width on mobile -->
+<div class="bg-white shadow-sm mt-3 p-4 sm:p-6">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="material-icons text-gray-500 text-base sm:text-lg">description</span>
+    <h3 class="text-sm sm:text-base font-bold text-gray-900">About</h3>
+  </div>
+  
+  <!-- Read more/less toggle content -->
+  <div class="text-gray-700 text-xs sm:text-sm leading-relaxed">
+    <ng-container *ngIf="!isBioExpanded && profile.bio && profile.bio.length > bioCharLimit">
+      {{ profile.bio | slice:0:bioCharLimit }}...
+    </ng-container>
+    <ng-container *ngIf="isBioExpanded || !profile.bio || profile.bio.length <= bioCharLimit">
+      {{ profile.bio || "No bio added yet. Tell others about yourself!" }}
+    </ng-container>
+    
+    <!-- Toggle button -->
+    <button *ngIf="profile.bio && profile.bio.length > bioCharLimit" 
+            (click)="toggleBioReadMore()"
+            class="text-blue-600 hover:text-blue-800 font-medium text-xs sm:text-sm mt-2 focus:outline-none">
+      {{ isBioExpanded ? 'Show less' : 'Read more' }}
+    </button>
+  </div>
+</div>
 
     <!-- Skills Section - Full width on mobile -->
     <div *ngIf="profile.skills?.length" class="bg-white shadow-sm mt-3 p-4 sm:p-6">

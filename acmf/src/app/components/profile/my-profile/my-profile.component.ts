@@ -25,6 +25,9 @@ export class MyProfileComponent implements OnInit {
   // Toggle tab: 'followers' or 'following'
   selectedTab: 'followers' | 'following' = 'followers';
 
+  isBioExpanded: boolean = false;
+  bioCharLimit: number = 150; 
+
   constructor(
     private profileService: ProfileService,
     private toastr: ToastrService,
@@ -168,5 +171,9 @@ export class MyProfileComponent implements OnInit {
 
   setTab(tab: 'followers' | 'following') {
     this.selectedTab = tab;
+  }
+
+  toggleBioReadMore(): void {
+    this.isBioExpanded = !this.isBioExpanded;
   }
 }
