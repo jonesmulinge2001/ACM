@@ -52,40 +52,55 @@
       <div class="h-px bg-gray-100"></div>
     </ng-container>
 
-    <!-- People you may know (inline card) -->
-    <div *ngIf="profiles.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <span class="material-icons text-blue-500 text-base">people_alt</span>
-          People you may know
-        </h3>
-        <span class="text-xs text-teal-600 cursor-pointer hover:underline" routerLink="/network">See all</span>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <div *ngFor="let profile of profiles.slice(0,6)"
-          class="border border-gray-100 rounded-xl p-3 hover:shadow-sm transition group">
-          <div class="flex flex-col items-center text-center">
-            <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-              class="w-12 h-12 rounded-full object-cover shadow-sm mb-1" />
-            <p class="text-sm font-semibold text-gray-900">{{ profile.name }}</p>
-            <p class="text-xs text-gray-500">{{ profile.course || profile.academicLevel }}</p>
-            <p class="text-xs text-gray-400 mt-0.5">{{ profile.institution?.name }}</p>
-            <div class="flex flex-wrap justify-center gap-1 my-2">
-              <span *ngFor="let skill of profile.skills.slice(0,2)"
-                class="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">{{ skill }}</span>
-            </div>
-            <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-            class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
-            + Follow
-          </button>
-            <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
-              class="w-full text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition">
-              Following ✓
-            </button>
+<!-- People you may know (inline card) -->
+<div *ngIf="profiles.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+      <span class="material-icons text-blue-500 text-base">people_alt</span>
+      People you may know
+    </h3>
+    <span class="text-xs text-teal-600 cursor-pointer hover:underline" routerLink="/network">See all</span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <div *ngFor="let profile of profiles.slice(0,6)"
+      class="border border-gray-100 rounded-xl p-3 hover:shadow-sm transition group">
+
+      <!-- Mobile: horizontal row | Desktop: vertical centered -->
+      <div class="flex items-center gap-3 lg:flex-col lg:items-center lg:text-center">
+
+        <img [src]="profile.profileImage || 'assets/default-avatar.png'"
+          class="w-12 h-12 rounded-full object-cover shadow-sm flex-shrink-0"/>
+
+        <!-- Text info -->
+        <div class="flex-1 min-w-0 lg:flex lg:flex-col lg:items-center">
+          <p class="text-sm font-semibold text-gray-900 truncate lg:text-center">{{ profile.name }}</p>
+          <p class="text-xs text-gray-500 truncate">{{ profile.course || profile.academicLevel }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
+          <div class="flex flex-wrap gap-1 mt-1 lg:justify-center">
+            <span *ngFor="let skill of profile.skills.slice(0,2)"
+              class="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">
+              {{ skill }}
+            </span>
           </div>
         </div>
+
+        <!-- Follow button pushed to right on mobile, full width on desktop -->
+        <div class="flex-shrink-0 lg:w-full lg:mt-2">
+          <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
+            class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition lg:w-full">
+            + Follow
+          </button>
+          <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
+            class="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition lg:w-full">
+            Following ✓
+          </button>
+        </div>
+
       </div>
     </div>
+  </div>
+</div>
     <!-- Main feed with interleaved recommender content -->
     <ng-container *ngFor="let post of posts; let i = index">
 
@@ -289,12 +304,12 @@
               <div>
                 <p class="text-sm font-semibold text-gray-900">{{ profile.name }}</p>
                 <p class="text-xs text-gray-500">{{ profile.course || profile.academicLevel }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ profile.institution?.name }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
               </div>
               <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-              class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
-              + Follow
-            </button>
+                class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
+                + Follow
+              </button>
               <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
                 class="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition flex-shrink-0">
                 Following ✓
@@ -306,8 +321,6 @@
             </div>
             <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
             <div class="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-              <span>{{ profile.followersCount || 0 }} followers</span>
-              <span>{{ profile.followingCount || 0 }} following</span>
               <span>Joined {{ profile.createdAt | date:'MMM yyyy' }}</span>
             </div>
           </div>
@@ -355,7 +368,7 @@
               <div>
                 <p class="text-sm font-semibold text-gray-900">{{ profile.name }}</p>
                 <p class="text-xs text-gray-500">{{ profile.course || profile.academicLevel }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ profile.institution?.name }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
               </div>
               <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
                 class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
@@ -372,8 +385,6 @@
             </div>
             <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
             <div class="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-              <span>{{ profile.followersCount || 0 }} followers</span>
-              <span>{{ profile.followingCount || 0 }} following</span>
               <span>Joined {{ profile.createdAt | date:'MMM yyyy' }}</span>
             </div>
           </div>
@@ -417,37 +428,62 @@
         {{ badge }}
       </span>
 
-      <!-- Action menu -->
-      <div class="relative ml-1 flex-shrink-0">
-        <button class="p-1.5 rounded-full hover:bg-gray-100 transition" (click)="toggleActionMenu($event, post.id)">
-          <span class="material-icons text-gray-500 text-xl">more_vert</span>
-        </button>
-        <div *ngIf="actionMenuOpen[post.id]"
-          class="post-dropdown origin-top-right absolute right-0 top-9 w-52 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden"
-          (click)="$event.stopPropagation()">
-          <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
-            (click)="copyPostLink()">
-            <span class="material-icons text-gray-400 text-base">link</span> Copy link to post
-          </button>
-          <div class="h-px bg-gray-100"></div>
-          <button *ngIf="post.author.id === loggedInUserId"
-            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
-            (click)="openEditModal(post)">
-            <span class="material-icons text-gray-400 text-base">edit</span> Edit post
-          </button>
-          <button *ngIf="post.author.id === loggedInUserId"
-            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
-            (click)="openDeleteModal(post)">
-            <span class="material-icons text-red-400 text-base">delete_outline</span> Delete post
-          </button>
-          <div *ngIf="post.author.id !== loggedInUserId" class="h-px bg-gray-100"></div>
-          <button
-            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-600 hover:bg-orange-50 transition"
-            (click)="openFlagModal(post)">
-            <span class="material-icons text-orange-400 text-base">flag</span> Report post
-          </button>
-        </div>
-      </div>
+<!-- Action menu -->
+<div class="relative ml-1 flex-shrink-0">
+  <button class="p-1.5 rounded-full hover:bg-gray-100 transition" (click)="toggleActionMenu($event, post.id)">
+    <span class="material-icons text-gray-400 text-xl">more_horiz</span>
+  </button>
+
+  <div *ngIf="actionMenuOpen[post.id]"
+    class="post-dropdown absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-2xl z-50 border border-gray-100 overflow-hidden py-1"
+    (click)="$event.stopPropagation()">
+
+    <!-- Copy link -->
+    <button (click)="copyPostLink()"
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+      <span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <span class="material-icons text-gray-500 text-base">link</span>
+      </span>
+      <span class="font-medium">Copy link</span>
+    </button>
+
+    <ng-container *ngIf="post.author.id === loggedInUserId">
+      <div class="h-px bg-gray-100 mx-4"></div>
+
+      <!-- Edit -->
+      <button (click)="openEditModal(post)"
+        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+        <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <span class="material-icons text-blue-500 text-base">edit</span>
+        </span>
+        <span class="font-medium">Edit post</span>
+      </button>
+
+      <!-- Delete -->
+      <button (click)="openDeleteModal(post)"
+        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
+        <span class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+          <span class="material-icons text-red-400 text-base">delete_outline</span>
+        </span>
+        <span class="font-medium">Delete post</span>
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="post.author.id !== loggedInUserId">
+      <div class="h-px bg-gray-100 mx-4"></div>
+
+      <!-- Report -->
+      <button (click)="openFlagModal(post)"
+        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-orange-600 hover:bg-orange-50 transition-colors">
+        <span class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+          <span class="material-icons text-orange-400 text-base">flag</span>
+        </span>
+        <span class="font-medium">Report post</span>
+      </button>
+    </ng-container>
+
+  </div>
+</div>
     </div>
 
     <!-- Body -->

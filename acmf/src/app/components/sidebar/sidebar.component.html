@@ -1,185 +1,110 @@
-<!-- Desktop Sidebar - LinkedIn Style -->
-<div
-  class="hidden lg:block fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] overflow-y-auto bg-white shadow-lg border-r border-gray-200 z-30 transition-all duration-300"
->
-  <div class="p-4">
+<!-- Desktop Sidebar -->
+<div class="hidden lg:flex flex-col fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-100 z-30 shadow-sm">
+  
+  <div class="flex-1 overflow-y-auto scrollbar-hide p-3">
+
     <!-- Navigation Menu -->
-    <ul class="space-y-1">
+    <ul class="space-y-0.5">
       <li *ngFor="let item of navItems">
-        <a
-          [routerLink]="item.link"
-          [ngClass]="{
-            'active-nav-item': isActiveRoute(item.link),
-            'inactive-nav-item': !isActiveRoute(item.link)
-          }"
-          class="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer relative overflow-hidden"
-        >
-          <!-- Active Indicator -->
-          <div *ngIf="isActiveRoute(item.link)" 
-               class="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-          
-          <!-- Icon with Gradient -->
-          <div class="relative">
-            <span 
-              class="material-icons text-xl transition-all duration-200"
-              [ngClass]="{
-                'text-blue-600': isActiveRoute(item.link),
-                'text-gray-500 group-hover:text-blue-500': !isActiveRoute(item.link)
-              }"
-            >
-              {{ item.icon }}
-            </span>
-            <div *ngIf="isActiveRoute(item.link)" 
-                 class="absolute inset-0 animate-ping-slow opacity-0 group-hover:opacity-100"></div>
-          </div>
-          
-          <!-- Label -->
-          <span 
-            class="text-sm font-medium transition-all duration-200"
-            [ngClass]="{
-              'text-gray-900': isActiveRoute(item.link),
-              'text-gray-600 group-hover:text-gray-900': !isActiveRoute(item.link)
-            }"
-          >
-            {{ item.label }}
+        <a [routerLink]="item.link"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer relative"
+          [ngClass]="isActiveRoute(item.link)
+            ? 'bg-blue-50 text-blue-600'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+
+          <!-- Active left bar -->
+          <span *ngIf="isActiveRoute(item.link)"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full">
           </span>
-          
-          <!-- Hover Background -->
-          <div class="absolute inset-0 bg-gradient-to-r from-gray-50 to-transparent opacity-0 group-hover:opacity-100 rounded-xl transition-opacity duration-200 -z-10"></div>
+
+          <!-- Icon -->
+          <span class="material-icons text-[1.35rem] flex-shrink-0 transition-all duration-200"
+            [ngClass]="isActiveRoute(item.link)
+              ? 'text-blue-600'
+              : 'text-gray-400 group-hover:text-gray-700'">
+            {{ item.icon }}
+          </span>
+
+          <!-- Label -->
+          <span class="text-sm font-medium leading-none">{{ item.label }}</span>
+
+          <!-- Active dot -->
+          <span *ngIf="isActiveRoute(item.link)"
+            class="ml-auto w-2 h-2 rounded-full bg-blue-600 flex-shrink-0">
+          </span>
         </a>
       </li>
     </ul>
 
     <!-- Divider -->
-    <div class="my-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+    <div class="my-4 h-px bg-gray-100"></div>
 
     <!-- Quick Actions -->
-    <div class="space-y-2">
-      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Quick Actions</p>
-      
-      <button
-        (click)="openCreatePost()"
-        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-all duration-200 group"
-      >
-        <span class="material-icons text-lg text-blue-500">add_circle</span>
-        <span>Create a post</span>
+    <div class="space-y-0.5">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Quick Actions</p>
+
+      <button (click)="openCreatePost()"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 group">
+        <span class="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center flex-shrink-0 transition-colors">
+          <span class="material-icons text-blue-600 text-[1.1rem]">edit</span>
+        </span>
+        Create a post
       </button>
-      
-      <button
-        (click)="openSearch()"
-        class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-all duration-200 group"
-      >
-        <span class="material-icons text-lg text-gray-400">search</span>
-        <span>Find people</span>
+
+      <button (click)="openSearch()"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 group">
+        <span class="w-8 h-8 rounded-lg bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center flex-shrink-0 transition-colors">
+          <span class="material-icons text-purple-500 text-[1.1rem]">person_search</span>
+        </span>
+        Find people
       </button>
     </div>
 
     <!-- Divider -->
-    <div class="my-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-
-    <!-- Your Impact Card - Enhanced LinkedIn Style -->
-    <div class="mt-4 p-4 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 shadow-lg overflow-hidden relative group">
-      <!-- Animated Background -->
-      <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      
-      <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-        <span class="material-icons text-white">insights</span>
-        Your Impact
-      </h3>
-      
-      <div class="space-y-3 text-sm">
-        <div class="flex justify-between items-center group/item">
-          <div class="flex items-center gap-2 text-white/90">
-            <span class="material-icons text-base">visibility</span>
-            <span>Profile Views</span>
-          </div>
-          <span class="font-semibold text-white group-hover/item:scale-110 transition-transform">1,456</span>
-        </div>
-        
-        <div class="flex justify-between items-center group/item">
-          <div class="flex items-center gap-2 text-white/90">
-            <span class="material-icons text-base">upload</span>
-            <span>Resources Shared</span>
-          </div>
-          <span class="font-semibold text-white group-hover/item:scale-110 transition-transform">12</span>
-        </div>
-        
-        <div class="flex justify-between items-center group/item">
-          <div class="flex items-center gap-2 text-white/90">
-            <span class="material-icons text-base">group</span>
-            <span>Connections</span>
-          </div>
-          <span class="font-semibold text-white group-hover/item:scale-110 transition-transform">234</span>
-        </div>
-        
-        <div class="flex justify-between items-center group/item">
-          <div class="flex items-center gap-2 text-white/90">
-            <span class="material-icons text-base">groups</span>
-            <span>Groups Created</span>
-          </div>
-          <span class="font-semibold text-white group-hover/item:scale-110 transition-transform">8</span>
-        </div>
-      </div>
-      
-      <!-- Decorative Element -->
-      <div class="absolute -bottom-4 -right-4 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
-    </div>
+    <div class="my-4 h-px bg-gray-100"></div>
 
     <!-- Footer Links -->
-    <div class="mt-6 px-3">
-      <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400">
-        <a href="#" class="hover:text-gray-600 transition">About</a>
-        <a href="#" class="hover:text-gray-600 transition">Privacy</a>
-        <a href="#" class="hover:text-gray-600 transition">Terms</a>
-        <a href="#" class="hover:text-gray-600 transition">Help</a>
+    <div class="px-3 pb-4">
+      <div class="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-gray-400">
+        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">About</a>
+        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Privacy</a>
+        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Terms</a>
+        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Help</a>
       </div>
-      <p class="text-xs text-gray-400 mt-3">© 2026 Academeet</p>
+      <p class="text-[11px] text-gray-400 mt-2">© {{ currentYear }} Academeet</p>
     </div>
+
   </div>
 </div>
 
-<!-- Mobile Bottom Navigation - LinkedIn Style -->
-<div
-  class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg z-50 transition-all duration-300"
->
-  <div class="flex justify-around items-center py-2 px-4">
-    <a
-      *ngFor="let item of navItems"
-      [routerLink]="item.link"
-      class="flex flex-col items-center justify-center transition-all duration-200 relative"
-      [ngClass]="{
-        'active-mobile-nav': isActiveRoute(item.link),
-        'inactive-mobile-nav': !isActiveRoute(item.link)
-      }"
-    >
-      <!-- Active Indicator Dot -->
-      <div *ngIf="isActiveRoute(item.link)" 
-           class="absolute -top-1 w-1 h-1 bg-blue-500 rounded-full"></div>
-      
-      <span
-        class="material-icons text-[1.5rem] transition-all duration-200"
-        [ngClass]="{
-          'text-blue-600 scale-110': isActiveRoute(item.link),
-          'text-gray-500 group-hover:text-blue-500': !isActiveRoute(item.link)
-        }"
-      >
+<!-- Mobile Bottom Navigation -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg z-50">
+  <div class="flex justify-around items-center py-1 px-2">
+    <a *ngFor="let item of navItems" [routerLink]="item.link"
+      class="flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-200 relative min-w-[3.5rem]"
+      [ngClass]="isActiveRoute(item.link)
+        ? 'text-blue-600'
+        : 'text-gray-400 hover:text-gray-700'">
+
+      <!-- Active pill background -->
+      <span *ngIf="isActiveRoute(item.link)"
+        class="absolute inset-0 bg-blue-50 rounded-xl">
+      </span>
+
+      <!-- Active top indicator -->
+      <span *ngIf="isActiveRoute(item.link)"
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-600 rounded-full">
+      </span>
+
+      <span class="material-icons relative z-10 transition-all duration-200 text-[1.5rem]"
+        [ngClass]="isActiveRoute(item.link) ? 'text-blue-600' : 'text-gray-400'">
         {{ item.icon }}
       </span>
-      
-      <span 
-        class="text-[0.65rem] mt-0.5 transition-all duration-200"
-        [ngClass]="{
-          'text-blue-600 font-medium': isActiveRoute(item.link),
-          'text-gray-500': !isActiveRoute(item.link)
-        }"
-      >
+
+      <span class="relative z-10 text-[0.6rem] mt-0.5 font-medium leading-none"
+        [ngClass]="isActiveRoute(item.link) ? 'text-blue-600' : 'text-gray-400'">
         {{ item.label }}
       </span>
-      
-      <!-- Ripple Effect -->
-      <div *ngIf="isActiveRoute(item.link)" 
-           class="absolute inset-0 bg-blue-100 rounded-full scale-0 animate-ripple"></div>
     </a>
   </div>
 </div>
-

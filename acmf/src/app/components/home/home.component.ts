@@ -122,7 +122,7 @@ export class HomeComponent implements OnInit {
 
     this.profileService.getMyProfile().subscribe({
       next: (profile) => (this.userProfile = profile),
-      error: () => console.error('Failed to load profile'),
+      // error: () => console.error('Failed to load profile'),
     });
 
     if (this.loggedInUserId) {
@@ -130,7 +130,7 @@ export class HomeComponent implements OnInit {
         next: (follows) => {
           this.followingIds = follows.map((f) => f.followingId);
         },
-        error: () => console.error('Failed to load following list'),
+        // error: () => console.error('Failed to load following list'),
       });
     }
 
@@ -145,6 +145,7 @@ export class HomeComponent implements OnInit {
     this.recommenderService.getRecommendations().subscribe({
       next: ({ profiles, resources }) => {
         this.profiles = profiles;
+        console.log('first profile institution:', this.profiles[0]?.institution);
         this.recommendedResourcePosts = resources.resource;
         this.recommendedAcademicPosts = resources.academic;
         this.recommendedOpportunityPosts = resources.opportunity;
@@ -158,34 +159,35 @@ export class HomeComponent implements OnInit {
           ...resources.general,
         ].forEach((post) => this.injectLikesCount(post));
       },
-      error: () => console.error('Failed to load recommendations'),
+      // error: () => console.error('Failed to load recommendations'),
     });
 
     // Profile suggestions by individual dimensions
     this.recommenderService.suggestProfilesByInterests().subscribe({
       next: (profiles) => (this.profilesByInterests = profiles),
-      error: () => console.error('Failed to load interest-based profiles'),
+      
+      // error: () => console.error('Failed to load interest-based profiles'),
     });
 
     this.recommenderService.suggestProfilesByCourse().subscribe({
       next: (profiles) => (this.profilesByCourse = profiles),
-      error: () => console.error('Failed to load course-based profiles'),
+      // error: () => console.error('Failed to load course-based profiles'),
     });
 
     this.recommenderService.suggestProfilesByAcademicLevel().subscribe({
       next: (profiles) => (this.profilesByAcademicLevel = profiles),
-      error: () => console.error('Failed to load academic-level profiles'),
+      // error: () => console.error('Failed to load academic-level profiles'),
     });
 
     this.recommenderService.suggestProfilesByInstitution().subscribe({
       next: (profiles) => (this.profilesByInstitution = profiles),
-      error: () => console.error('Failed to load institution-based profiles'),
+      // error: () => console.error('Failed to load institution-based profiles'),
     });
 
     // Group suggestions based on the user's skills
     this.recommenderService.recommendGroupsBySkills().subscribe({
       next: (groups) => (this.suggestedGroups = groups),
-      error: () => console.error('Failed to load suggested groups'),
+      // error: () => console.error('Failed to load suggested groups'),
     });
   }
 
@@ -238,7 +240,7 @@ export class HomeComponent implements OnInit {
 
           this.nextCursor = posts.nextCursor ?? null;
         },
-        error: () => console.error('Failed to load more posts'),
+        // error: () => console.error('Failed to load more posts'),
       });
   }
 
@@ -248,7 +250,7 @@ export class HomeComponent implements OnInit {
         this.trendingPosts = posts;
         this.injectLikesCount(this.trendingPosts);
       },
-      error: () => console.error('Failed to load trending posts'),
+      // error: () => console.error('Failed to load trending posts'),
     });
 
     this.postService.getRecommendedPostsForUser().subscribe({
@@ -266,20 +268,20 @@ export class HomeComponent implements OnInit {
   follow(userId: string): void {
     this.followService.followUser(userId).subscribe({
       next: () => {
-        this.toastr.success('Followed successfully');
+        // this.toastr.success('Followed successfully');
         this.followingIds.push(userId);
       },
-      error: () => this.toastr.error('Follow failed'),
+      // error: () => this.toastr.error('Follow failed'),
     });
   }
 
   unFollow(userId: string): void {
     this.followService.unFollowUser(userId).subscribe({
       next: () => {
-        this.toastr.info('Unfollowed');
+        // this.toastr.info('Unfollowed');
         this.followingIds = this.followingIds.filter((id) => id !== userId);
       },
-      error: () => this.toastr.error('Unfollow failed'),
+      // error: () => this.toastr.error('Unfollow failed'),
     });
   }
 
@@ -302,7 +304,7 @@ export class HomeComponent implements OnInit {
           }
         },
         error: () => {
-          console.error('Failed to load comments');
+          // console.error('Failed to load comments');
           this.commentLoading[postId] = false;
         },
       });
@@ -321,7 +323,7 @@ export class HomeComponent implements OnInit {
           ? (comment.likes ?? 0) + 1
           : (comment.likes ?? 1) - 1;
       },
-      error: () => this.toastr.warning('Like toggle failed'),
+      // error: () => this.toastr.warning('Like toggle failed'),
     });
   }
 
@@ -346,7 +348,7 @@ export class HomeComponent implements OnInit {
           },
         });
       },
-      error: () => this.toastr.error('Comment failed'),
+      // error: () => this.toastr.error('Comment failed'),
     });
   }
 
@@ -360,9 +362,9 @@ export class HomeComponent implements OnInit {
         if (!this.replies[commentId]) this.replies[commentId] = [];
         this.replies[commentId].push(newReply);
         this.cdr.detectChanges();
-        this.toastr.success('Replied successfully');
+        // this.toastr.success('Replied successfully');
       },
-      error: () => this.toastr.error('Reply failed'),
+      // error: () => this.toastr.error('Reply failed'),
     });
   }
 
@@ -808,5 +810,13 @@ export class HomeComponent implements OnInit {
   // Check if post has PDF
   isPdfPost(post: Post): boolean {
     return this.getFileType(post) === 'pdf';
+  }
+
+  truncateInstitutionName(text: string | undefined, maxWords: number = 2): string {
+    if (!text) return '';
+    const words = text.split(' ');
+    return words.length > maxWords
+      ? words.slice(0, maxWords).join(' ') + '...'
+      : text;
   }
 }
