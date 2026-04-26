@@ -10,10 +10,8 @@ import { PermissionModule } from './permissions/permission.module';
 import { ProfileModule } from './profile/profile.module';
 import { FollowModule } from './follow/follow.module';
 import { RecommenderModule } from './recommender/recommender.module';
-import { InteractionModule } from './interaction/interaction.module';
 import { LikeModule } from './like/like.module';
 import { CommentModule } from './comment/comment.module';
-import { ViewsModule } from './views/views.module';
 import { CommentLikeModule } from './comment-like/comment-like.module';
 import { PostModule } from './post/post.module';
 import { DashboardOverviewModule } from './admin/dashboard-overview/dashboard-overview.module';
@@ -33,6 +31,7 @@ import { ExtractionModule } from './academic/extraction/extraction.module';
 import { ModerationModule } from './academic/moderation/moderation.module';
 import { ProcessingModule } from './academic/processing/processing.module';
 import { AcademicResourceModule } from './academic/academic-reseource/academic-resource.module';
+import { IntentModule } from './intent/intent.module';
 
 @Module({
   imports: [
@@ -44,10 +43,8 @@ import { AcademicResourceModule } from './academic/academic-reseource/academic-r
     ProfileModule,
     FollowModule,
     RecommenderModule,
-    InteractionModule,
     LikeModule,
     CommentModule,
-    ViewsModule,
     CommentLikeModule,
     PostModule,
     DashboardOverviewModule,
@@ -66,7 +63,8 @@ import { AcademicResourceModule } from './academic/academic-reseource/academic-r
     ExtractionModule,
     ModerationModule,
     ProcessingModule,
-    AcademicResourceModule
+    AcademicResourceModule,
+    IntentModule
   ],
   providers: [AppService],
   controllers: [],
