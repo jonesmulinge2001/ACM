@@ -2,15 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
-import { NotificationItem, NotificationEventPayload } from '../interfaces';
+import {
+  NotificationItem,
+  NotificationEventPayload,
+  NotificationListResponse,
+} from '../interfaces';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  // private apiUrl = 'http://localhost:3000/notifications';
-  private apiUrl = `${environment.apiBase}/notifications`
+  private apiUrl = `${environment.apiBase}/notifications`;
   private socket!: Socket;
 
   private _notifications = new BehaviorSubject<NotificationItem[]>([]);
@@ -20,14 +23,13 @@ export class NotificationService {
   unreadCount$ = this._unreadCount.asObservable();
 
   private lastCursor: string | null = null;
-  private fetching = false;
+  private fetching: boolean = false;
 
   constructor(private http: HttpClient) {
     this.initSocket();
   }
 
-  /** Fetch notifications from backend */
-
+  /** ================= FETCH ================= */
   fetchNotifications(loadMore = false): void {
     if (this.fetching) return;
     this.fetching = true;
@@ -37,141 +39,66 @@ export class NotificationService {
       url += `?cursor=${this.lastCursor}`;
     }
 
-    this.http.get<NotificationItem[]>(url).subscribe({
-      next: (data) => {
+    this.http.get<NotificationListResponse>(url).subscribe({
+      next: (res) => {
+        const data = res.notifications;
+
         if (data.length > 0) {
-          this.lastCursor = data[data.length - 1].id; // last item's id
+          this.lastCursor = data[data.length - 1].id;
         }
 
-        if (loadMore) {
-          this._notifications.next([...this._notifications.value, ...data]);
-        } else {
-          this._notifications.next(data);
-        }
+        const merged = loadMore
+          ? [...this._notifications.value, ...data]
+          : data;
 
-        this._unreadCount.next(
-          this._notifications.value.filter((n) => !n.seen).length
-        );
+        this._notifications.next(merged);
+        this._unreadCount.next(res.unreadCount);
       },
-      error: (err) => console.error('Failed to fetch notifications', err),
       complete: () => (this.fetching = false),
+      error: (err) => console.error(err),
     });
   }
 
-  /** Mark single notification as seen */
+  /** ================= MARK AS SEEN ================= */
   markAsSeen(notificationId: string): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${notificationId}/seen`, {});
   }
 
-  /** Mark all notifications as seen */
   markAllAsSeen(): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/seen`, {});
   }
 
-  /** Initialize Socket.IO */
+  /** ================= SOCKET ================= */
   private initSocket(): void {
     const token = localStorage.getItem('token') ?? '';
     this.socket = io(`${environment.apiBase}`, { auth: { token } });
 
-    this.socket.on('connect', () =>
-      console.log('Notifications socket connected', this.socket.id)
-    );
-
     this.socket.on('notification', (event: NotificationEventPayload) => {
-      console.log('Notification received:', event);
-      this.handleIncomingEvent(event);
+      this.fetchNotifications(); // simplest + safest approach
     });
   }
 
-  /** Handle incoming event and aggregate if necessary */
-  private handleIncomingEvent(event: NotificationEventPayload): void {
-    const current = this._notifications.value;
-
-    // Look for existing aggregated notification
-    const existingIndex = current.findIndex(
-      (n) => n.type === event.type && n.entityId === (event.entityId ?? null)
-    );
-
-    if (existingIndex > -1) {
-      const updated = [...current];
-      const existing = updated[existingIndex];
-
-      if (!existing.actorIds.includes(event.actorId)) {
-        existing.actorIds.push(event.actorId);
-        existing.actorNames.push(event.actorName);
-        existing.count = existing.actorIds.length;
-        existing.seen = false;
-      }
-
-      updated[existingIndex] = existing;
-      this._notifications.next(updated);
-    } else {
-      const newNotification: NotificationItem = {
-        id: event.entityId ?? crypto.randomUUID(),
-        type: event.type,
-        entityId: event.entityId ?? null,
-        actorIds: [event.actorId],
-        actorNames: [event.actorName],
-        count: 1,
-        seen: false,
-        message: this.buildMessage(event.type, [event.actorName]),
-        createdAt: event.createdAt,
-
-        actionUrl: this.buildFallbackActionUrl(event),
-      };
-      this._notifications.next([newNotification, ...current]);
-    }
-
-    // Update unread count
-    this._unreadCount.next(
-      this._notifications.value.filter((n) => !n.seen).length
-    );
-  }
-
-  private buildFallbackActionUrl(event: NotificationEventPayload): string {
-    switch (event.type) {
-      case 'POST_LIKED':
-      case 'POST_COMMENTED':
-        return `/posts/${event.entityId}`;
-      case 'FOLLOWED':
-        return `/profile/${event.actorId}`;
-      case 'MESSAGE_SENT':
-        return `${environment.apiBase}/conversations/${event.actorId}`;
-      default:
-        return '/notifications';
-    }
-  }
-  
-
-  /** Format notification message (LinkedIn style) */
-  private buildMessage(
-    type: NotificationItem['type'],
-    actorNames: string[]
-  ): string {
+  /** ================= REALTIME MESSAGE ================= */
+  private buildRealtimeMessage(type: NotificationItem['type']): string {
     switch (type) {
       case 'POST_LIKED':
-        if (actorNames.length === 1) return `${actorNames[0]} liked your post`;
-        return `${actorNames[0]} and ${
-          actorNames.length - 1
-        } others liked your post`;
+        return 'Someone liked your post';
+
       case 'POST_COMMENTED':
-        if (actorNames.length === 1)
-          return `${actorNames[0]} commented on your post`;
-        return `${actorNames[0]} and ${
-          actorNames.length - 1
-        } others commented on your post`;
+        return 'Someone commented on your post';
+
       case 'FOLLOWED':
-        if (actorNames.length === 1)
-          return `${actorNames[0]} started following you`;
-        return `${actorNames[0]} and ${
-          actorNames.length - 1
-        } others started following you`;
+        return 'You have a new follower';
+
       case 'MESSAGE_SENT':
-        if (actorNames.length === 1)
-          return `${actorNames[0]} sent you a message`;
-        return `${actorNames[0]} and ${
-          actorNames.length - 1
-        } others sent you messages`;
+        return 'You have a new message';
+
+      case 'INTENT_OVERLAP':
+        return 'Someone shares your interests';
+
+      case 'PROFILE_VIEWED':
+        return 'Someone viewed your profile';
+
       default:
         return 'You have a new notification';
     }

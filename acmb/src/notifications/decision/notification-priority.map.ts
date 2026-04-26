@@ -9,4 +9,8 @@ export const ALWAYS_NOTIFY_EVENTS: NotificationEventType[] = [
 export const AGGREGATABLE_EVENTS: NotificationEventType[] = [
   NotificationEventType.POST_LIKED,
   NotificationEventType.POST_COMMENTED,
+
+  NotificationEventType.PROFILE_VIEWED,
+  NotificationEventType.INTENT_OVERLAP,
+  NotificationEventType.SKILL_MATCH,
 ];

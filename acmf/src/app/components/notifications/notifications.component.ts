@@ -20,15 +20,18 @@ export class NotificationComponent implements OnInit, OnDestroy {
   @ViewChild('notificationList') notificationList!: ElementRef;
 
   notifications: NotificationItem[] = [];
-  unreadCount = 0;
-  menuOpen = false;
-  loading = false;
-  loadingMore = false;
-  markingAllAsRead = false;
+  unreadCount: number = 0;
+  menuOpen: boolean = false;
+  loading: boolean = false;
+  loadingMore: boolean = false;
+  markingAllAsRead: boolean = false;
   markingAsRead: Record<string, boolean> = {};
+
+  activePreviewId: string | null = null;
 
   private subscriptions = new Subscription();
   private clickListener!: (event: MouseEvent) => void;
+
 
   constructor(
     private notificationService: NotificationService,
@@ -202,5 +205,14 @@ export class NotificationComponent implements OnInit, OnDestroy {
     return new Date(timestamp).toLocaleDateString('en-US', {
       month: 'short', day: 'numeric'
     });
+  }
+
+  // preview for profileImages in the notifications
+  togglePreview(notificationId: string, event: Event): void {
+    event.stopPropagation();
+    this.activePreviewId =
+      this.activePreviewId === notificationId ? null : notificationId;
+
+      this.cdr.detectChanges();
   }
 }
