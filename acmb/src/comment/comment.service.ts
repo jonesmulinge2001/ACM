@@ -32,7 +32,7 @@ export class CommentService {
       },
     });
   
-    // 🔔 EMIT NOTIFICATION EVENT (COMMENT)
+    //  EMIT NOTIFICATION EVENT (COMMENT)
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
       select: { authorId: true },

@@ -723,22 +723,36 @@ export type NotificationType =
   | 'FOLLOWED'
   | 'POST_LIKED'
   | 'POST_COMMENTED'
-  | 'MESSAGE_SENT';
+  | 'MESSAGE_SENT'
+  | 'INTENT_OVERLAP'
+  | 'PROFILE_VIEWED';
 
-export interface NotificationItem {
-  id: string;                  // UUID of the notification
-  type: NotificationType;
-  entityId?: string | null;    // e.g., postId, messageId, null for follow
-  actorIds: string[];          // IDs of users who triggered this
-  actorNames: string[];        // Names of users for display
-  count: number;               // For aggregatable events (like multiple likes)
-  seen: boolean;               // True if the user has seen this
-  message: string;             // Pre-generated string like "Jonathan liked your post"
-  createdAt: string;           // ISO timestamp
-
-  actionUrl?: string;
-  actionMeta?: Record<string, any>;
-}
+  export interface NotificationItem {
+    id: string;
+    type: NotificationType;
+    entityId?: string | null;
+  
+    actorIds: string[];
+    actorNames: string[];
+  
+    // 🔥 NEW
+    actorProfiles?: {
+      id: string;
+      userId: string;
+      name: string;
+      profileImage?: string | null;
+      institutionId?: string;
+      course?: string;
+    }[];
+  
+    count: number;
+    seen: boolean;
+    message: string;
+    createdAt: string;
+  
+    actionUrl?: string;
+    actionMeta?: Record<string, any>;
+  }
 
 
 export interface NotificationListResponse {
@@ -748,9 +762,7 @@ export interface NotificationListResponse {
 
 
 export interface NotificationEventPayload {
-  type: NotificationType
-  actorId: string;
-  actorName: string; 
+  type: NotificationType;
   recipientId: string;
   entityId?: string;
   createdAt: string;

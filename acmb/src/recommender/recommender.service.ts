@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma';
@@ -8,28 +9,49 @@ export class RecommenderService {
   private prisma = new PrismaClient();
 
   async recommend(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({
+      where: { userId },
+    });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
     }
+
+    // 🔥 BEHAVIOR SIGNALS (NEW)
+    const profileViews = await this.prisma.profileView.findMany({
+      where: { viewerId: userId },
+    });
+
+    const viewedUsers = new Set(profileViews.map(v => v.viewedId));
 
     const otherProfiles = await this.prisma.profile.findMany({
       where: { NOT: { userId } },
     });
 
     const scoredProfiles = otherProfiles.map((profile) => {
+      // --- BASE MATCHING ---
       const skillMatch = intersection(student.skills, profile.skills).length;
       const interestMatch = intersection(
         student.interests,
         profile.interests,
       ).length;
+
       const institutionMatch =
         profile.institutionId === student.institutionId ? 1 : 0;
+
       const courseMatch = profile.course === student.course ? 1 : 0;
 
-      const score =
-        skillMatch * 3 + interestMatch * 2 + institutionMatch + courseMatch;
+      // --- BASE SCORE ---
+      let score =
+        skillMatch * 3 +
+        interestMatch * 2 +
+        institutionMatch +
+        courseMatch;
+
+      // --- BEHAVIOR BOOST (NEW INTELLIGENCE LAYER) ---
+      if (viewedUsers.has(profile.userId)) {
+        score += 2; // user showed interest before
+      }
 
       return { profile, score };
     });
@@ -39,7 +61,7 @@ export class RecommenderService {
       .slice(0, 10)
       .map((entry) => entry.profile);
 
-    // Build tag-based filter from skills and interests
+    // --- TAG SYSTEM (UNCHANGED) ---
     const tags = [...student.skills, ...student.interests];
 
     const postFilter = {
@@ -54,53 +76,52 @@ export class RecommenderService {
       },
     };
 
-    const [resourcePosts, academicPosts, opportunityPosts, generalPosts] =
-      await Promise.all([
-        this.prisma.post.findMany({
-          where: { type: 'RESOURCE', ...postFilter },
-          take: 10,
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
+    const [
+      resourcePosts,
+      academicPosts,
+      opportunityPosts,
+      generalPosts,
+    ] = await Promise.all([
+      this.prisma.post.findMany({
+        where: { type: 'RESOURCE', ...postFilter },
+        take: 10,
+        include: {
+          tags: {
+            include: { tag: true },
           },
-        }),
-        this.prisma.post.findMany({
-          where: { type: 'ACADEMIC', ...postFilter },
-          take: 10,
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
+        },
+      }),
+
+      this.prisma.post.findMany({
+        where: { type: 'ACADEMIC', ...postFilter },
+        take: 10,
+        include: {
+          tags: {
+            include: { tag: true },
           },
-        }),
-        this.prisma.post.findMany({
-          where: { type: 'OPPORTUNITY', ...postFilter },
-          take: 10,
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
+        },
+      }),
+
+      this.prisma.post.findMany({
+        where: { type: 'OPPORTUNITY', ...postFilter },
+        take: 10,
+        include: {
+          tags: {
+            include: { tag: true },
           },
-        }),
-        this.prisma.post.findMany({
-          where: { type: 'GENERAL', ...postFilter },
-          take: 10,
-          include: {
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
+        },
+      }),
+
+      this.prisma.post.findMany({
+        where: { type: 'GENERAL', ...postFilter },
+        take: 10,
+        include: {
+          tags: {
+            include: { tag: true },
           },
-        }),
-      ]);
+        },
+      }),
+    ]);
 
     return {
       profiles: topProfiles,
@@ -218,7 +239,9 @@ export class RecommenderService {
 
   // >>> suggest profiles based on skills alone
   async suggestProfilesBySkills(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({ where: { userId }, include: { institution: {
+      select: { id: true, name: true}
+    } } });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
@@ -243,7 +266,9 @@ export class RecommenderService {
 
   // >>> suggest profiles based on interests alone
   async suggestProfilesByInterests(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({ where: { userId }, include: { institution: {
+      select: { id: true, name: true}
+    } } });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
@@ -251,6 +276,7 @@ export class RecommenderService {
 
     const otherProfiles = await this.prisma.profile.findMany({
       where: { NOT: { userId } },
+      include: { institution: { select: { id: true, name: true } } }
     });
 
     const scoredProfiles = otherProfiles
@@ -271,7 +297,12 @@ export class RecommenderService {
 
   // >>> suggest profiles based on course alone
   async suggestProfilesByCourse(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({ where: { userId }, include: { institution: {
+      select: {
+        id: true,
+        name: true,
+      }
+    }} });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
@@ -287,6 +318,7 @@ export class RecommenderService {
         course: student.course,
       },
       take: 10,
+      include: { institution: { select: { id: true, name: true } } }
     });
 
     return profiles;
@@ -294,7 +326,12 @@ export class RecommenderService {
 
   // >>> suggest profiles based on academic level alone
   async suggestProfilesByAcademicLevel(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({ where: { userId }, include: { institution: {
+      select: {
+        id: true,
+        name: true,
+      }
+    }} });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
@@ -310,6 +347,7 @@ export class RecommenderService {
         academicLevel: student.academicLevel,
       },
       take: 10,
+      include: { institution: { select: { id: true, name: true } } }
     });
 
     return profiles;
@@ -317,7 +355,12 @@ export class RecommenderService {
 
   // >>> suggest profiles based on institution alone
   async suggestProfilesByInstitution(userId: string) {
-    const student = await this.prisma.profile.findUnique({ where: { userId } });
+    const student = await this.prisma.profile.findUnique({ where: { userId }, include: { institution: {
+      select: {
+        id:true,
+        name: true,
+      }
+    }} });
 
     if (!student) {
       throw new NotFoundException(`User with this id ${userId} was not found`);
@@ -333,6 +376,7 @@ export class RecommenderService {
         institutionId: student.institutionId,
       },
       take: 10,
+      include: { institution: { select: { id: true, name: true } } }
     });
 
     return profiles;

@@ -59,7 +59,7 @@
               class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors text-lg">
               person
             </span>
-            <input type="text" formControlName="name" placeholder="John Doe"
+            <input type="text" formControlName="name" placeholder="xyz"
               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 bg-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 placeholder-gray-400"
               [ngClass]="{
                 'border-red-400 focus:ring-red-400': isInvalid('name'),
@@ -83,7 +83,7 @@
               class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors text-lg">
               email
             </span>
-            <input type="email" formControlName="email" placeholder="hello@example.com"
+            <input type="email" formControlName="email" placeholder="hello@academeet.com"
               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 bg-white/60 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 placeholder-gray-400"
               [ngClass]="{
                 'border-red-400 focus:ring-red-400': isInvalid('email'),
@@ -194,14 +194,7 @@
         </div>
 
         <!-- Terms and Conditions -->
-        <div class="flex items-start gap-2 pt-2">
-          <input type="checkbox" id="terms"
-            class="mt-1 w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer">
-          <label for="terms" class="text-xs text-gray-600 leading-tight cursor-pointer">
-            I agree to the <a href="#" class="text-green-500 hover:underline font-medium">Terms of Service</a> and
-            <a href="#" class="text-green-500 hover:underline font-medium">Privacy Policy</a>
-          </label>
-        </div>
+      
 
         <!-- Submit Button -->
         <button type="submit"
@@ -213,29 +206,6 @@
       </form>
 
       <!-- Divider -->
-      <div class="relative my-6">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-300"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="px-3 bg-transparent text-gray-500">or</span>
-        </div>
-      </div>
-
-      <!-- Social Sign Up Options -->
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <button
-          class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
-          <span class="material-icons text-[#4285F4]">google</span>
-          <span class="text-sm font-medium">Google</span>
-        </button>
-
-        <button
-          class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
-          <span class="material-icons text-[#1877F2]">facebook</span>
-          <span class="text-sm font-medium">Facebook</span>
-        </button>
-      </div>
 
       <!-- Login Link -->
       <p class="text-sm text-center text-gray-600">
