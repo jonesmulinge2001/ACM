@@ -53,10 +53,22 @@ import {
       return this.profileService.getProfileByUserId(req.user.id);
     }
   
-    @Get(':userId')
+    @Get('user/:userId')
     @RequirePermissions(Permission.MANAGE_PROFILE)
-    async getProfile(@Param('userId') userId: string) {
+    async getProfileByUserId(@Param('userId') userId: string) {
       return this.profileService.getProfileByUserId(userId);
+    }
+    
+    @Get(':id')
+    @RequirePermissions(Permission.MANAGE_PROFILE)
+    async getProfileById(
+      @Param('id') id: string,
+      @Request() req: { user: AuthUser },
+    ) {
+      return this.profileService.getProfileAndTrackView(
+        req.user.id,
+        id,
+      );
     }
   
     @Patch()
@@ -93,12 +105,6 @@ import {
     async getAllProfiles(@Query('search') search?: string) {
       return this.profileService.getAllProfiles(search)
     }
-
-    @Get(':id')
-    @RequirePermissions(Permission.MANAGE_PROFILE)
-    getProfileById(@Param('id') id: string) {
-  return this.profileService.getProfileById(id);
-}
 
   }
   

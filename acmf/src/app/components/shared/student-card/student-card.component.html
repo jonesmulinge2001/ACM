@@ -22,40 +22,46 @@
       </div>
     </div>
 
-    <!-- Follow / Following Button -->
-    <div (click)="$event.stopPropagation()" class="flex-shrink-0 mt-1">
-      <button
-        *ngIf="!followState"
-        (click)="handleFollow()"
-        [disabled]="isLoading"
-        class="linkedin-follow-btn flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-blue-600 text-blue-600 text-sm font-semibold hover:bg-blue-50 active:bg-blue-100 transition-all disabled:opacity-60"
-      >
-        <svg *ngIf="!isLoading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-        <svg *ngIf="isLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-        </svg>
-        Follow
-      </button>
+<!-- Follow / Following Button -->
+<div (click)="$event.stopPropagation()" class="flex-shrink-0 mt-1">
 
-      <button
-        *ngIf="followState"
-        (click)="handleUnfollow()"
-        [disabled]="isLoading"
-        class="linkedin-following-btn group flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-gray-400 text-gray-600 text-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:bg-red-100 transition-all disabled:opacity-60"
-      >
-        <svg class="w-4 h-4 group-hover:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        <svg class="w-4 h-4 hidden group-hover:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        <span class="group-hover:hidden">Following</span>
-        <span class="hidden group-hover:inline">Unfollow</span>
-      </button>
-    </div>
+  <button
+  *ngIf="!followState"
+  (click)="handleFollow()"
+  [disabled]="isLoading"
+  class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0 flex items-center justify-center"
+>
+  <span *ngIf="!isLoading">+ Follow</span>
+
+  <span *ngIf="isLoading" class="text-xs">
+    Following...
+  </span>
+</button>
+
+<button
+  *ngIf="followState"
+  (click)="handleUnfollow()"
+  [disabled]="isLoading"
+  class="w-full text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition group flex items-center justify-center"
+>
+  <!-- Default -->
+  <span *ngIf="!isLoading" class="group-hover:hidden">
+    Following ✓
+  </span>
+
+  <!-- Hover state -->
+  <span *ngIf="!isLoading" class="hidden group-hover:inline">
+    Unfollow
+  </span>
+
+  <!-- Loading -->
+  <span *ngIf="isLoading" class="flex items-center gap-1">
+    <span class="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>
+    Processing...
+  </span>
+</button>
+
+</div>
   </div>
 
   <!-- Bio -->
@@ -92,8 +98,8 @@
   <!-- Footer -->
   <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
     <div class="flex gap-3">
-      <span><strong class="text-gray-700">{{ displayFollowers }}</strong> followers</span>
-      <span><strong class="text-gray-700">{{ profile.followingCount || 0 }}</strong> following</span>
+      <!-- <span><strong class="text-gray-700">{{ displayFollowers }}</strong> followers</span>
+      <span><strong class="text-gray-700">{{ profile.followingCount || 0 }}</strong> following</span> -->
     </div>
     <span>Joined {{ profile.createdAt | date: 'MMM yyyy' }}</span>
   </div>

@@ -15,12 +15,18 @@ import {
   AcademeetUploadType,
 } from '../shared/cloudinary/cloudinary/cloudinary.service';
 import type { Express } from 'express'; 
+import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
+import { NotificationEventType } from 'src/notifications/events/notification-event.type';
 
 @Injectable()
 export class ProfileService {
   private prisma = new PrismaClient();
 
-  constructor(private cloudinary: AcademeetCloudinaryService) {}
+  constructor(
+    private cloudinary: AcademeetCloudinaryService,
+    private notificationEvents: NotificationEventsService,
+
+  ) {}
 
   async createprofile(userId: string, dto: CreateProfileDto) {
     const profileExists = await this.prisma.profile.findUnique({
@@ -191,5 +197,64 @@ async getProfileById(id: string) {
         institution: true, // optional: returns institution data along with profile
       },
     });
+  }
+
+  async getProfileAndTrackView(viewerId: string, profileId: string) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: profileId },
+      include: {
+        user: true,
+        institution: {
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
+          },
+        },
+      },
+    });
+  
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+  
+    const viewedUserId = profile.userId;
+  
+    // Don’t track self-view
+    if (viewerId === viewedUserId) {
+      return profile;
+    }
+  
+    // Anti-spam: check last 30 mins
+    const recentView = await this.prisma.profileView.findFirst({
+      where: {
+        viewerId,
+        viewedId: viewedUserId,
+        createdAt: {
+          gte: new Date(Date.now() - 1000 * 60 * 30),
+        },
+      },
+    });
+  
+    if (!recentView) {
+      // Save view
+      await this.prisma.profileView.create({
+        data: {
+          viewerId,
+          viewedId: viewedUserId,
+        },
+      });
+  
+      // Emit notification
+      this.notificationEvents.emit({
+        type: NotificationEventType.PROFILE_VIEWED,
+        actorId: viewerId,
+        recipientId: viewedUserId,
+        entityId: profileId, 
+        createdAt: new Date(),
+      });
+    }
+  
+    return profile;
   }
 }
