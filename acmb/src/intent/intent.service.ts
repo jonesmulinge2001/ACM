@@ -5,9 +5,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from 'generated/prisma/client';
-import { CreateIntentDto } from 'src/dto/create-intent.dto';
-import { UpdateIntentDto } from 'src/dto/update-intent.dto';
-import { NotificationEventsService } from 'src/notifications/events/notification-events.service';
+import { CreateIntentDto } from '../dto/create-intent.dto';
+import { UpdateIntentDto } from '../dto/update-intent.dto';
+import { NotificationEventsService } from '../notifications/events/notification-events.service';
 import { NotificationEventType } from '../notifications/events/notification-event.type';
 
 @Injectable()

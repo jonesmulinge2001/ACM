@@ -13,8 +13,8 @@ import {
 import { IntentService } from './intent.service';
 import { JwtAuthGuard } from '../guards/jwt/jwtAuth.guard';
 import { RequestWithUser } from '../interfaces/requestwithUser.interface';
-import { CreateIntentDto } from 'src/dto/create-intent.dto';
-import { UpdateIntentDto } from 'src/dto/update-intent.dto';
+import { CreateIntentDto } from '../dto/create-intent.dto';
+import { UpdateIntentDto } from '../dto/update-intent.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('intent')
