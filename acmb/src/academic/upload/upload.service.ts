@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaClient, ProcessingStatus } from 'generated/prisma';
-import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
+import { CreateAcademicResourceDto } from '../../dto/academic-resource.dto';
 import {
   AcademeetCloudinaryService,
   AcademeetUploadType,
-} from 'src/shared/cloudinary/cloudinary/cloudinary.service';
+} from '../../shared/cloudinary/cloudinary/cloudinary.service';
 import { ProcessingService } from '../processing/processing.service';
 
 @Injectable()

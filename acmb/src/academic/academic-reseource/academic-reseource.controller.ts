@@ -9,7 +9,7 @@ import {
     Req,
   } from '@nestjs/common';
 import { AcademicResourceService } from './academic-reseource.service';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequestWithUser } from '../../interfaces/requestwithUser.interface';
   
   @Controller('resources')
   export class AcademicResourceController {

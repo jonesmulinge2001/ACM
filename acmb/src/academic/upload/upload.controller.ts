@@ -9,9 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateAcademicResourceDto } from 'src/dto/academic-resource.dto';
+import { CreateAcademicResourceDto } from '../../dto/academic-resource.dto';
 import { UploadService } from './upload.service';
-import { RequestWithUser } from 'src/interfaces/requestwithUser.interface';
+import { RequestWithUser } from '../../interfaces/requestwithUser.interface';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('upload')
