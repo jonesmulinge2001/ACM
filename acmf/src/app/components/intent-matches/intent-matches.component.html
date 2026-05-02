@@ -1,0 +1,115 @@
+<div class="space-y-4 px-1">
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-10 text-gray-400 text-sm">
+    Loading matches...
+  </div>
+
+  <!-- Match Cards -->
+  <div *ngFor="let match of matches" class="bg-white rounded-3xl border border-purple-100 p-5 shadow-sm">
+
+    <!-- HEADER -->
+    <div class="flex items-start justify-between">
+      <div class="flex gap-3 items-start">
+        <!-- Avatar  -->
+        <div class="relative flex-shrink-0">
+          <img *ngIf="match.user.profileImage" [src]="match.user.profileImage" [alt]="match.user.name"
+            class="w-14 h-14 rounded-full object-cover" />
+          <div *ngIf="!match.user.profileImage"
+            class="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold"
+            [ngClass]="getAvatarGradient(match.user.name)">
+            {{ getAvatar(match.user.name) }}
+          </div>
+        </div>
+
+        <!-- Text info -->
+        <div class="flex flex-col gap-0.5">
+
+          <!-- Name + Trending badge -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base font-bold text-gray-900 leading-tight">{{ match.user.name }}</span>
+          </div>
+
+          <!-- Course · Institution -->
+          <p class="text-gray-500 text-sm">
+            {{ match.user.course }} · {{ match.user.institution?.name }}
+          </p>
+
+          <!-- Academic Level row -->
+          <div class="flex items-center gap-3 text-gray-400 text-xs mt-0.5">
+            <span class="flex items-center gap-1">
+              <span class="material-icons" style="font-size: 13px;">school</span>
+              {{ match.user.academicLevel }}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bio -->
+    <p class="text-gray-700 text-sm mt-4 leading-relaxed">
+      {{ match.user.bio }}
+    </p>
+
+    <!-- Skill chips -->
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span *ngFor="let skill of match.user.skills"
+        class="px-3 py-1 rounded-full border border-gray-200 text-gray-600 text-xs font-medium bg-white">
+        {{ skill }}
+      </span>
+    </div>
+
+    <!-- Intent box -->
+    <div class="mt-4 border border-purple-100 rounded-2xl p-4 flex items-center gap-3 bg-white">
+      <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+        <span class="material-icons text-purple-500" style="font-size: 18px;">rocket_launch</span>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-purple-400 leading-none mb-1">
+          Looking For
+        </p>
+        <p class="text-sm font-semibold text-gray-900">
+          {{ getIntentLabel(match.intent.type) }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Shared signal -->
+    <div class="mt-4 flex items-center gap-1.5 text-sm text-gray-600">
+      <span class="material-icons text-purple-400" style="font-size: 17px;">diamond</span>
+      <span>You both love <strong class="text-gray-800">{{ match.sharedSkills.join(', ') }}</strong></span>
+      <span>🧡</span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="mt-5 flex gap-3 items-center">
+
+      <button
+        class="flex-1 py-3 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+        <span class="material-icons" style="font-size: 17px;">person_add</span>
+        Connect
+      </button>
+
+      <button
+        class="flex-1 py-3 rounded-full border border-gray-200 text-gray-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+        <span class="material-icons" style="font-size: 17px;">chat_bubble_outline</span>
+        Message
+      </button>
+
+      <button
+        class="w-11 h-11 rounded-full bg-purple-50 flex items-center justify-center hover:bg-purple-100 transition-colors flex-shrink-0">
+        <span class="material-icons text-purple-500" style="font-size: 18px;">hub</span>
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && matches.length === 0" class="text-center py-16 text-gray-400 text-sm">
+    No matching students found yet
+  </div>
+
+</div>

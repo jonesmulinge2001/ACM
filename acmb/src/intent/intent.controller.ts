@@ -31,6 +31,11 @@ export class IntentController {
     return this.service.findMine(req.user.id);
   }
 
+  @Get('matches')
+  findMatches(@Req() req: RequestWithUser) {
+  return this.service.findMatches(req.user.id);
+}
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateIntentDto) {
     return this.service.update(id, dto);
