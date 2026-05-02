@@ -14,6 +14,7 @@ import { NotificationService } from '../../services/notification.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './notifications.component.html',
+  styleUrl: './notifications.component.css',
 })
 export class NotificationComponent implements OnInit, OnDestroy {
   @ViewChild('notificationMenu') notificationMenu!: ElementRef;

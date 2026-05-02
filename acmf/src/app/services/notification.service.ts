@@ -29,36 +29,46 @@ export class NotificationService {
     this.initSocket();
   }
 
-  /** ================= FETCH ================= */
   fetchNotifications(loadMore = false): void {
     if (this.fetching) return;
     this.fetching = true;
-
+  
     let url = this.apiUrl;
     if (loadMore && this.lastCursor) {
       url += `?cursor=${this.lastCursor}`;
     }
-
+  
     this.http.get<NotificationListResponse>(url).subscribe({
       next: (res) => {
         const data = res.notifications;
-
         if (data.length > 0) {
           this.lastCursor = data[data.length - 1].id;
         }
-
         const merged = loadMore
           ? [...this._notifications.value, ...data]
           : data;
-
         this._notifications.next(merged);
         this._unreadCount.next(res.unreadCount);
       },
       complete: () => (this.fetching = false),
-      error: (err) => console.error(err),
+      error: (err) => {
+        console.error(err);
+        this.fetching = false; // ← THE ACTUAL BUG: was missing, blocking all future fetches
+      },
     });
   }
-
+  
+  private initSocket(): void {
+    const token = localStorage.getItem('token') ?? '';
+    this.socket = io(`${environment.apiBase}/notifications`, { // ← match the gateway namespace
+      auth: { token },
+    });
+  
+    this.socket.on('notification', () => {
+      this.fetching = false; // ensure the guard doesn't block this fetch
+      this.fetchNotifications(false);
+    });
+  }
   /** ================= MARK AS SEEN ================= */
   markAsSeen(notificationId: string): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${notificationId}/seen`, {});
@@ -68,15 +78,7 @@ export class NotificationService {
     return this.http.patch<void>(`${this.apiUrl}/seen`, {});
   }
 
-  /** ================= SOCKET ================= */
-  private initSocket(): void {
-    const token = localStorage.getItem('token') ?? '';
-    this.socket = io(`${environment.apiBase}`, { auth: { token } });
 
-    this.socket.on('notification', (event: NotificationEventPayload) => {
-      this.fetchNotifications(); // simplest + safest approach
-    });
-  }
 
   /** ================= REALTIME MESSAGE ================= */
   private buildRealtimeMessage(type: NotificationItem['type']): string {

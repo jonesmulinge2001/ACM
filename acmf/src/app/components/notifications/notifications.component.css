@@ -1,0 +1,164 @@
+/* ── Panel entrance ─────────────────────────────────────── */
+.notif-panel {
+  animation: panelIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top right;
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Notification rows stagger ──────────────────────────── */
+.notif-item {
+  animation: rowIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Unread row ─────────────────────────────────────────── */
+.notif-item.unread {
+  background-color: #eef3f8;
+}
+.notif-item.unread:hover {
+  background-color: #dce6f0;
+}
+.notif-item:not(.unread) {
+  background-color: #ffffff;
+}
+.notif-item:not(.unread):hover {
+  background-color: #f8f8f8;
+}
+
+/* ── Badge pulse ────────────────────────────────────────── */
+.badge {
+  animation: badgePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes badgePop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Bell ring (subtle) ─────────────────────────────────── */
+.bell-ring {
+  animation: bellRing 2.5s ease-in-out 1.5s infinite;
+}
+@keyframes bellRing {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  5%,
+  15% {
+    transform: rotate(12deg);
+  }
+  10%,
+  20% {
+    transform: rotate(-10deg);
+  }
+  25% {
+    transform: rotate(0deg);
+  }
+}
+
+/* ── Refresh spin ───────────────────────────────────────── */
+.spin {
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Trigger active state ───────────────────────────────── */
+.notif-trigger.menu-open {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* ── Preview popover entrance ───────────────────────────── */
+.preview-popover {
+  animation: popoverIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top left;
+}
+@keyframes popoverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Mobile backdrop fade ───────────────────────────────── */
+.backdrop {
+  animation: fadeIn 0.18s ease both;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 99px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+/* ── Mark-read reveal on row hover ─────────────────────── */
+.notif-item:hover .mark-read-btn {
+  opacity: 1;
+}
+
+/* ── Icon buttons ───────────────────────────────────────── */
+.icon-btn {
+  position: relative;
+  overflow: hidden;
+}
+.icon-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.icon-btn:active::after {
+  opacity: 0.08;
+}
