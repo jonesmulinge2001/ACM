@@ -114,3 +114,7 @@
 .toast-warning {
   border-left: 6px solid #facc15 !important; /* Tailwind yellow-400 */
 }
+
+.swal2-container {
+  z-index: 999999 !important;
+}

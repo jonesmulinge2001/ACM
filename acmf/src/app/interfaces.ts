@@ -1,3 +1,4 @@
+
 export interface RegisterRequest {
   name: string;
   email: string;
@@ -103,7 +104,7 @@ export interface Author {
   id: string;
   name: string;
   profileImage?: string | null;
-  institution?: {name: string} | null;
+  institution?: { name: string } | null;
   academicLevel?: string;
 }
 
@@ -112,8 +113,8 @@ export interface Post {
   title: string;
   body?: string;
   fileUrl?: string;
-  fileType?: 'image' | 'video' | 'pdf'; 
-  fileName?: string;  
+  fileType?: 'image' | 'video' | 'pdf';
+  fileName?: string;
   createdAt: string;
   updatedAt: string;
   type: 'GENERAL' | 'ACADEMIC' | 'RESOURCE' | 'opportunity';
@@ -171,7 +172,6 @@ export interface Comment {
   likes?: number;
   isLikedByCurrentUser?: boolean;
   replies?: Comment[];
-  
 }
 
 export interface CommentResponse {
@@ -265,15 +265,13 @@ export interface DashboardOverview {
   institutionStats: InstitutionStats[];
 }
 
-
 export interface AdminUserProfile {
   institution?: {
     id: string;
     name?: string;
-  }
+  };
 
   profileImage?: string | null;
-
 }
 
 export interface AdminUser {
@@ -295,16 +293,15 @@ export interface BulkActionResponse {
   message: string;
 }
 
-
 export type FlagStatus = 'PENDING' | 'REVIEWED' | 'RESOLVED';
 export type PostStatusAction = 'DELETE' | 'RESTORE';
 
 export interface AdminPostAuthorProfile {
   profileImage?: string | null;
   institution?: {
-    id: string,
+    id: string;
     name: string;
-  }
+  };
   academicLevel?: string | null;
 }
 
@@ -327,7 +324,6 @@ export interface AdminPost {
 
   author: AdminPostAuthor;
 
-
   // counts coming from `_count`
 
   likesCount: number;
@@ -342,7 +338,7 @@ export interface PostFlagLiteReporter {
     institution?: {
       id: string;
       name: string;
-    }
+    };
   };
 }
 
@@ -384,8 +380,6 @@ export interface GroupMember {
   };
 }
 
-
-
 export interface GroupResourceComment {
   id: string;
   content: string;
@@ -398,14 +392,13 @@ export interface GroupResourceComment {
       institution: {
         id: string;
         name: string;
-      }
+      };
     };
   };
 
-  likesCount?: number; 
-  isLikedByCurrentUser?: boolean; 
+  likesCount?: number;
+  isLikedByCurrentUser?: boolean;
 }
-
 
 export interface GroupResource {
   id: string;
@@ -421,19 +414,18 @@ export interface GroupResource {
       institution: {
         id: string;
         name: string;
-      } 
-    }
+      };
+    };
   };
   likesCount: number;
   isLikedByCurrentUser: boolean;
   commentsCount: number;
   comments: GroupResourceComment[];
   originalName?: string | null;
-  fileType?: string | null; 
+  fileType?: string | null;
   showMenu?: boolean;
   previewImage?: string;
 }
-
 
 export interface GroupMessage {
   id: string;
@@ -443,7 +435,7 @@ export interface GroupMessage {
   createdAt: string;
   user?: { id: string; name: string; profileImage?: string | null };
   replyTo?: GroupMessage;
-  mediaUrl?: string; 
+  mediaUrl?: string;
   mediaType?: 'image' | 'video' | 'file';
 }
 
@@ -465,15 +457,12 @@ export interface Group {
   updatedAt?: string;
   members?: GroupMember[];
   resources?: GroupResource[];
-  _count?: { 
-    members?: number; 
-    resources?: number 
+  _count?: {
+    members?: number;
+    resources?: number;
   };
   isDeleted?: boolean;
 }
-
-
-
 
 export interface BulkAddMembersDto {
   userIds: string[];
@@ -564,11 +553,8 @@ export interface MessageAttachment {
   url: string;
   type: string; // 'image', 'video', 'file', etc.
   name: string;
-  progress?: number
+  progress?: number;
 }
-
-
-
 
 /** Message coming from REST or socket */
 export interface ConversationMessage {
@@ -594,7 +580,7 @@ export interface SendMessageRequest {
   recipientId?: string; // optional convenience: backend can create one-on-one
   content: string;
   // attachments?: string[] | null;
-  attachments?: MessageAttachment[] | null; 
+  attachments?: MessageAttachment[] | null;
 }
 
 /** WebSocket client -> server payload */
@@ -603,7 +589,7 @@ export interface DmSocketSendPayload {
   recipientId?: string;
   content: string;
   tempId?: string | null; // optional client temp id for local optimistic UI
-  attachments?:  MessageAttachment[]
+  attachments?: MessageAttachment[];
 }
 
 /** WebSocket events */
@@ -659,7 +645,7 @@ export interface Institution {
   // officialDomain?: string;
   createdAt?: string;
   reviewedById?: string | null;
-  _count?: { profiles: number }; 
+  _count?: { profiles: number };
 }
 
 export interface RegisterInstitutionRequest {
@@ -669,7 +655,6 @@ export interface RegisterInstitutionRequest {
   officialDomain: string;
   websiteUrl: string;
 }
-
 
 export type InstitutionStatusFilter = 'ALL' | 'PENDING_REVIEW' | 'APPROVED';
 
@@ -718,7 +703,6 @@ export interface GlobalSearchResult {
   resources: AcademicResource[];
 }
 
-
 export type NotificationType =
   | 'FOLLOWED'
   | 'POST_LIKED'
@@ -727,39 +711,37 @@ export type NotificationType =
   | 'INTENT_OVERLAP'
   | 'PROFILE_VIEWED';
 
-  export interface NotificationItem {
-    id: string;
-    type: NotificationType;
-    entityId?: string | null;
-  
-    actorIds: string[];
-    actorNames: string[];
-  
-    // 🔥 NEW
-    actorProfiles?: {
-      id: string;
-      userId: string;
-      name: string;
-      profileImage?: string | null;
-      institutionId?: string;
-      course?: string;
-    }[];
-  
-    count: number;
-    seen: boolean;
-    message: string;
-    createdAt: string;
-  
-    actionUrl?: string;
-    actionMeta?: Record<string, any>;
-  }
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  entityId?: string | null;
 
+  actorIds: string[];
+  actorNames: string[];
+
+  // 🔥 NEW
+  actorProfiles?: {
+    id: string;
+    userId: string;
+    name: string;
+    profileImage?: string | null;
+    institutionId?: string;
+    course?: string;
+  }[];
+
+  count: number;
+  seen: boolean;
+  message: string;
+  createdAt: string;
+
+  actionUrl?: string;
+  actionMeta?: Record<string, any>;
+}
 
 export interface NotificationListResponse {
   notifications: NotificationItem[];
   unreadCount: number;
 }
-
 
 export interface NotificationEventPayload {
   type: NotificationType;
@@ -771,8 +753,7 @@ export interface NotificationEventPayload {
 // theme
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-
-// UniTok Videos 
+// UniTok Videos
 export interface CreateVideoDto {
   title: string;
   description: string;
@@ -794,7 +775,7 @@ export interface Video {
   tags: string[];
   videoUrl: string;
   likesCount: number;
-  commentsCount: number
+  commentsCount: number;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -841,4 +822,54 @@ export interface CreateVideoCommentRequest {
 
 export interface UpdateVideoCommentRequest {
   content: string;
+}
+
+
+export type IntentType = 
+| 'STUDY_PARTNER'
+| 'BUILD_PROJECT'
+| 'INTERNSHIP'
+| 'STARTUP'
+| 'FIND_COFOUNDER'
+| 'HACKATHON_TEAM'
+| 'SKILL_EXCHANGE'
+| 'MENTORSHIP'
+| 'RESEARCH_COLLAB'
+| 'ACCOUNTABILITY_PARTNER'
+
+export interface IntentContext {
+  skills?: string;
+  description?: string;
+}
+
+export interface CreateIntentDto {
+  type: IntentType;
+  priority: number; // 1-5
+  context?: IntentContext;
+}
+
+export interface Intent {
+  id: string;
+  type: IntentType;
+  priority: number;
+  context?: IntentContext;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IntentMatch {
+  matchType: 'INTENT_MATCH' | 'PROFILE_SKILL';
+
+  user: Profile;
+  
+  intent: {
+    id: string;
+    type: string;
+    priority: number;
+    skill?: string;
+  };
+
+  sharedSkills: string[];
+  compatibilityScore: number;
 }
