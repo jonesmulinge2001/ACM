@@ -20,11 +20,11 @@ export class CreateGroupComponent {
   @ViewChild('coverInput') coverInput!: ElementRef<HTMLInputElement>;
 
   groupForm: FormGroup;
-  isLoading = false;
-  successMessage = '';
-  errorMessage = '';
-  showSuccessBanner = false;
-  showErrorBanner = false;
+  isLoading: boolean = false;
+  successMessage: string = '';
+  errorMessage: string = '';
+  showSuccessBanner: boolean = false;
+  showErrorBanner: boolean = false;
   coverPreview: string | ArrayBuffer | null = null;
   selectedCoverFile: File | null = null;
 

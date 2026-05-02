@@ -56,8 +56,12 @@ export class GroupsService {
   }
 
   createGroup(payload: Partial<Group>): Observable<Group> {
+    const isFormData = payload instanceof FormData;
+  
     return this.http.post<Group>(this.base, payload, {
-      headers: this.getAuthHeaders(),
+      headers: isFormData
+        ? this.getFormDataHeaders() 
+        : this.getAuthHeaders(),
     });
   }
 
