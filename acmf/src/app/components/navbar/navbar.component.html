@@ -187,7 +187,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
           <div class="flex items-center gap-2.5">
-            <span class="material-icons text-blue-600 text-xl">chat_bubble_outline</span>
+            <span class="material-icons text-blue-600 text-xl">chat_bubble</span>
             <h3 class="text-sm font-semibold tracking-tight text-gray-900">Recent Conversations</h3>
           </div>
           <button 
@@ -344,6 +344,29 @@
       </div>
     </ng-container>
   </div>
+
+  <button
+  (click)="showIntentModal = true"
+  class="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-900 hover:bg-black text-white text-sm font-semibold transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+>
+  <span class="material-icons text-base">add</span>
+  <span>Looking for...</span>
+</button>
+
+<!-- Mobile: icon-only -->
+<button
+  (click)="showIntentModal = true"
+  class="sm:hidden p-2 rounded-full bg-gray-900 hover:bg-black text-white transition-all duration-200"
+  aria-label="Looking for..."
+>
+  <span class="material-icons text-xl">add</span>
+</button>
+  
+  <app-intent-modal
+    *ngIf="showIntentModal"
+    (close)="showIntentModal = false"
+  ></app-intent-modal>
+
 </div>
 
 <!-- Mobile Search Modal - Enhanced -->

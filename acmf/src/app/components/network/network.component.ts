@@ -6,13 +6,15 @@ import { StudentCardComponent } from '../shared/student-card/student-card.compon
 import { FollowService } from '../../services/follow.service';
 import { RecommenderService } from '../../services/recommender.service';
 import { forkJoin } from 'rxjs';
+import { IntentMatchesComponent } from "../intent-matches/intent-matches.component";
 
 export type NetworkTab =
   | 'skills'
   | 'interests'
   | 'course'
   | 'academic-level'
-  | 'institution';
+  | 'institution'
+  | 'matches';
 
 export interface TabConfig {
   key: NetworkTab;
@@ -25,7 +27,7 @@ export interface TabConfig {
 }
 
 @Component({
-  imports: [CommonModule, StudentCardComponent],
+  imports: [CommonModule, StudentCardComponent, IntentMatchesComponent],
   selector: 'app-network',
   templateUrl: './network.component.html',
   styleUrls: ['./network.component.css'],
@@ -94,6 +96,15 @@ export class NetworkComponent implements OnInit {
       emptyTitle: 'No institution matches',
       emptySubtitle: 'Make sure your institution is set in your profile.',
     },
+    {
+      key: 'matches',
+      label: 'Matches',
+      icon: 'auto_awesome',
+      description: 'Students whose goals and skills align with yours.',
+      emptyIcon: 'groups',
+      emptyTitle: 'No intent matches yet',
+      emptySubtitle: 'Set your intent to discover matching students.'
+    }
   ];
 
   get activeTab(): TabConfig | undefined {

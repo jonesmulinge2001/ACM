@@ -16,6 +16,7 @@ import { NotificationComponent } from '../notifications/notifications.component'
 import { SettingsPanelComponent } from "../../settings/settings-panel/settings-panel.component";
 import { ConversationsService } from '../../services/conversations.service';
 import { DmChatComponent } from '../dm-chat/dm-chat/dm-chat.component';
+import { IntentModalComponent } from "../intent-modal/intent-modal.component";
 
 @Component({
   selector: 'app-navbar',
@@ -26,8 +27,9 @@ import { DmChatComponent } from '../dm-chat/dm-chat/dm-chat.component';
     RouterModule,
     NotificationComponent,
     SettingsPanelComponent,
-    DmChatComponent
-  ],
+    DmChatComponent,
+    IntentModalComponent
+],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -62,7 +64,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   chatModalOpen: boolean = false;
 
   @Output() chatOpened = new EventEmitter<void>();
-@Output() chatClosed = new EventEmitter<void>();
+  @Output() chatClosed = new EventEmitter<void>();
+
+  showIntentModal: boolean = false;
+  @Output() openIntent = new EventEmitter<void>();
 
   
   
@@ -313,6 +318,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.recentPanelOpen = false;
     this.router.navigate(['/messages']);
   }
+
+openIntentModal() {
+  this.openIntent.emit();
+}
   
 
   logOut(): void {

@@ -7,6 +7,122 @@
       <p class="text-sm text-gray-500 mt-1">Tell the community about yourself</p>
     </div>
 
+    <!-- ✨ PROGRESS BAR CARD -->
+    <div class="mb-5 bg-white rounded-2xl shadow-md border border-gray-100 p-4 sticky top-4 z-20 backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <!-- Animated icon based on progress -->
+          <span class="text-lg transition-all duration-500"
+            [class.animate-bounce]="completionPercentage === 100">
+            {{ completionPercentage === 100 ? '🏆' : completionPercentage >= 60 ? '🚀' : completionPercentage >= 30 ? '✏️' : '📝' }}
+          </span>
+          <span class="text-sm font-semibold text-gray-700">Profile Completion</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-400">{{ completedFields }}/{{ totalFields }} fields</span>
+          <span class="text-sm font-bold tabular-nums"
+            [class.text-blue-600]="completionPercentage < 100"
+            [class.text-purple-600]="completionPercentage === 100">
+            {{ completionPercentage }}%
+          </span>
+        </div>
+      </div>
+
+      <!-- Progress Track -->
+      <div class="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+        <!-- Animated shimmer on fill -->
+        <div
+          class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r transition-all duration-700 ease-out"
+          [class]="'bg-gradient-to-r ' + progressColor"
+          [style.width.%]="completionPercentage">
+          <!-- Shimmer effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent
+                      animate-shimmer rounded-full"></div>
+        </div>
+        <!-- Glowing dot at the tip -->
+        <div *ngIf="completionPercentage > 2 && completionPercentage < 100"
+          class="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md border-2 border-blue-500
+                 transition-all duration-700 ease-out"
+          [style.left]="'calc(' + completionPercentage + '% - 6px)'">
+        </div>
+      </div>
+
+      <!-- Progress label & field dots -->
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-xs text-gray-500 transition-all duration-300">{{ progressLabel }}</span>
+
+        <!-- Field completion dots -->
+        <div class="flex items-center gap-1">
+          <div *ngFor="let i of [1,2,3,4,5,6,7,8,9]; let idx = index"
+            class="w-2 h-2 rounded-full transition-all duration-500"
+            [class.bg-gradient-to-r]="idx < completedFields"
+            [class.from-blue-400]="idx < completedFields"
+            [class.to-purple-500]="idx < completedFields"
+            [class.bg-gray-200]="idx >= completedFields"
+            [class.scale-125]="idx === completedFields - 1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🏆 BADGE OVERLAY (shown at 100%) -->
+    <div *ngIf="showBadge"
+      class="mb-5 relative overflow-hidden rounded-2xl border-2 border-purple-200 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-5 shadow-lg">
+
+      <!-- Confetti dots (CSS only) -->
+      <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="confetti-dot" style="left:10%; animation-delay:0s; background:#6366f1;"></div>
+        <div class="confetti-dot" style="left:25%; animation-delay:0.1s; background:#ec4899;"></div>
+        <div class="confetti-dot" style="left:40%; animation-delay:0.2s; background:#f59e0b;"></div>
+        <div class="confetti-dot" style="left:55%; animation-delay:0.15s; background:#10b981;"></div>
+        <div class="confetti-dot" style="left:70%; animation-delay:0.05s; background:#3b82f6;"></div>
+        <div class="confetti-dot" style="left:85%; animation-delay:0.25s; background:#a855f7;"></div>
+        <div class="confetti-dot" style="left:18%; animation-delay:0.3s; background:#f43f5e;"></div>
+        <div class="confetti-dot" style="left:62%; animation-delay:0.35s; background:#14b8a6;"></div>
+      </div>
+
+      <div class="flex items-center gap-4 relative z-10">
+        <!-- Badge icon with pulse ring -->
+        <div class="relative flex-shrink-0" [class.badge-pop]="badgeAnimating">
+          <div class="absolute inset-0 rounded-full bg-purple-400 opacity-30 animate-ping scale-110"></div>
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500
+                      flex items-center justify-center shadow-xl border-4 border-white">
+            <span class="text-3xl">🏆</span>
+          </div>
+          <!-- Star badges around -->
+          <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600
+                      flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow">
+            ✓
+          </div>
+        </div>
+
+        <div class="flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-base font-bold text-gray-900">Profile Champion Unlocked!</h3>
+            <span class="px-2 py-0.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-semibold
+                         rounded-full shadow-sm">NEW</span>
+          </div>
+          <p class="text-sm text-gray-600 mt-0.5">
+            🎉 Amazing! You've completed your entire profile. You're all set to connect with the community!
+          </p>
+          <div class="flex items-center gap-3 mt-2">
+            <div class="flex items-center gap-1 text-xs text-purple-600 font-medium">
+              <span>⭐</span> <span>+50 XP earned</span>
+            </div>
+            <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
+              <span>🔓</span> <span>Full access unlocked</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close badge -->
+        <button (click)="showBadge = false"
+          class="flex-shrink-0 text-gray-300 hover:text-gray-500 transition-colors self-start">
+          <span class="material-icons text-sm">close</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Profile Card -->
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 
@@ -76,6 +192,9 @@
               <input formControlName="name" type="text" placeholder="Enter your full name"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 [class.border-red-300]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" />
+              <!-- Field complete checkmark -->
+              <span *ngIf="profileForm.get('name')?.valid && profileForm.get('name')?.value"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
               class="text-red-500 text-xs mt-1">
@@ -123,6 +242,8 @@
               <input formControlName="academicLevel" type="text" placeholder="e.g., Year 1, Sophomore, Masters"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 [class.border-red-300]="profileForm.get('academicLevel')?.invalid && profileForm.get('academicLevel')?.touched" />
+              <span *ngIf="profileForm.get('academicLevel')?.valid && profileForm.get('academicLevel')?.value"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <div *ngIf="profileForm.get('academicLevel')?.invalid && profileForm.get('academicLevel')?.touched"
               class="text-red-500 text-xs mt-1">
@@ -130,7 +251,7 @@
             </div>
           </div>
 
-          <!-- Course/Program of Study - -->
+          <!-- Course -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">
               Course/Program of Study <span class="text-red-500">*</span>
@@ -143,6 +264,8 @@
                 placeholder="e.g., Computer Science, Business Administration, Medicine"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 [class.border-red-300]="profileForm.get('course')?.invalid && profileForm.get('course')?.touched" />
+              <span *ngIf="profileForm.get('course')?.valid && profileForm.get('course')?.value"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <p class="text-xs text-gray-400 mt-1">Enter your major or program of study</p>
             <div *ngIf="profileForm.get('course')?.invalid && profileForm.get('course')?.touched"
@@ -164,6 +287,8 @@
                 placeholder="e.g., Public Speaking, AI, Tutoring (comma separated)"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 [class.border-red-300]="profileForm.get('skills')?.invalid && profileForm.get('skills')?.touched" />
+              <span *ngIf="profileForm.get('skills')?.valid && profileForm.get('skills')?.value"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <p class="text-xs text-gray-400 mt-1">Separate skills with commas</p>
             <div *ngIf="profileForm.get('skills')?.invalid && profileForm.get('skills')?.touched"
@@ -185,6 +310,8 @@
                 placeholder="e.g., Math, Music, Travelling (comma separated)"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 [class.border-red-300]="profileForm.get('interests')?.invalid && profileForm.get('interests')?.touched" />
+              <span *ngIf="profileForm.get('interests')?.valid && profileForm.get('interests')?.value"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <p class="text-xs text-gray-400 mt-1">Separate interests with commas</p>
             <div *ngIf="profileForm.get('interests')?.invalid && profileForm.get('interests')?.touched"
@@ -205,6 +332,8 @@
               <textarea formControlName="bio" rows="4" placeholder="Write a short bio about yourself..."
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                 [class.border-red-300]="profileForm.get('bio')?.invalid && profileForm.get('bio')?.touched"></textarea>
+              <span *ngIf="profileForm.get('bio')?.valid && profileForm.get('bio')?.value"
+                class="absolute right-3 top-3 text-green-500 text-sm font-bold animate-fade-in">✓</span>
             </div>
             <div class="flex justify-between items-center mt-1">
               <p class="text-xs text-gray-400">Tell others about your journey, goals, and passions</p>
@@ -222,10 +351,11 @@
               class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200">
               Cancel
             </button>
-            <button type="submit" [disabled]="profileForm.invalid"
+            <button type="submit" [disabled]="profileForm.invalid || isSubmitting"
               class="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              <span class="material-icons text-sm">save</span>
-              Save Profile
+              <span *ngIf="!isSubmitting" class="material-icons text-sm">save</span>
+              <span *ngIf="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              {{ isSubmitting ? 'Saving...' : 'Save Profile' }}
             </button>
           </div>
         </form>
@@ -239,8 +369,8 @@
         <div class="flex-1">
           <p class="text-sm font-medium text-blue-800">Profile Tips</p>
           <p class="text-xs text-blue-600 mt-0.5">
-            Complete your profile to connect with peers, discover opportunities, and showcase your skills to the
-            community.
+            Complete your profile to connect with peers, discover opportunities, and showcase your skills to the community.
+            <strong>Upload both photos</strong> to reach 100% and earn your Profile Champion badge!
           </p>
         </div>
       </div>

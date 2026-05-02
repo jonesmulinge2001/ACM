@@ -9,8 +9,8 @@ import { Router, RouterModule } from '@angular/router';
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent implements OnInit {
-  collapsed = false;
-  showSidebar = true;
+  collapsed: boolean = false;
+  showSidebar: boolean = true;
   isBrowser: boolean;
 
   navItems = [

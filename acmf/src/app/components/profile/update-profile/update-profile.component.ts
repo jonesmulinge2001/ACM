@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ProfileService } from '../../../services/profile.service';
-import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 import { Profile } from '../../../interfaces';
 import { InstitutionService } from '../../../services/institution.service';
 
@@ -24,7 +24,6 @@ export class UpdateProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
-    private toastr: ToastrService,
     private router: Router,
     private institutionService: InstitutionService
   ) {}
@@ -35,12 +34,32 @@ export class UpdateProfileComponent implements OnInit {
     this.loadProfile();
   }
 
+  // ---------- SWEETALERT HELPERS ----------
+  private alert(icon: any, title: string, text?: string) {
+    return Swal.fire({
+      icon,
+      title,
+      text,
+      confirmButtonText: 'OK',
+      buttonsStyling: false,
+      background: '#ffffff',
+      color: '#111827',
+      customClass: {
+        popup: 'rounded-2xl p-6 shadow-lg border border-gray-200',
+        title: 'text-lg font-semibold text-gray-900',
+        htmlContainer: 'text-gray-500 text-sm',
+        confirmButton:
+          'mt-4 px-5 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition',
+      },
+    });
+  }
+
   private initForm(): void {
     this.profileForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       institutionId: ['', Validators.required],
       academicLevel: ['', [Validators.required, Validators.maxLength(100)]],
-      course: ['', [Validators.required, Validators.maxLength(200)]], 
+      course: ['', [Validators.required, Validators.maxLength(200)]],
       skills: ['', [Validators.required, Validators.maxLength(500)]],
       bio: ['', [Validators.required, Validators.maxLength(500)]],
       interests: ['', [Validators.maxLength(500)]]
@@ -50,7 +69,7 @@ export class UpdateProfileComponent implements OnInit {
   private loadInstitutions(): void {
     this.institutionService.getInstitutions().subscribe({
       next: (data) => (this.institutions = data),
-      error: () => this.toastr.error('Failed to load institutions'),
+      error: () => this.alert('error', 'Failed to load institutions'),
     });
   }
 
@@ -58,22 +77,23 @@ export class UpdateProfileComponent implements OnInit {
     this.profileService.getMyProfile().subscribe({
       next: (profile: Profile) => {
         this.isLoading = false;
+
         this.profileForm.patchValue({
           name: profile.name,
           institutionId: profile.institutionId,
           academicLevel: profile.academicLevel,
-          course: profile.course || '', 
+          course: profile.course || '',
           skills: profile.skills?.join(', ') || '',
           bio: profile.bio,
           interests: profile.interests?.join(', ') || ''
         });
+
         this.profilePreview = profile.profileImage ?? null;
         this.coverPreview = profile.coverPhoto ?? null;
       },
-      error: (err) => {
+      error: () => {
         this.isLoading = false;
-        console.error('Failed to load profile:', err);
-        this.toastr.error('Failed to load profile');
+        this.alert('error', 'Failed to load profile');
       }
     });
   }
@@ -85,41 +105,29 @@ export class UpdateProfileComponent implements OnInit {
   onSubmit(): void {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
-      
-      if (this.profileForm.get('name')?.errors?.['required']) {
-        this.toastr.error('Please enter your name');
-      } else if (this.profileForm.get('institutionId')?.errors?.['required']) {
-        this.toastr.error('Please select your institution');
-      } else if (this.profileForm.get('academicLevel')?.errors?.['required']) {
-        this.toastr.error('Please enter your academic level');
-      } else if (this.profileForm.get('course')?.errors?.['required']) { 
-        this.toastr.error('Please enter your course');
-      } else if (this.profileForm.get('skills')?.errors?.['required']) {
-        this.toastr.error('Please enter your skills');
-      } else if (this.profileForm.get('bio')?.errors?.['required']) {
-        this.toastr.error('Please enter a bio');
-      }
+      this.alert('warning', 'Please complete all required fields');
       return;
     }
 
     const formData = this.profileForm.value;
-    
-    // Parse skills and interests
-    formData.skills = formData.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s);
-    formData.interests = formData.interests ? 
-      formData.interests.split(',').map((i: string) => i.trim()).filter((i: string) => i) : [];
+
+    formData.skills = formData.skills
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter((s: string) => s);
+
+    formData.interests = formData.interests
+      ? formData.interests.split(',').map((i: string) => i.trim()).filter((i: string) => i)
+      : [];
 
     this.profileService.updateProfile(formData).subscribe({
       next: () => {
-        this.toastr.success('Profile updated successfully! 🎉');
-        setTimeout(() => {
-          this.goBack();
-        }, 1500);
+        this.alert('success', 'Profile updated successfully! 🎉')
+          .then(() => this.goBack());
       },
       error: (err) => {
-        console.error('Failed to update profile:', err);
-        const errorMessage = err.error?.message || 'Failed to update profile';
-        this.toastr.error(errorMessage);
+        const message = err.error?.message || 'Failed to update profile';
+        this.alert('error', 'Update failed', message);
       }
     });
   }
@@ -128,28 +136,17 @@ export class UpdateProfileComponent implements OnInit {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      this.toastr.error('Profile image must be less than 2MB');
-      return;
-    }
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+      this.alert('error', 'Image too large', 'Max size is 2MB');
       return;
     }
 
     this.profileService.uploadProfileImage(file).subscribe({
       next: (res) => {
         this.profilePreview = res.profileImage ?? null;
-        this.toastr.success('Profile photo updated successfully');
+        this.alert('success', 'Profile photo updated');
       },
-      error: (err) => {
-        console.error('Failed to upload profile photo:', err);
-        this.toastr.error('Failed to upload profile photo');
-      }
+      error: () => this.alert('error', 'Upload failed')
     });
   }
 
@@ -157,28 +154,17 @@ export class UpdateProfileComponent implements OnInit {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      this.toastr.error('Cover image must be less than 5MB');
-      return;
-    }
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      this.toastr.error('Only JPEG, PNG, GIF, and WEBP images are allowed');
+      this.alert('error', 'Image too large', 'Max size is 5MB');
       return;
     }
 
     this.profileService.uploadCoverPhoto(file).subscribe({
       next: (res) => {
         this.coverPreview = res.coverPhoto ?? null;
-        this.toastr.success('Cover photo updated successfully');
+        this.alert('success', 'Cover photo updated');
       },
-      error: (err) => {
-        console.error('Failed to upload cover photo:', err);
-        this.toastr.error('Failed to upload cover photo');
-      }
+      error: () => this.alert('error', 'Upload failed')
     });
   }
 }

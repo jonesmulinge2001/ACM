@@ -24,17 +24,17 @@ export class PostDetailComponent implements OnInit {
   @Output() postUpdated = new EventEmitter<Post>();
 
   post: Post | null = null;
-  loading = false;
+  loading: boolean = false;
   error: string | null = null;
-  showFullText = false;
-  isBookmarked = false;
-  showMoreOptions = false;
-  newComment = '';
-  postingComment = false;
-  viewCount = 0;
-  showMediaViewer = false;
-  currentMediaUrl = '';
-  currentUserProfileImage = 'assets/default-avatar.png';
+  showFullText: boolean = false;
+  isBookmarked: boolean = false;
+  showMoreOptions: boolean = false;
+  newComment: string = '';
+  postingComment: boolean = false;
+  viewCount: number = 0;
+  showMediaViewer: boolean = false;
+  currentMediaUrl: string = '';
+  currentUserProfileImage: string = 'assets/default-avatar.png';
 
   private currentUserId: string | null = null;
 

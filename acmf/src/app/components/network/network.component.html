@@ -63,13 +63,26 @@
   </div>
 
   <!-- ── Profiles grid ── -->
-  <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <ng-container *ngIf="getProfiles(selectedTab).length > 0; else empty">
-      <app-student-card *ngFor="let profile of getProfiles(selectedTab); trackBy: trackByUserId" [profile]="profile"
-        [isFollowing]="isUserFollowing(profile.userId)" (follow)="followUser($event)" (unfollow)="unfollowUser($event)">
-      </app-student-card>
-    </ng-container>
-  </div>
+<!-- MATCHES TAB -->
+<div *ngIf="!loading && selectedTab === 'matches'" class="mt-4">
+  <app-intent-matches></app-intent-matches>
+</div>
+
+<!-- NORMAL PROFILE TABS -->
+<div
+  *ngIf="!loading && selectedTab !== 'matches'"
+  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+>
+  <ng-container *ngIf="getProfiles(selectedTab).length > 0; else empty">
+    <app-student-card
+      *ngFor="let profile of getProfiles(selectedTab); trackBy: trackByUserId"
+      [profile]="profile"
+      [isFollowing]="isUserFollowing(profile.userId)"
+      (follow)="followUser($event)"
+      (unfollow)="unfollowUser($event)">
+    </app-student-card>
+  </ng-container>
+</div>
 
   <!-- ── Empty state ── -->
   <ng-template #empty>
