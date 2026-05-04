@@ -29,6 +29,7 @@ export class PostComponent implements OnInit {
   errorMessage: string = '';
   showSuccessMessage: boolean = false;
   showErrorMessage: boolean = false;
+
   
   // Category options
   categories = [
@@ -51,6 +52,7 @@ export class PostComponent implements OnInit {
       content: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(5000)]],
       tagInput: ['', [Validators.minLength(2), Validators.maxLength(30)]]
     });
+    
   }
 
   ngOnInit(): void {
@@ -338,4 +340,6 @@ export class PostComponent implements OnInit {
     const content = this.postForm.get('content')?.value?.trim();
     return !!(content || this.selectedFile || this.tags.length > 0);
   }
+
+  
 }

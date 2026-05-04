@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,6 +14,8 @@ export class SidebarComponent implements OnInit {
   showSidebar: boolean = true;
   isBrowser: boolean;
 
+  hideBottomNav: boolean = false;
+
   navItems = [
     { label: 'Feed', link: '/home', icon: 'dynamic_feed', activeIcon: 'feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3', activeIcon: 'people' },
@@ -20,6 +23,8 @@ export class SidebarComponent implements OnInit {
     // { label: 'UniTok', link: '/videos', icon: 'video_library', activeIcon: 'play_circle' },
     { label: 'Groups', link: '/groups', icon: 'handshake', activeIcon: 'group' },
   ];
+
+  private readonly HIDDEN_NAV_ROUTES = ['/create', '/post/create', '/groups/create'];
 
   constructor(
     private router: Router,
@@ -32,6 +37,20 @@ export class SidebarComponent implements OnInit {
     if (this.isBrowser) {
       this.showSidebar = window.innerWidth >= 1024;
     }
+
+        // Check on initial load
+        this.hideBottomNav = this.HIDDEN_NAV_ROUTES.some(route =>
+          this.router.url.startsWith(route)
+        );
+    
+        // Check on every navigation
+        this.router.events.pipe(
+          filter(e => e instanceof NavigationEnd)
+        ).subscribe((e: any) => {
+          this.hideBottomNav = this.HIDDEN_NAV_ROUTES.some(route =>
+            e.urlAfterRedirects.startsWith(route)
+          );
+        });
   }
 
   @HostListener('window:resize', ['$event'])
