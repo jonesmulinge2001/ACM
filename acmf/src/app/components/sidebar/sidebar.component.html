@@ -1,108 +1,109 @@
 <!-- Desktop Sidebar -->
-<div class="hidden lg:flex flex-col fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-100 z-30 shadow-sm">
-  
-  <div class="flex-1 overflow-y-auto scrollbar-hide p-3">
+<div class="hidden lg:flex flex-col fixed top-16 left-0 w-60 h-[calc(100vh-4rem)] bg-white border-r border-gray-100 z-30" style="box-shadow: 2px 0 12px rgba(0,0,0,0.04);">
+
+  <div class="flex-1 overflow-y-auto scrollbar-hide px-3 pt-4 pb-6">
 
     <!-- Navigation Menu -->
-    <ul class="space-y-0.5">
+    <ul class="space-y-1">
       <li *ngFor="let item of navItems">
         <a [routerLink]="item.link"
-          class="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer relative"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer relative overflow-hidden"
           [ngClass]="isActiveRoute(item.link)
-            ? 'bg-blue-50 text-blue-600'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'">
+            ? 'bg-[#EEF3FF] text-[#0A66C2]'
+            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'">
 
-          <!-- Active left bar -->
+          <!-- Active left accent bar -->
           <span *ngIf="isActiveRoute(item.link)"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full">
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#0A66C2] rounded-r-full">
           </span>
 
-          <!-- Icon -->
-          <span class="material-icons text-[1.35rem] flex-shrink-0 transition-all duration-200"
+          <!-- Icon container -->
+          <span class="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200"
             [ngClass]="isActiveRoute(item.link)
-              ? 'text-blue-600'
-              : 'text-gray-400 group-hover:text-gray-700'">
-            {{ item.icon }}
+              ? 'bg-[#0A66C2]/10'
+              : 'bg-transparent group-hover:bg-gray-100'">
+            <span class="material-icons text-[1.2rem] transition-colors duration-200"
+              [ngClass]="isActiveRoute(item.link)
+                ? 'text-[#0A66C2]'
+                : 'text-gray-400 group-hover:text-gray-600'">
+              {{ isActiveRoute(item.link) ? getActiveIcon(item.icon) : item.icon }}
+            </span>
           </span>
 
           <!-- Label -->
-          <span class="text-sm font-medium leading-none">{{ item.label }}</span>
-
-          <!-- Active dot -->
-          <span *ngIf="isActiveRoute(item.link)"
-            class="ml-auto w-2 h-2 rounded-full bg-blue-600 flex-shrink-0">
-          </span>
+          <span class="text-[0.8125rem] font-semibold leading-none tracking-tight">{{ item.label }}</span>
         </a>
       </li>
     </ul>
 
     <!-- Divider -->
-    <div class="my-4 h-px bg-gray-100"></div>
+    <div class="my-4 h-px bg-gray-100 mx-1"></div>
 
     <!-- Quick Actions -->
-    <div class="space-y-0.5">
-      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Quick Actions</p>
+    <div class="space-y-2">
+      <p class="text-[9px] font-extrabold text-gray-400 uppercase tracking-[0.12em] px-3 mb-3">Quick Actions</p>
 
       <button (click)="openCreatePost()"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 group">
-        <span class="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center flex-shrink-0 transition-colors">
-          <span class="material-icons text-blue-600 text-[1.1rem]">edit</span>
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.8125rem] font-semibold text-white transition-all duration-200 group active:scale-[0.98]"
+        style="background-color: #3f3f3f;">
+        <span class="w-7 h-7 rounded-md bg-white/15 group-hover:bg-white/25 flex items-center justify-center flex-shrink-0 transition-colors">
+          <span class="material-icons text-white text-[1rem]">edit</span>
         </span>
         Create a post
       </button>
 
       <button (click)="openSearch()"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 group">
-        <span class="w-8 h-8 rounded-lg bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center flex-shrink-0 transition-colors">
-          <span class="material-icons text-purple-500 text-[1.1rem]">person_search</span>
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.8125rem] font-semibold text-white transition-all duration-200 group active:scale-[0.98]"
+        style="background-color: #3f3f3f;">
+        <span class="w-7 h-7 rounded-md bg-white/15 group-hover:bg-white/25 flex items-center justify-center flex-shrink-0 transition-colors">
+          <span class="material-icons text-white text-[1rem]">person_search</span>
         </span>
         Find people
       </button>
     </div>
 
     <!-- Divider -->
-    <div class="my-4 h-px bg-gray-100"></div>
+    <div class="my-4 h-px bg-gray-100 mx-1"></div>
 
     <!-- Footer Links -->
-    <div class="px-3 pb-4">
-      <div class="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-gray-400">
-        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">About</a>
-        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Privacy</a>
-        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Terms</a>
-        <a href="#" class="hover:text-blue-600 hover:underline transition-colors">Help</a>
+    <div class="px-3">
+      <div class="flex flex-wrap gap-x-3 gap-y-1.5 text-[10.5px] text-gray-400">
+        <a href="#" class="hover:text-[#0A66C2] transition-colors">About</a>
+        <a href="#" class="hover:text-[#0A66C2] transition-colors">Privacy</a>
+        <a href="#" class="hover:text-[#0A66C2] transition-colors">Terms</a>
+        <a href="#" class="hover:text-[#0A66C2] transition-colors">Help</a>
       </div>
-      <p class="text-[11px] text-gray-400 mt-2">© {{ currentYear }} Academeet</p>
+      <p class="text-[10.5px] text-gray-400 mt-2">© {{ currentYear }} Academeet</p>
     </div>
 
   </div>
 </div>
 
 <!-- Mobile Bottom Navigation -->
-<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg z-50">
+<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 z-50"
+  style="box-shadow: 0 -4px 16px rgba(0,0,0,0.06);">
   <div class="flex justify-around items-center py-1 px-2">
     <a *ngFor="let item of navItems" [routerLink]="item.link"
-      class="flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-200 relative min-w-[3.5rem]"
-      [ngClass]="isActiveRoute(item.link)
-        ? 'text-blue-600'
-        : 'text-gray-400 hover:text-gray-700'">
+      class="flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-200 relative min-w-[3.5rem]"
+      [ngClass]="isActiveRoute(item.link) ? 'text-[#0A66C2]' : 'text-gray-400'">
 
-      <!-- Active pill background -->
+      <!-- Active pill -->
       <span *ngIf="isActiveRoute(item.link)"
-        class="absolute inset-0 bg-blue-50 rounded-xl">
+        class="absolute inset-0 bg-[#EEF3FF] rounded-xl">
       </span>
 
-      <!-- Active top indicator -->
+      <!-- Active top bar -->
       <span *ngIf="isActiveRoute(item.link)"
-        class="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-600 rounded-full">
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#0A66C2] rounded-full">
       </span>
 
-      <span class="material-icons relative z-10 transition-all duration-200 text-[1.5rem]"
-        [ngClass]="isActiveRoute(item.link) ? 'text-blue-600' : 'text-gray-400'">
-        {{ item.icon }}
+      <span class="material-icons relative z-10 text-[1.4rem]"
+        [ngClass]="isActiveRoute(item.link) ? 'text-[#0A66C2]' : 'text-gray-400'">
+        {{ isActiveRoute(item.link) ? getActiveIcon(item.icon) : item.icon }}
       </span>
 
-      <span class="relative z-10 text-[0.6rem] mt-0.5 font-medium leading-none"
-        [ngClass]="isActiveRoute(item.link) ? 'text-blue-600' : 'text-gray-400'">
+      <span class="relative z-10 text-[0.6rem] mt-0.5 font-semibold leading-none"
+        [ngClass]="isActiveRoute(item.link) ? 'text-[#0A66C2]' : 'text-gray-400'">
         {{ item.label }}
       </span>
     </a>

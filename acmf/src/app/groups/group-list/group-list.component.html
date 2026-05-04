@@ -1,50 +1,38 @@
 <div class="min-h-screen bg-gray-50">
-  <!-- Removed ALL padding from this container on all screens -->
   <div class="p-0 m-0">
 
-    <!-- ── Header ── - no padding on small screens -->
+    <!-- ── Header ── -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7 p-0 sm:px-6">
       <div class="px-4 sm:px-0">
-        <div class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1 rounded-full mb-2 text-xs font-semibold">
-          <span class="material-icons text-sm">groups</span>
-          Communities
-        </div>
-        <h1 class="text-2xl font-bold text-gray-900 leading-tight">Explore student communities</h1>
+        <h1 class="text-lg font-bold text-gray-900 leading-tight">Explore student communities</h1>
         <p class="text-sm text-gray-500 mt-0.5">Join groups that match your interests</p>
       </div>
       <a routerLink="/groups/create"
-        class="self-start sm:self-center inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition shadow-sm mx-4 sm:mx-0">
+        class="self-start sm:self-center inline-flex items-center    text-gray-600 border border-teal-300 rounded-full px-3 py-1 text-xs font-semibold transition shadow-sm mx-4 sm:mx-0">
         <span class="material-icons text-base">add</span>
         Create community
       </a>
     </div>
 
     <!-- ── Search + filter ── - full width on mobile -->
-    <div class="bg-white rounded-none sm:rounded-xl border-y sm:border-x border-gray-200 shadow-none sm:shadow-sm p-3 mb-6 flex flex-col sm:flex-row gap-3">
+    <div
+      class="bg-white rounded-none sm:rounded-xl border-y sm:border-x border-gray-200 shadow-none sm:shadow-sm p-3 mb-6 flex flex-col sm:flex-row gap-3">
       <div class="flex-1 relative px-4 sm:px-0">
         <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
           <span class="material-icons text-gray-400 text-lg">search</span>
         </span>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="filterGroups()"
-          placeholder="Search communities…"
-          class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"/>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterGroups()" placeholder="Search communities…"
+          class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
       </div>
       <div class="flex gap-2 px-4 sm:px-0">
-        <button
-          (click)="selectedFilter = 'all'; filterGroups()"
-          class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-semibold transition"
-          [ngClass]="selectedFilter === 'all'
-            ? 'bg-blue-600 text-white shadow-sm'
+        <button (click)="selectedFilter = 'all'; filterGroups()"
+          class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-semibold transition" [ngClass]="selectedFilter === 'all'
+            ? 'bg-gray-100 text-gray-600 shadow-sm'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
           All groups
         </button>
-        <button
-          (click)="selectedFilter = 'joined'; filterGroups()"
-          class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-semibold transition"
-          [ngClass]="selectedFilter === 'joined'
+        <button (click)="selectedFilter = 'joined'; filterGroups()"
+          class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-semibold transition" [ngClass]="selectedFilter === 'joined'
             ? 'bg-blue-600 text-white shadow-sm'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
           My groups
@@ -68,81 +56,75 @@
       </div>
     </div>
 
-    <!-- ── Groups grid ── - no padding on mobile, cards touch edges -->
+    <!-- ── Groups grid ── -->
     <div *ngIf="!isLoading && filteredGroups.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 p-0 sm:px-6">
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-0 sm:px-6">
 
-      <div *ngFor="let group of filteredGroups; let i = index"
-        [routerLink]="['/groups', group.id]"
-        class="group bg-white rounded-none sm:rounded-2xl border-x sm:border-x border-b sm:border border-gray-200 shadow-none sm:shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden flex flex-col">
+      <div *ngFor="let group of filteredGroups; let i = index" [routerLink]="['/groups', group.id]"
+        class="group bg-white rounded-none sm:rounded-xl border-x sm:border border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer px-4 py-4 flex items-start gap-3">
 
-        <div class="h-20 bg-gradient-to-r relative flex-shrink-0"
+        <!-- Avatar -->
+        <div
+          class="w-24 h-24 rounded-full border border-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center text-xl font-semibold"
           [ngClass]="{
-            'from-blue-500 to-indigo-600': i % 5 === 0,
-            'from-emerald-500 to-teal-600': i % 5 === 1,
-            'from-violet-500 to-purple-600': i % 5 === 2,
-            'from-rose-500 to-pink-600': i % 5 === 3,
-            'from-amber-500 to-orange-600': i % 5 === 4
-          }">
-          <span class="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/80 text-gray-700">
-            {{ group.visibility === 'PUBLIC' ? 'Public' : 'Private' }}
-          </span>
+    'bg-blue-50 text-blue-800': i % 5 === 0,
+    'bg-emerald-50 text-emerald-800': i % 5 === 1,
+    'bg-violet-50 text-violet-800': i % 5 === 2,
+    'bg-rose-50 text-rose-800': i % 5 === 3,
+    'bg-amber-50 text-amber-800': i % 5 === 4
+  }">
+          <img *ngIf="group.coverImage" [src]="group.coverImage" [alt]="group.name"
+            class="w-full h-full object-cover object-center block" />
+          <span *ngIf="!group.coverImage">{{ group.name.charAt(0).toUpperCase() }}</span>
         </div>
 
-        <div class="flex justify-center -mt-10 flex-shrink-0 px-5">
-          <div class="relative">
-            <div class="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white flex items-center justify-center">
-              <img *ngIf="group.coverImage"
-                [src]="group.coverImage"
-                [alt]="group.name"
-                class="w-full h-full object-cover"/>
-              <span *ngIf="!group.coverImage"
-                class="text-2xl font-bold text-white flex items-center justify-center w-full h-full"
-                [ngClass]="{
-                  'bg-blue-500': i % 5 === 0,
-                  'bg-emerald-500': i % 5 === 1,
-                  'bg-violet-500': i % 5 === 2,
-                  'bg-rose-500': i % 5 === 3,
-                  'bg-amber-500': i % 5 === 4
-                }">
-                {{ group.name.charAt(0).toUpperCase() }}
-              </span>
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+
+          <!-- Name + button row -->
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h3
+                class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition truncate leading-tight">
+                {{ group.name }}
+              </h3>
             </div>
-            <span *ngIf="isUserJoined(group)"
-              class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center"
-              title="Joined">
-              <span class="material-icons text-white text-xs leading-none">check</span>
-            </span>
-          </div>
-        </div>
 
-        <div class="px-5 pt-3 pb-5 flex flex-col flex-1 text-center">
-          <h3 class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition line-clamp-1 mb-1">
-            {{ group.name }}
-          </h3>
-          <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 flex-1 mb-3">
+            <button (click)="$event.stopPropagation()"
+              class="flex-shrink-0 text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors whitespace-nowrap"
+              [ngClass]="isUserJoined(group)
+            ? 'border-teal-300 text-gray-500 hover:bg-gray-50'
+            : 'border-teal-300 text-gray-700 hover:bg-gray-50'">
+              {{ isUserJoined(group) ? 'View group' : '+ Join' }}
+            </button>
+          </div>
+
+          <!-- Description -->
+          <p class="text-xs text-gray-500 mt-1.5 truncate">
             {{ group.description || 'No description provided.' }}
           </p>
 
-          <div class="flex items-center justify-center gap-3 text-[11px] text-gray-400 mb-4">
-            <span class="flex items-center gap-1">
-              <span class="material-icons text-xs">group</span>
-              {{ getMemberCount(group) }} members
-            </span>
-            <span class="text-gray-200">·</span>
-            <span class="flex items-center gap-1">
-              <span class="material-icons text-xs">schedule</span>
-              {{ formatDate(group.createdAt) }}
-            </span>
-          </div>
+          <!-- Meta -->
+          <p class="text-[11px] text-gray-400 mt-1">
+            {{ group.visibility === 'PUBLIC' ? 'Public' : 'Private' }}
+            · {{ formatDate(group.createdAt) }}
+            · {{ getMemberCount(group) }} members
+          </p>
 
-          <button
-            class="w-full py-2 rounded-full text-sm font-semibold transition border"
-            [ngClass]="isUserJoined(group)
-              ? 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-              : 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700'">
-            {{ isUserJoined(group) ? 'View group' : 'Join group' }}
-          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Skeleton ── -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-0 sm:px-6">
+      <div *ngFor="let _ of [1,2,3,4,5,6]"
+        class="bg-white rounded-xl border border-gray-200 px-4 py-4 flex items-start gap-3 animate-pulse">
+        <div class="w-13 h-13 rounded-full bg-gray-200 flex-shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3.5 bg-gray-200 rounded w-1/2"></div>
+          <div class="h-3 bg-gray-100 rounded w-1/3"></div>
+          <div class="h-3 bg-gray-100 rounded w-full"></div>
+          <div class="h-3 bg-gray-100 rounded w-4/5"></div>
         </div>
       </div>
     </div>
@@ -156,13 +138,13 @@
       <h3 class="text-base font-semibold text-gray-900 mb-1">No communities found</h3>
       <p class="text-sm text-gray-500 max-w-xs mx-auto mb-5">
         {{ searchQuery
-          ? 'No groups match your search.'
-          : selectedFilter === 'joined'
-            ? "You haven't joined any groups yet."
-            : 'No communities have been created yet.' }}
+        ? 'No groups match your search.'
+        : selectedFilter === 'joined'
+        ? "You haven't joined any groups yet."
+        : 'No communities have been created yet.' }}
       </p>
       <a routerLink="/groups/create"
-        class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition shadow-sm">
+        class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-teal-300 text-white text-sm font-semibold rounded-full transition shadow-sm">
         <span class="material-icons text-base">add</span>
         Create a community
       </a>

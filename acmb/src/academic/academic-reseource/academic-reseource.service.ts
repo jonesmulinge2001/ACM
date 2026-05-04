@@ -47,7 +47,7 @@ import {
   
       if (!resource) throw new NotFoundException('Resource not found');
   
-      // 🔒 ownership check
+      // ownership check
       if (resource.uploader.userId !== userId) {
         throw new ForbiddenException('Not allowed');
       }
@@ -60,13 +60,13 @@ import {
         },
       });
   
-      // 🔥 reset processing
+      // reset processing
       await this.prisma.academicResourceProcessing.update({
         where: { resourceId: id },
         data: { status: ProcessingStatus.QUEUED },
       });
   
-      // 🔥 trigger again
+      //  trigger again
       this.processingService.processResource(id);
   
       return updated;
