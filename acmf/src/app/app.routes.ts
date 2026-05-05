@@ -13,11 +13,8 @@ import { StudentProfileComponent } from './pages/student-profile/student-profile
 
 import { HomeComponent } from './components/home/home.component';
 import { NetworkComponent } from './components/network/network.component';
-import { ResourcesComponent } from './components/resources/resources.component';
 import { OpportunitiesComponent } from './components/opportunities/opportunities.component';
 import { PostComponent } from './components/post/post.component';
-import { ResourceUploadModalComponent } from './components/resource-upload-modal/resource-upload-modal.component';
-
 import { StudentLayoutComponent } from './layouts/student-layout/student-layout.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { ManageUsersComponent } from './admin/manage-users/manage-users.component';
@@ -36,6 +33,7 @@ import { FundMeComponent } from './components/fund-me/fund-me.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
 import { VideoManagerComponent } from './unitok/video-manager/video-manager.component';
 import { VideoDetailComponent } from './unitok/video-detail/video-detail.component';
+import { UploadResourceComponent } from './components/upload-resource/upload-resource.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -63,13 +61,13 @@ export const routes: Routes = [
       // { path: 'resources', component: ResourcesComponent },
       { path: 'videos', component: VideoManagerComponent },
       { path: 'create', component: PostComponent },
-      { path: 'upload-academic-resource', component: ResourceUploadModalComponent },
       { path: 'opportunities', component: OpportunitiesComponent },
       { path: 'groups/create', component: CreateGroupComponent }, 
       { path: 'groups', component: GroupListComponent },
       { path: 'groups/:id', component: GroupDetailComponent },
       // { path: 'fund-me', component: FundMeComponent },
       { path: 'search', component: SearchResultsComponent },
+      {path: 'academic-resource', component: UploadResourceComponent},
       { path: 'videos/:id', component: VideoDetailComponent },
     ]
   },

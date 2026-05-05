@@ -20,7 +20,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Feed', link: '/home', icon: 'dynamic_feed', activeIcon: 'feed' },
     { label: 'Network', link: '/network', icon: 'diversity_3', activeIcon: 'people' },
     { label: 'Create', link: '/create', icon: 'add_circle', activeIcon: 'edit' },
-    // { label: 'UniTok', link: '/videos', icon: 'video_library', activeIcon: 'play_circle' },
+    { label: 'Academic', link: '/academic-resource', icon: 'video_library', activeIcon: 'play_circle' },
     { label: 'Groups', link: '/groups', icon: 'handshake', activeIcon: 'group' },
   ];
 

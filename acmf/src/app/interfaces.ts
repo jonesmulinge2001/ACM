@@ -873,3 +873,26 @@ export interface IntentMatch {
   sharedSkills: string[];
   compatibilityScore: number;
 }
+
+export enum MaterialType {
+  NOTES = 'NOTES',
+  PAST_PAPER = 'PAST_PAPER',
+  ASSIGNMENT = 'ASSIGNMENT',
+}
+
+export interface CreateAcademicResource {
+  title: string;
+  type: MaterialType;
+  fileUrl?: string;
+}
+
+export interface AcademicResourceResponse {
+  message: string;
+  resource: {
+    id: string;
+    title: string;
+    fileUrl: string;
+    fileType: string | null;
+    createdAt: string;
+  };
+}

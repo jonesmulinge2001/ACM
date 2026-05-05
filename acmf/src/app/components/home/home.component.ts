@@ -9,7 +9,6 @@ import { FollowService } from '../../services/follow.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommentService } from '../../services/comment.service';
 import { TimeagoModule } from 'ngx-timeago';
-import { ResourceUploadModalComponent } from '../resource-upload-modal/resource-upload-modal.component';
 import { NumberShortPipe } from '../../pipes/number-short.pipe';
 import { EditPostComponent } from '../edit-post/edit-post.component';
 import { LikeService } from '../../services/like.service';
@@ -30,7 +29,6 @@ import { RecommenderService } from '../../services/recommender.service';
     ReactiveFormsModule,
     FormsModule,
     TimeagoModule,
-    ResourceUploadModalComponent,
     EditPostComponent,
     InfiniteScrollModule,
     FlagPostModalComponent,
@@ -61,8 +59,8 @@ export class HomeComponent implements OnInit {
   followingIds: string[] = [];
 
   loggedInUserId = localStorage.getItem('userId');
-  loading = true;
-  showUpload = false;
+  loading: boolean = true;
+  showUpload: boolean = false;
 
   commentVisible: { [postId: string]: boolean } = {};
   newComments: { [postId: string]: string } = {};
@@ -76,7 +74,7 @@ export class HomeComponent implements OnInit {
   repliesVisible: { [commentId: string]: boolean } = {};
 
   actionMenuOpen: { [postId: string]: boolean } = {};
-  showEditModal = false;
+  showEditModal: boolean = false;
   selectedPostForEdit?: Post | null;
 
   editedComment: string = '';
@@ -88,19 +86,19 @@ export class HomeComponent implements OnInit {
   posts: Post[] = [];
   post: Post | null = null;
   nextCursor?: string | null = undefined;
-  isLoading = false;
-  limit = 10;
+  isLoading: boolean = false;
+  limit: number = 10;
 
   likingInProgress = new Set<string>();
   expandedPosts: { [postId: string]: boolean } = {};
 
-  showFlagModal = false;
+  showFlagModal: boolean = false;
   selectedPostToFlag?: Post;
-  showMoreOptions = false;
-  showCommentEditModal = false;
+  showMoreOptions: boolean = false;
+  showCommentEditModal: boolean = false;
   menuOpen: Record<string, boolean> = {};
 
-  showDeleteModal = false;
+  showDeleteModal: boolean = false;
   postToDelete?: Post | null;
 
   constructor(

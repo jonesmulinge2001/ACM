@@ -1,7 +1,5 @@
 <!-- ═══════════════════════ MODALS (top-level) ═══════════════════════ -->
 
-<app-resource-upload-modal *ngIf="showUpload" (closeModal)="showUpload = false"></app-resource-upload-modal>
-
 <app-edit-post *ngIf="showEditModal && selectedPostForEdit" [post]="selectedPostForEdit" [showModal]="showEditModal"
   (close)="onCloseEditModal()" (save)="onPostSave($event)">
 </app-edit-post>
