@@ -15,7 +15,7 @@ import {
   
     constructor(private processingService: ProcessingService) {}
   
-    // 🔹 GET ALL
+    //  GET ALL
     async getAll() {
       return this.prisma.academicResource.findMany({
         where: { isDeleted: false },
@@ -23,7 +23,7 @@ import {
       });
     }
   
-    // 🔹 GET ONE
+    //  GET ONE
     async getOne(id: string) {
       const resource = await this.prisma.academicResource.findUnique({
         where: { id },
@@ -34,7 +34,7 @@ import {
       return resource;
     }
   
-    // 🔹 UPDATE (title/file ONLY)
+    //  UPDATE (title/file ONLY)
     async update(
       id: string,
       userId: string,
@@ -72,7 +72,7 @@ import {
       return updated;
     }
   
-    // 🔹 DELETE (soft)
+    //  DELETE (soft)
     async delete(id: string, userId: string) {
       const resource = await this.prisma.academicResource.findUnique({
         where: { id },
@@ -89,5 +89,33 @@ import {
         where: { id },
         data: { isDeleted: true },
       });
+    }
+
+    // DOWNLOAD Resource
+    async download(id:string) {
+      const resource = await this.prisma.academicResource.findFirst({
+        where: {
+          id,
+          isDeleted: false,
+          // isApproved: true,
+        }
+      });
+      if(!resource) {
+        throw new NotFoundException('Resource not found');
+      }
+
+      await this.prisma.academicResource.update({
+        where: { id },
+        data: { 
+          downloadCount: {
+            increment: 1,
+          },
+        },
+      });
+      return{ 
+        fileUrl: resource.fileUrl,
+        fileType: resource.fileType,
+        title: resource.title,
+      }
     }
   }
