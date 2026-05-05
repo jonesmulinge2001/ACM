@@ -288,6 +288,7 @@ ${text.slice(0, 1500)}`;
 
       const result = await model.generateContent(prompt);
       const raw = result.response.text().trim();
+      this.logger.log(`Gemini raw moderation response: ${raw}`);
 
       // Strip markdown code fences if present
       const cleaned = raw.replace(/```json|```/g, '').trim();
