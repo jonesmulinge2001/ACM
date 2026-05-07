@@ -1,6 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { Observable, Subscription, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { Group } from '../../interfaces';
 import { GroupsService } from '../../services/group.service';
 import { CommonModule } from '@angular/common';
@@ -13,16 +18,19 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './group-list.component.html',
-  styleUrls: ['./group-list.component.css']
+  styleUrls: ['./group-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupListComponent implements OnInit, OnDestroy {
   groups$!: Observable<Group[]>;
   filteredGroups: Group[] = [];
   allGroups: Group[] = [];
+
   isLoading = true;
   searchQuery = '';
   selectedFilter: 'all' | 'joined' = 'all';
   currentUserId: string = '';
+
   private subscriptions = new Subscription();
 
   constructor(
@@ -36,43 +44,54 @@ export class GroupListComponent implements OnInit, OnDestroy {
     this.loadGroups();
   }
 
-  loadGroups() {
+  loadGroups(): void {
     this.isLoading = true;
     this.groups$ = this.svc.getAllGroups();
-    
+
     this.subscriptions.add(
-      this.groups$.subscribe(groups => {
-        this.allGroups = groups;
-        this.filterGroups();
-        this.isLoading = false;
-        this.cdr.detectChanges();
+      this.groups$.subscribe({
+        next: (groups) => {
+          this.allGroups = groups;
+          this.filterGroups();
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
       })
     );
   }
 
-  filterGroups() {
+  filterGroups(): void {
     let filtered = [...this.allGroups];
-    
-    // Filter by search query
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(group => 
-        group.name.toLowerCase().includes(query) ||
-        (group.description && group.description.toLowerCase().includes(query))
+
+    // Text search
+    const q = this.searchQuery.trim().toLowerCase();
+    if (q) {
+      filtered = filtered.filter(
+        (g) =>
+          g.name.toLowerCase().includes(q) ||
+          (g.description && g.description.toLowerCase().includes(q))
       );
     }
-    
-    // Filter by joined status
+
+    // Joined filter
     if (this.selectedFilter === 'joined') {
-      filtered = filtered.filter(group => this.isUserJoined(group));
+      filtered = filtered.filter((g) => this.isUserJoined(g));
     }
-    
+
     this.filteredGroups = filtered;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
+  // ── Helpers ────────────────────────────────────────────────────
+
   isUserJoined(group: Group): boolean {
-    return group.members?.some(member => member.userId === this.currentUserId) || false;
+    return (
+      group.members?.some((m) => m.userId === this.currentUserId) ?? false
+    );
   }
 
   getMemberCount(group: Group): number {
@@ -80,29 +99,36 @@ export class GroupListComponent implements OnInit, OnDestroy {
   }
 
   getTotalMembers(): number {
-    return this.allGroups.reduce((total, group) => total + this.getMemberCount(group), 0);
+    return this.allGroups.reduce(
+      (sum, g) => sum + this.getMemberCount(g),
+      0
+    );
   }
 
   getActiveGroups(): number {
-    return this.allGroups.filter(group => group.members && group.members.length > 0).length;
+    return this.allGroups.filter(
+      (g) => (g.members?.length ?? 0) > 0
+    ).length;
   }
 
   formatDate(dateString: string): string {
     if (!dateString) return 'Recently';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
+    const days = Math.floor(
+      (Date.now() - new Date(dateString).getTime()) / 86_400_000
+    );
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7)  return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+    return `${Math.floor(days / 365)}y ago`;
   }
 
-  ngOnDestroy() {
+  trackByGroupId(_: number, group: Group): string {
+    return group.id;
+  }
+
+  ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 }

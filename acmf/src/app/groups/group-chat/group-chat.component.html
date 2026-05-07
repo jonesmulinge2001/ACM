@@ -1,515 +1,403 @@
-<div
-  class="flex flex-col px-0 w-full h-[60vh] bg-white/60 backdrop-blur-sm border border-gray-200/60 rounded-3xl shadow-2xl overflow-hidden relative transition-transform duration-300 hover:scale-[1.003]"
->
-  <!-- Header -->
-  <div
-    class="flex items-center justify-between px-2 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md"
-  >
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+<style>
+  .font-syne { font-family: 'Syne', sans-serif; }
+  .font-dm   { font-family: 'DM Sans', sans-serif; }
+
+  @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeUp  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(.95) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes modalUp { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes bounce1 { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+  @keyframes bounce2 { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+  @keyframes bounce3 { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+  @keyframes msgIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .anim-fade-in  { animation: fadeIn  .18s ease both; }
+  .anim-fade-up  { animation: fadeUp  .22s ease both; }
+  .anim-scale-in { animation: scaleIn .2s  ease both; }
+  .anim-modal    { animation: modalUp .24s cubic-bezier(.34,1.1,.64,1) both; }
+  .anim-msg      { animation: msgIn   .22s ease both; }
+
+  .dot1 { animation: bounce1 1.2s ease infinite; }
+  .dot2 { animation: bounce2 1.2s ease .15s infinite; }
+  .dot3 { animation: bounce3 1.2s ease .3s  infinite; }
+
+  /* Slim scrollbar */
+  .msg-scroll::-webkit-scrollbar       { width: 3px; }
+  .msg-scroll::-webkit-scrollbar-track { background: transparent; }
+  .msg-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
+
+  /* Attachment strip */
+  .att-strip::-webkit-scrollbar { display: none; }
+  .att-strip { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Hover-reveal for 3-dot on my messages */
+  .msg-group:hover .menu-trigger { opacity: 1; }
+  .menu-trigger { opacity: 0; transition: opacity .15s ease; }
+  .menu-trigger:focus { opacity: 1; }
+</style>
+
+<!-- ░░ GROUP CHAT SHELL ░░ -->
+<div class="font-dm flex flex-col h-[65vh] sm:h-[72vh] bg-white border-b sm:border border-gray-200 sm:rounded-2xl sm:shadow-sm overflow-hidden relative">
+
+  <!-- ══════════════════════════════
+       HEADER
+       ══════════════════════════════ -->
+  <div class="flex-shrink-0 flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-gray-100 bg-white">
     <div class="flex items-center gap-3">
-      <span class="font-semibold text-sm drop-shadow-sm">Group Chat</span>
+      <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <span class="material-icons-round text-blue-600" style="font-size:18px">forum</span>
+      </div>
+      <div>
+        <h3 class="font-syne text-[15px] font-extrabold text-gray-950 tracking-tight leading-tight">Group Chat</h3>
+        <p class="text-[11px] text-emerald-500 font-medium">{{ messages.length }} messages</p>
+      </div>
     </div>
-    <button
-      (click)="closeAllMenus()"
-      class="text-white hover:text-gray-200 text-lg font-bold"
-      aria-label="Close chat"
-    >
-      ✕
+    <button (click)="closeAllMenus()"
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="Close menus">
+      <span class="material-icons-round" style="font-size:18px">close</span>
     </button>
   </div>
 
-  <!-- Messages -->
-  <div
-    #messagesContainer
-    class="flex-1 overflow-y-auto p-2 space-y-4 scrollbar-thin scrollbar-thumb-sky-500 scrollbar-track-gray-100 scroll-smooth bg-gradient-to-b from-white/40 to-gray-50/50"
-  >
-    <div *ngFor="let m of messages" class="relative group">
-      <!-- My message -->
-      <div *ngIf="isMyMessage(m); else otherMsg" class="flex justify-end">
-        <div
-          class="relative max-w-[78%] min-w-[8rem] px-4 py-3 rounded-2xl shadow-xl transform transition duration-200 ease-out hover:scale-[1.01] group-hover:translate-y-[-1px] bg-gradient-to-r from-sky-600/95 to-indigo-600/95 text-white ring-1 ring-white/10 backdrop-blur-sm"
-        >
-          <!-- Replied message -->
-          <div
-            *ngIf="m.replyTo"
-            class="mb-2 rounded-lg p-2 text-xs italic bg-white/10 border-l-4 border-white/25 max-w-full break-words"
-            title="{{ m.replyTo.content }}"
-          >
-            <span class="font-semibold text-white/90 mr-1 truncate block">
-              {{ m.replyTo.user?.name }}:
-            </span>
-            <span class="text-white/85 line-clamp-2">
-              {{ m.replyTo.content | slice : 0 : 80 }}
-              {{ m.replyTo.content.length > 80 ? "..." : "" }}
-            </span>
+  <!-- ══════════════════════════════
+       MESSAGES AREA
+       ══════════════════════════════ -->
+  <div #messagesContainer
+       class="msg-scroll flex-1 overflow-y-auto px-3 sm:px-4 py-4 flex flex-col gap-3 bg-gray-50/40">
+
+    <div *ngFor="let m of messages"
+         class="msg-group anim-msg flex flex-col"
+         [class.items-end]="isMyMessage(m)"
+         [class.items-start]="!isMyMessage(m)">
+
+      <!-- ── MY MESSAGE ── -->
+      <ng-container *ngIf="isMyMessage(m)">
+        <div class="relative max-w-[80%] sm:max-w-[72%] group/bubble">
+
+          <!-- Reply preview -->
+          <div *ngIf="m.replyTo"
+               class="mb-1 px-3 py-2 bg-gray-200/70 border-l-[3px] border-gray-400 rounded-xl rounded-br-sm text-[11.5px] text-gray-600 italic max-w-full break-words">
+            <span class="font-semibold text-gray-700 not-italic block truncate">{{ m.replyTo.user?.name }}</span>
+            <span class="line-clamp-2">{{ m.replyTo.content | slice:0:80 }}{{ m.replyTo.content.length > 80 ? '…' : '' }}</span>
           </div>
 
-      <!-- Message text with readmore/readless -->
-      <div
-      class="text-sm leading-relaxed break-words selection:bg-white/30 selection:text-white"
-    >
-      <!-- Full message when expanded -->
-      <span *ngIf="isExpanded(m.id)">{{ m.content }}</span>
-      
-      <!-- Truncated message when not expanded -->
-      <span *ngIf="!isExpanded(m.id)">
-        {{ shouldTruncate(m) ? getTruncatedText(m.content) : m.content }}
-      </span>
-      
-      <!-- Read more/less button -->
-      <button
-        *ngIf="shouldTruncate(m)"
-        (click)="toggleReadMore(m.id)"
-        class="ml-2 text-xs font-semibold text-white/80 hover:text-white transition-colors underline focus:outline-none focus:ring-1 focus:ring-white/50 rounded px-1"
-      >
-        {{ isExpanded(m.id) ? 'Read less' : 'Read more' }}
-      </button>
-    </div>
-          <div
-            *ngIf="m.attachments?.length"
-            class="mt-2 flex gap-2 overflow-x-auto"
-          >
-            <div
-              *ngFor="let att of m.attachments"
-              class="relative flex-shrink-0"
-            >
-              <img
-                *ngIf="att.fileType === 'IMAGE'"
-                [src]="att.previewUrl"
-                class="h-16 w-16 rounded-md object-cover shadow-md"
-              />
-              <video
-                *ngIf="att.fileType === 'VIDEO'"
-                [src]="att.previewUrl"
-                controls
-                class="h-16 w-16 rounded-md shadow-md"
-              ></video>
-              <a
-                *ngIf="att.fileType === 'FILE'"
-                [href]="att.previewUrl"
-                target="_blank"
-                class="text-indigo-600 underline hover:text-indigo-800"
-                >Download</a
-              >
-              <div
-                *ngIf="att.progress !== undefined && att.progress < 100"
-                class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300"
-              >
-                <div
-                  class="h-1 bg-indigo-500"
-                  [style.width.%]="att.progress || 0"
-                ></div>
-              </div>
-            </div>
-          </div>
+          <!-- Bubble -->
+          <div class="relative px-3.5 py-2.5 bg-gray-950 text-white rounded-2xl rounded-br-sm shadow-sm">
 
-          <!-- Media attachments -->
-          <div *ngIf="m.mediaUrl" class="mt-2 mb-1">
-            <img
-              *ngIf="m.mediaType === 'image'"
-              [src]="m.mediaUrl"
-              alt="image attachment"
-              class="rounded-lg max-h-60 w-auto object-cover shadow-md"
-            />
-            <video
-              *ngIf="m.mediaType === 'video'"
-              [src]="m.mediaUrl"
-              controls
-              class="rounded-lg max-h-60 w-full object-cover shadow-md"
-            ></video>
-            <a
-              *ngIf="m.mediaType === 'file'"
-              [href]="m.mediaUrl"
-              target="_blank"
-              class="text-indigo-200 underline hover:text-white"
-            >
-              Download File
-            </a>
-            <div *ngIf="m.uploading" class="mt-1 h-1 bg-gray-300 rounded-full">
-              <div
-                class="h-1 bg-indigo-500 rounded-full transition-all"
-                [style.width.%]="m.progress || 0"
-              ></div>
-            </div>
-          </div>
+            <!-- 3-dot menu trigger -->
+            <button (click)="toggleMenu(m.id)"
+                    class="menu-trigger absolute -top-2 -left-2 w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors z-10"
+                    aria-label="Message options">
+              <span class="material-icons-round text-gray-500" style="font-size:13px">more_vert</span>
+            </button>
 
-          <!-- Metadata & menu -->
-          <div class="mt-2 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="text-[12px] text-white/90 select-none">{{
-                m.createdAt | date : "MMM d, h:mm a"
-              }}</span>
-            </div>
-
-            <!-- 3-dot menu -->
-            <div class="relative">
-              <button
-                (click)="toggleMenu(m.id)"
-                class="p-1 rounded-full hover:bg-white/10 transition-opacity duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
-                aria-label="Message options"
-              >
-                <span class="material-icons text-[18px] text-white/95"
-                  >more_vert</span
-                >
+            <!-- Dropdown -->
+            <div *ngIf="menuOpen[m.id]"
+                 class="anim-scale-in absolute left-0 top-6 w-36 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden py-1">
+              <button (click)="replyToMessage(m); closeAllMenus()"
+                      class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[12.5px] text-blue-600 hover:bg-blue-50 transition-colors">
+                <span class="material-icons-round" style="font-size:14px">reply</span>Reply
               </button>
+              <button (click)="openEditModal(m)"
+                      class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[12.5px] text-gray-700 hover:bg-gray-50 transition-colors">
+                <span class="material-icons-round" style="font-size:14px">edit</span>Edit
+              </button>
+              <button (click)="openDeleteModal(m)"
+                      class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[12.5px] text-red-600 hover:bg-red-50 transition-colors">
+                <span class="material-icons-round" style="font-size:14px">delete</span>Delete
+              </button>
+            </div>
 
-              <div
-                *ngIf="menuOpen[m.id]"
-                class="absolute right-0 mt-2 w-40 z-50 rounded-xl overflow-hidden bg-white/95 text-gray-800 ring-1 ring-black/8 shadow-2xl transform origin-top-right transition duration-200 ease-out scale-95 animate-fadeIn"
-              >
-                <button
-                  (click)="replyToMessage(m)"
-                  class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-50 transition text-sky-600"
-                >
-                  <span class="material-icons text-[18px] mr-2 text-sky-600"
-                    >reply</span
-                  >
-                  Reply
-                </button>
-                <button
-                  (click)="openEditModal(m)"
-                  class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-50 transition"
-                >
-                  <span class="material-icons text-[18px] mr-2 text-sky-600"
-                    >edit</span
-                  >
-                  Edit
-                </button>
-                <button
-                  (click)="openDeleteModal(m)"
-                  class="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-50 transition text-red-600"
-                >
-                  <span class="material-icons text-[18px] mr-2 text-red-600"
-                    >delete</span
-                  >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Other message -->
-      <ng-template #otherMsg>
-        <div class="flex items-start space-x-3">
-          <img
-            [src]="
-              m.user?.profileImage ||
-              'https://ui-avatars.com/api/?name=' + m.user?.name
-            "
-            alt="User avatar"
-            class="w-10 h-10 rounded-full ring-1 ring-white/60 object-cover shadow-sm"
-          />
-          <div
-            class="max-w-[78%] px-4 py-3 rounded-2xl bg-white/85 text-gray-800 shadow-md border border-gray-100/60 transition transform hover:scale-[1.005]"
-          >
-            <div class="flex items-center justify-between gap-2">
-              <div class="text-xs font-semibold text-gray-700">
-                {{ m.user?.name }}
-              </div>
-              <div class="text-[11px] text-gray-400 select-none">
-                {{ m.createdAt | date : "MMM d, h:mm a" }}
-              </div>
-            </div>
-      
-            <!-- Replied message -->
-            <div
-              *ngIf="m.replyTo"
-              class="mt-2 bg-gray-50 border-l-4 border-gray-200 rounded-md p-2 mb-1 text-xs text-gray-600 italic"
-              title="{{ m.replyTo.content }}"
-            >
-              <span class="font-semibold text-gray-700"
-                >{{ m.replyTo.user?.name }}:</span
-              >
-              <span class="line-clamp-2"
-                >{{ m.replyTo.content | slice : 0 : 80
-                }}{{ m.replyTo.content.length > 80 ? "..." : "" }}</span
-              >
-            </div>
-      
-            <!-- Message text with readmore/readless -->
-            <div class="text-sm leading-relaxed break-words mt-1">
-              <!-- Full message when expanded -->
+            <!-- Text content -->
+            <p class="text-[13.5px] leading-relaxed break-words">
               <span *ngIf="isExpanded(m.id)">{{ m.content }}</span>
-              
-              <!-- Truncated message when not expanded -->
-              <span *ngIf="!isExpanded(m.id)">
-                {{ shouldTruncate(m) ? getTruncatedText(m.content) : m.content }}
-              </span>
-              
-              <!-- Read more/less button -->
-              <button
-                *ngIf="shouldTruncate(m)"
-                (click)="toggleReadMore(m.id)"
-                class="ml-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors underline focus:outline-none focus:ring-1 focus:ring-indigo-300 rounded px-1"
-                [attr.aria-label]="isExpanded(m.id) ? 'Read less' : 'Read more'"
-              >
+              <span *ngIf="!isExpanded(m.id)">{{ shouldTruncate(m) ? getTruncatedText(m.content) : m.content }}</span>
+              <button *ngIf="shouldTruncate(m)"
+                      (click)="toggleReadMore(m.id)"
+                      class="ml-1.5 text-[11px] font-semibold text-white/60 hover:text-white underline transition-colors">
                 {{ isExpanded(m.id) ? 'Read less' : 'Read more' }}
               </button>
-            </div>
-      
-            <!-- Media attachments (existing code) -->
-            <div *ngIf="m.mediaUrl" class="mt-2 mb-1">
-              <img
-                *ngIf="m.mediaType === 'image'"
-                [src]="m.mediaUrl"
-                alt="image attachment"
-                class="rounded-lg max-h-60 w-auto object-cover shadow-md"
-              />
-              <video
-                *ngIf="m.mediaType === 'video'"
-                [src]="m.mediaUrl"
-                controls
-                class="rounded-lg max-h-60 w-full object-cover shadow-md"
-              ></video>
-              <a
-                *ngIf="m.mediaType === 'file'"
-                [href]="m.mediaUrl"
-                target="_blank"
-                class="text-indigo-600 underline hover:text-indigo-800"
-                >Download File</a
-              >
-              <div
-                *ngIf="m.uploading"
-                class="mt-1 h-1 bg-gray-300 rounded-full"
-              >
-                <div
-                  class="h-1 bg-indigo-500 rounded-full transition-all"
-                  [style.width.%]="m.progress || 0"
-                ></div>
+            </p>
+
+            <!-- Media attachments (legacy single) -->
+            <div *ngIf="m.mediaUrl" class="mt-2">
+              <img *ngIf="m.mediaType === 'image'" [src]="m.mediaUrl" alt="image"
+                   class="rounded-xl max-h-56 w-auto object-contain" />
+              <video *ngIf="m.mediaType === 'video'" [src]="m.mediaUrl" controls
+                     class="rounded-xl max-h-56 w-full object-contain bg-gray-950"></video>
+              <a *ngIf="m.mediaType === 'file'" [href]="m.mediaUrl" target="_blank"
+                 class="inline-flex items-center gap-1 text-[12px] text-white/70 hover:text-white underline mt-1">
+                <span class="material-icons-round" style="font-size:14px">download</span>Download File
+              </a>
+              <div *ngIf="m.uploading" class="mt-1.5 h-1 bg-white/20 rounded-full overflow-hidden">
+                <div class="h-full bg-white/70 rounded-full transition-all" [style.width.%]="m.progress || 0"></div>
               </div>
             </div>
-      
-            <!-- Multiple attachments support -->
-            <div
-              *ngIf="m.attachments?.length"
-              class="mt-2 flex gap-2 overflow-x-auto"
-            >
-              <div
-                *ngFor="let att of m.attachments"
-                class="relative flex-shrink-0"
-              >
-                <img
-                  *ngIf="att.fileType === 'IMAGE'"
-                  [src]="att.previewUrl"
-                  class="h-16 w-16 rounded-md object-cover shadow-md"
-                />
-                <video
-                  *ngIf="att.fileType === 'VIDEO'"
-                  [src]="att.previewUrl"
-                  controls
-                  class="h-16 w-16 rounded-md shadow-md"
-                ></video>
-                <a
-                  *ngIf="att.fileType === 'FILE'"
-                  [href]="att.previewUrl"
-                  target="_blank"
-                  class="text-indigo-600 underline hover:text-indigo-800"
-                  >Download</a
-                >
-                <div
-                  *ngIf="att.progress !== undefined && att.progress < 100"
-                  class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300"
-                >
-                  <div
-                    class="h-1 bg-indigo-500"
-                    [style.width.%]="att.progress || 0"
-                  ></div>
+
+            <!-- Multiple attachments -->
+            <div *ngIf="m.attachments?.length" class="mt-2 flex flex-col gap-1.5">
+              <div *ngFor="let att of m.attachments" class="relative">
+                <img *ngIf="att.fileType === 'IMAGE'" [src]="att.previewUrl"
+                     class="rounded-xl max-h-48 w-full object-contain bg-gray-900" />
+                <video *ngIf="att.fileType === 'VIDEO'" [src]="att.previewUrl" controls
+                       class="rounded-xl max-h-48 w-full bg-gray-950"></video>
+                <a *ngIf="att.fileType === 'FILE'" [href]="att.previewUrl" target="_blank"
+                   class="inline-flex items-center gap-1 text-[12px] text-white/70 hover:text-white underline">
+                  <span class="material-icons-round" style="font-size:14px">attach_file</span>{{ att.fileName }}
+                </a>
+                <div *ngIf="att.progress !== undefined && att.progress < 100"
+                     class="mt-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div class="h-full bg-white/70 rounded-full transition-all" [style.width.%]="att.progress || 0"></div>
                 </div>
               </div>
             </div>
-      
-            <div class="mt-2 flex items-center justify-between">
-              <button
-                (click)="replyToMessage(m)"
-                class="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 rounded-md px-2 py-1 transition"
-              >
-                <span class="material-icons text-[16px]">reply</span> Reply
-              </button>
-              <div class="text-[11px] text-gray-400 select-none">
-                {{ m.createdAt | date : "h:mm a" }}
+
+            <!-- Timestamp -->
+            <p class="text-[10px] text-white/40 mt-1.5 text-right">{{ m.createdAt | date:'MMM d, h:mm a' }}</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── OTHER'S MESSAGE ── -->
+      <ng-container *ngIf="!isMyMessage(m)">
+        <div class="flex items-start gap-2.5 max-w-[80%] sm:max-w-[72%]">
+
+          <!-- Avatar -->
+          <img [src]="m.user?.profileImage || 'https://ui-avatars.com/api/?name=' + (m.user?.name || 'U') + '&background=1f2937&color=ffffff&size=60'"
+               [alt]="m.user?.name"
+               class="w-8 h-8 rounded-xl object-cover flex-shrink-0 border border-gray-200 mt-0.5" />
+
+          <div class="flex flex-col gap-0.5 min-w-0">
+
+            <!-- Sender name -->
+            <p class="text-[11.5px] font-semibold text-gray-500 ml-1">{{ m.user?.name }}</p>
+
+            <!-- Reply preview -->
+            <div *ngIf="m.replyTo"
+                 class="mb-1 px-3 py-2 bg-gray-100 border-l-[3px] border-gray-300 rounded-xl rounded-bl-sm text-[11.5px] text-gray-600 italic break-words">
+              <span class="font-semibold text-gray-700 not-italic block truncate">{{ m.replyTo.user?.name }}</span>
+              <span class="line-clamp-2">{{ m.replyTo.content | slice:0:80 }}{{ m.replyTo.content.length > 80 ? '…' : '' }}</span>
+            </div>
+
+            <!-- Bubble -->
+            <div class="relative px-3.5 py-2.5 bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-bl-sm shadow-sm">
+
+              <!-- Text -->
+              <p class="text-[13.5px] leading-relaxed break-words">
+                <span *ngIf="isExpanded(m.id)">{{ m.content }}</span>
+                <span *ngIf="!isExpanded(m.id)">{{ shouldTruncate(m) ? getTruncatedText(m.content) : m.content }}</span>
+                <button *ngIf="shouldTruncate(m)"
+                        (click)="toggleReadMore(m.id)"
+                        class="ml-1.5 text-[11px] font-semibold text-blue-600 hover:text-blue-700 underline transition-colors">
+                  {{ isExpanded(m.id) ? 'Read less' : 'Read more' }}
+                </button>
+              </p>
+
+              <!-- Media (legacy single) -->
+              <div *ngIf="m.mediaUrl" class="mt-2">
+                <img *ngIf="m.mediaType === 'image'" [src]="m.mediaUrl" alt="image"
+                     class="rounded-xl max-h-56 w-auto object-contain" />
+                <video *ngIf="m.mediaType === 'video'" [src]="m.mediaUrl" controls
+                       class="rounded-xl max-h-56 w-full object-contain bg-gray-950"></video>
+                <a *ngIf="m.mediaType === 'file'" [href]="m.mediaUrl" target="_blank"
+                   class="inline-flex items-center gap-1 text-[12px] text-blue-600 hover:text-blue-700 underline mt-1">
+                  <span class="material-icons-round" style="font-size:14px">download</span>Download
+                </a>
               </div>
+
+              <!-- Multiple attachments -->
+              <div *ngIf="m.attachments?.length" class="mt-2 flex flex-col gap-1.5">
+                <div *ngFor="let att of m.attachments" class="relative">
+                  <img *ngIf="att.fileType === 'IMAGE'" [src]="att.previewUrl"
+                       class="rounded-xl max-h-48 w-full object-contain bg-gray-100" />
+                  <video *ngIf="att.fileType === 'VIDEO'" [src]="att.previewUrl" controls
+                         class="rounded-xl max-h-48 w-full bg-gray-950"></video>
+                  <a *ngIf="att.fileType === 'FILE'" [href]="att.previewUrl" target="_blank"
+                     class="inline-flex items-center gap-1 text-[12px] text-blue-600 hover:text-blue-700 underline">
+                    <span class="material-icons-round" style="font-size:14px">attach_file</span>{{ att.fileName }}
+                  </a>
+                </div>
+              </div>
+
+              <!-- Timestamp + reply -->
+              <div class="flex items-center justify-between gap-3 mt-1.5">
+                <button (click)="replyToMessage(m)"
+                        class="inline-flex items-center gap-1 text-[11.5px] text-gray-400 hover:text-blue-600 transition-colors font-medium">
+                  <span class="material-icons-round" style="font-size:13px">reply</span>Reply
+                </button>
+                <p class="text-[10px] text-gray-400">{{ m.createdAt | date:'h:mm a' }}</p>
+              </div>
+
             </div>
           </div>
         </div>
-      </ng-template>
+      </ng-container>
+
     </div>
+    <!-- end messages loop -->
+
   </div>
 
-  <!-- New message indicator -->
-  <button
-    *ngIf="showNewMessageButton"
-    (click)="jumpToBottom()"
-    class="absolute bottom-28 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-lg ring-1 ring-black/6 text-sm flex items-center gap-2 transition hover:translate-y-[-2px]"
-    aria-label="Jump to new messages"
-  >
-    <span class="text-[14px]">⬇</span>
-    <span class="font-medium text-sky-600">New messages</span>
+  <!-- ── New messages indicator ── -->
+  <button *ngIf="showNewMessageButton"
+          (click)="jumpToBottom()"
+          class="anim-fade-up absolute bottom-24 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-lg text-[12.5px] font-semibold text-blue-600 hover:bg-blue-50 transition-all z-10">
+    <span class="material-icons-round" style="font-size:15px">arrow_downward</span>
+    New messages
   </button>
 
-  <!-- Reply preview -->
-  <div
-    *ngIf="replyingTo"
-    class="flex items-center justify-between bg-gradient-to-r from-sky-50 to-indigo-50 border-l-4 border-sky-400 px-4 py-2 text-sm text-gray-700"
-  >
-    <div class="truncate">
-      Replying to
-      <span class="font-semibold truncate">{{ replyingTo.user?.name }}</span
-      >:
-      <span class="italic text-gray-500 truncate"
-        >“{{ replyingTo.content | slice : 0 : 80
-        }}{{ replyingTo.content.length > 80 ? "..." : "" }}”</span
-      >
+  <!-- ══════════════════════════════
+       REPLY PREVIEW BAR
+       ══════════════════════════════ -->
+  <div *ngIf="replyingTo"
+       class="anim-fade-up flex-shrink-0 flex items-center justify-between gap-3 px-4 py-2.5 bg-blue-50 border-t border-blue-200">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-0.5 h-8 bg-blue-500 rounded-full flex-shrink-0"></div>
+      <div class="min-w-0">
+        <p class="text-[11px] font-semibold text-blue-700">Replying to {{ replyingTo.user?.name }}</p>
+        <p class="text-[11.5px] text-gray-500 truncate italic">
+          "{{ replyingTo.content | slice:0:80 }}{{ replyingTo.content.length > 80 ? '…' : '' }}"
+        </p>
+      </div>
     </div>
-    <button
-      (click)="cancelReply()"
-      class="text-gray-500 hover:text-red-500 transition p-1 rounded-full"
-    >
-      <span class="material-icons text-[18px]">close</span>
+    <button (click)="cancelReply()"
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-blue-100 transition-colors flex-shrink-0">
+      <span class="material-icons-round" style="font-size:16px">close</span>
     </button>
   </div>
 
-  <!-- Pending attachments preview -->
-  <div *ngIf="pendingAttachments.length" class="flex gap-2 overflow-x-auto p-2">
-    <div
-      *ngFor="let att of pendingAttachments; let i = index"
-      class="relative flex-shrink-0"
-    >
-      <img
-        *ngIf="att.fileType === 'IMAGE'"
-        [src]="att.previewUrl"
-        class="h-16 w-16 rounded-md object-cover shadow-md"
-      />
-      <video
-        *ngIf="att.fileType === 'VIDEO'"
-        [src]="att.previewUrl"
-        controls
-        class="h-16 w-16 rounded-md shadow-md"
-      ></video>
-      <button
-        (click)="removeAttachment(i)"
-        class="absolute top-0 right-0 text-white bg-black bg-opacity-60 rounded-full px-1"
-      >
+  <!-- ══════════════════════════════
+       PENDING ATTACHMENTS STRIP
+       ══════════════════════════════ -->
+  <div *ngIf="pendingAttachments.length"
+       class="att-strip flex-shrink-0 flex gap-2 overflow-x-auto px-4 py-2.5 bg-gray-50 border-t border-gray-200">
+    <div *ngFor="let att of pendingAttachments; let i = index"
+         class="relative flex-shrink-0 group">
+      <img *ngIf="att.fileType === 'IMAGE'" [src]="att.previewUrl"
+           class="h-14 w-14 rounded-xl object-cover border border-gray-200 shadow-sm" />
+      <video *ngIf="att.fileType === 'VIDEO'" [src]="att.previewUrl" controls
+             class="h-14 w-14 rounded-xl object-cover border border-gray-200 shadow-sm"></video>
+      <div *ngIf="att.fileType === 'FILE'"
+           class="h-14 w-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+        <span class="material-icons-round text-blue-600" style="font-size:22px">insert_drive_file</span>
+      </div>
+      <button (click)="removeAttachment(i)"
+              class="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full text-[10px] font-bold shadow-sm transition-colors">
         ✕
       </button>
-      <div
-        *ngIf="att.uploading"
-        class="absolute bottom-0 left-0 right-0 h-1 bg-gray-300"
-      >
-        <div
-          class="h-1 bg-indigo-500"
-          [style.width.%]="att.progress || 0"
-        ></div>
+      <div *ngIf="att.uploading"
+           class="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-b-xl overflow-hidden">
+        <div class="h-full bg-blue-500 transition-all" [style.width.%]="att.progress || 0"></div>
       </div>
     </div>
   </div>
 
-  <!-- Input section -->
-  <div
-    class="p-3 border-t border-gray-200 bg-white/70 backdrop-blur-sm flex items-center gap-3"
-  >
-    <input
-      [formControl]="messageControl"
-      placeholder="Write a message..."
-      class="flex-1 bg-white/80 hover:bg-white focus:bg-white focus:ring-2 focus:ring-sky-400 border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-700 placeholder-gray-400 transition shadow-sm"
-      (keydown.enter)="send()"
-    />
-    <button
-      (click)="openFilePicker()"
-      class="flex items-center justify-center w-12 h-10 bg-gray-200 hover:bg-gray-300 rounded-full transition"
-    >
-      <span class="material-icons text-[20px]">attach_file</span>
+  <!-- ══════════════════════════════
+       COMPOSER
+       ══════════════════════════════ -->
+  <div class="flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-3 border-t border-gray-100 bg-white">
+
+    <input #fileInput type="file" hidden multiple
+           (change)="onFilesSelected($event)"
+           accept="image/*,video/*,.pdf,.doc,.docx,.txt" />
+
+    <!-- Attach -->
+    <button (click)="openFilePicker()"
+            class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+      <span class="material-icons-round" style="font-size:19px">attach_file</span>
     </button>
-    <button
-      (click)="send()"
-      class="flex items-center justify-center w-12 h-10 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-lg transition-transform"
-    >
-      <span class="material-icons text-[22px]">send</span>
+
+    <!-- Text input -->
+    <input [formControl]="messageControl"
+           placeholder="Write a message…"
+           class="flex-1 px-4 py-2.5 text-[13.5px] text-gray-800 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-[3px] focus:ring-blue-100 focus:outline-none placeholder:text-gray-400 transition-all duration-150"
+           (keydown.enter)="send()" />
+
+    <!-- Send -->
+    <button (click)="send()"
+            [disabled]="!messageControl.value?.trim() && pendingAttachments.length === 0"
+            class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-gray-950 hover:bg-gray-800 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 shadow-sm">
+      <span class="material-icons-round" style="font-size:17px">send</span>
     </button>
+
   </div>
-  <input #fileInput type="file" hidden (change)="onFilesSelected($event)" />
+
 </div>
+<!-- end chat shell -->
 
-<!-- Delete Confirmation Modal -->
-<div
-  *ngIf="showDeleteModal"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] animate-fadeIn"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl w-full md:w-96 p-6 text-center relative transform transition-all duration-300"
-  >
-    <button
-      (click)="cancelDelete()"
-      class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-      aria-label="Close"
-    >
-      <span class="material-icons text-[22px]">close</span>
-    </button>
 
-    <span class="material-icons text-red-500 text-6xl mb-3">warning</span>
-
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">
-      Delete this message?
-    </h3>
-    <p class="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
-
-    <div class="flex justify-center gap-3">
-      <button
-        (click)="confirmDelete()"
-        class="px-4 py-2 rounded-full text-white bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 shadow-md transition"
-      >
-        <span class="material-icons text-[18px] mr-2">delete_forever</span>
-        Delete
-      </button>
-
-      <button
-        (click)="cancelDelete()"
-        class="px-4 py-2 rounded-full text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md transition"
-      >
-        <span class="material-icons text-[18px] mr-2">cancel</span>
-        Cancel
-      </button>
+<!-- ══════════════════════════════════════
+     DELETE MODAL
+     ══════════════════════════════════════ -->
+<div *ngIf="showDeleteModal"
+     class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 anim-fade-in"
+     style="background: rgba(0,0,0,.55); backdrop-filter: blur(4px);"
+     (click)="cancelDelete()">
+  <div class="anim-modal w-full sm:max-w-sm bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden font-dm"
+       (click)="$event.stopPropagation()">
+    <div class="h-1 bg-red-500"></div>
+    <div class="p-6 flex flex-col items-center gap-4 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
+        <span class="material-icons-round text-red-500" style="font-size:28px">delete_forever</span>
+      </div>
+      <div>
+        <h3 class="font-syne text-[18px] font-extrabold text-gray-950 tracking-tight mb-1">Delete message?</h3>
+        <p class="text-[13px] text-gray-500 leading-relaxed">This can't be undone. The message will be permanently removed.</p>
+      </div>
+      <div class="flex gap-3 w-full">
+        <button (click)="cancelDelete()"
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button (click)="confirmDelete()"
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-sm">
+          Delete
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Edit Message Modal -->
-<div
-  *ngIf="showEditModal"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] animate-fadeIn"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl w-full md:w-96 p-6 text-center relative transform transition-all duration-300"
-  >
-    <button
-      (click)="cancelEdit()"
-      class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-    >
-      <span class="material-icons text-[22px]">close</span>
-    </button>
 
-    <h3 class="text-lg font-semibold text-gray-800 mb-3">Edit your message</h3>
-    <textarea
-      [(ngModel)]="editedMessage"
-      rows="3"
-      class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
-    ></textarea>
+<!-- ══════════════════════════════════════
+     EDIT MODAL
+     ══════════════════════════════════════ -->
+<div *ngIf="showEditModal"
+     class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 anim-fade-in"
+     style="background: rgba(0,0,0,.55); backdrop-filter: blur(4px);"
+     (click)="cancelEdit()">
+  <div class="anim-modal w-full sm:max-w-md bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden font-dm"
+       (click)="$event.stopPropagation()">
 
-    <div class="flex justify-end gap-3 mt-5">
-      <button
-        (click)="cancelEdit()"
-        class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-      >
-        <span class="material-icons text-[18px] mr-2">cancel</span>
-        Cancel
-      </button>
-      <button
-        (click)="saveEdit()"
-        class="px-4 py-2 rounded-lg text-white bg-gradient-to-r from-green-500 to-sky-500 hover:from-green-600 hover:to-sky-600 shadow-md transition"
-      >
-        <span class="material-icons text-[18px] mr-2">save</span>
-        Save
-      </button>
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+      <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <span class="material-icons-round text-blue-600" style="font-size:17px">edit_note</span>
+      </div>
+      <h3 class="font-syne text-[16px] font-extrabold text-gray-950 tracking-tight">Edit message</h3>
     </div>
+
+    <div class="p-5 flex flex-col gap-4">
+      <textarea [(ngModel)]="editedMessage"
+                rows="4"
+                class="w-full text-[13.5px] text-gray-800 border border-gray-200 rounded-xl px-4 py-3 focus:ring-[3px] focus:ring-blue-100 focus:border-blue-400 focus:outline-none resize-none placeholder:text-gray-400 transition-all"
+                placeholder="Edit your message…"
+                autofocus></textarea>
+
+      <div class="flex gap-3 justify-end pt-1 border-t border-gray-100">
+        <button (click)="cancelEdit()"
+                class="px-5 py-2.5 text-[13px] font-semibold font-syne text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button (click)="saveEdit()"
+                [disabled]="!editedMessage.trim()"
+                class="px-5 py-2.5 text-[13px] font-semibold font-syne text-white bg-gray-950 hover:bg-gray-800 rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+          Save changes
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>

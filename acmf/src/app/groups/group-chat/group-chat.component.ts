@@ -55,7 +55,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   messages: GroupMessageUI[] = [];
   subs = new Subscription();
   messageControl = new FormControl('');
-  showNewMessageButton = false;
+  showNewMessageButton: boolean = false;
 
   currentUserId: string | null = null;
   menuOpen: Record<string, boolean> = {};
@@ -65,7 +65,7 @@ export class GroupChatComponent implements OnInit, OnDestroy, AfterViewInit {
   messageToDelete: GroupMessage | null = null;
 
   // Edit modal
-  showEditModal = false;
+  showEditModal: boolean = false;
   editedMessage: string = '';
   editingMessageId: string | null = null;
 

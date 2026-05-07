@@ -105,12 +105,13 @@ export class GroupMembersComponent implements OnInit, OnChanges {
   }
 
   openChatFromSidebar(member: Profile) {
-    this.showSidebar = false;
-    this.selectedParticipantId = member.userId;
-    this.selectedParticipantName = member.name;
-    this.selectedParticipantImage = member.profileImage;
-    this.showChatPopup = true;
-    this.cdr.detectChanges();
+    // this.showSidebar = false;
+    // this.selectedParticipantId = member.userId;
+    // this.selectedParticipantName = member.name;
+    // this.selectedParticipantImage = member.profileImage;
+    // this.showChatPopup = true;
+    // this.cdr.detectChanges();
+    this.message.emit(member.userId!);
   }
 
   closeDmChat() {
@@ -138,5 +139,10 @@ export class GroupMembersComponent implements OnInit, OnChanges {
 
   trackByUserId(index: number, member: Profile): string {
     return member.userId || index.toString();
+  }
+
+  getAvatarColor(userId?: string): string {
+    const code = (userId || '').charCodeAt(0) % 5;
+    return ['bg-blue-50','bg-emerald-50','bg-violet-50','bg-rose-50','bg-amber-50'][code];
   }
 }

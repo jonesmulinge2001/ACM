@@ -1,171 +1,276 @@
-<div
-  class="bg-white rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md"
->
-  <h3
-    class="text-lg font-semibold mb-4 text-gray-800 flex items-center space-x-2"
-  >
-    <span class="material-icons text-blue-500 text-xl">folder_shared</span>
-    <span>Shared Resources</span>
-  </h3>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <ng-container *ngIf="loading">
-    <div class="flex items-center space-x-2 text-gray-500 text-sm">
-      <div
-        class="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"
-      ></div>
-      <p>Loading resources...</p>
+<style>
+  .font-syne { font-family: 'Syne', sans-serif; }
+  .font-dm   { font-family: 'DM Sans', sans-serif; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+  }
+
+  .anim-fade-up { animation: fadeUp .28s ease both; }
+
+  .res-card { animation: fadeUp .3s ease both; }
+  .res-card:nth-child(1) { animation-delay: .04s; }
+  .res-card:nth-child(2) { animation-delay: .08s; }
+  .res-card:nth-child(3) { animation-delay: .12s; }
+  .res-card:nth-child(4) { animation-delay: .16s; }
+  .res-card:nth-child(5) { animation-delay: .20s; }
+  .res-card:nth-child(6) { animation-delay: .24s; }
+  .res-card:nth-child(7) { animation-delay: .28s; }
+  .res-card:nth-child(8) { animation-delay: .32s; }
+  .res-card:nth-child(9) { animation-delay: .36s; }
+
+  .shimmer {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.5s ease infinite;
+  }
+
+  /* Zoom only for PDF previews which are cover-cropped */
+  .media-zoom { transition: transform .5s cubic-bezier(.4,0,.2,1); }
+  .res-card:hover .media-zoom { transform: scale(1.03); }
+
+  /* Image sizing — contain so no cropping ever occurs */
+  .img-contain {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    max-height: 280px;
+    background: #f9fafb;
+  }
+</style>
+
+<div class="font-dm px-4 sm:px-6 py-5 flex flex-col gap-5">
+
+  <!-- ══════════════════════════════════
+       HEADER ROW
+       ══════════════════════════════════ -->
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+      <span class="material-icons-round text-emerald-600" style="font-size:18px">folder_shared</span>
     </div>
-  </ng-container>
+    <div>
+      <h3 class="font-syne text-[16px] font-extrabold text-gray-950 tracking-tight leading-tight">
+        Shared Resources
+      </h3>
+      <p *ngIf="!loading && resources?.length" class="text-[11.5px] text-gray-400 mt-px">
+        {{ resources.length }} {{ resources.length === 1 ? 'file' : 'files' }} shared
+      </p>
+    </div>
+  </div>
 
-  <ng-container *ngIf="!loading && resources?.length; else empty">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      <div
-        *ngFor="let res of resources"
-        class="border border-gray-200 rounded-xl bg-white hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden"
-      >
-        <!-- Image Files -->
-        <!-- Image Files -->
-        <ng-container
-          *ngIf="
-            res.fileType === 'image' ||
-              ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(
-                getFileExtension(res.resourceUrl || '').toLowerCase()
-              );
-            else nonMediaBlock
-          "
-        >
-          <div class="w-full bg-gray-50 flex items-center justify-center">
-            <img
-              [src]="res.resourceUrl"
-              alt="{{ res.originalName }}"
-              class="w-full max-h-56 object-contain rounded-t-xl"
-              loading="lazy"
-              (error)="handleImageError($event)"
-            />
+  <!-- ══════════════════════════════════
+       SKELETON LOADER
+       ══════════════════════════════════ -->
+  <div *ngIf="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let _ of [1,2,3,4,5,6]"
+         class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      <div class="shimmer h-44 w-full"></div>
+      <div class="p-3.5 flex flex-col gap-2.5">
+        <div class="shimmer h-3 rounded w-4/5"></div>
+        <div class="shimmer h-2.5 rounded w-1/2"></div>
+        <div class="flex items-center justify-between mt-1">
+          <div class="flex items-center gap-2">
+            <div class="shimmer w-6 h-6 rounded-full"></div>
+            <div class="shimmer h-2.5 rounded w-20"></div>
           </div>
-        </ng-container>
+          <div class="shimmer h-2.5 rounded w-12"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Non-Image / Non-PDF Block -->
-        <ng-template #nonMediaBlock>
-          <!-- Video Preview -->
-          <ng-container *ngIf="isVideo(res); else pdfOrIconBlock">
-            <div
-              class="w-full bg-black flex items-center justify-center rounded-t-xl overflow-hidden"
-            >
-              <video
-                [src]="getSafeUrl(res.resourceUrl)"
-                controls
-                class="w-full max-h-56 object-contain"
-              ></video>
+  <!-- ══════════════════════════════════
+       RESOURCE GRID
+       ══════════════════════════════════ -->
+  <ng-container *ngIf="!loading && resources?.length; else empty">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div *ngFor="let res of resources"
+           class="res-card group/card bg-white border border-gray-200 hover:border-gray-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
+
+        <!-- ══ MEDIA AREA ══ -->
+        <div class="relative flex-shrink-0">
+
+          <!-- ── IMAGE ──
+               Uses object-contain + auto height so portrait, landscape and
+               square images all render at their natural ratio without cropping.
+               Background is neutral gray to fill any letterbox space. -->
+          <ng-container *ngIf="
+              res.fileType === 'image' ||
+              ['jpg','jpeg','png','gif','svg','bmp','webp'].includes(
+                getFileExtension(res.resourceUrl || '').toLowerCase()
+              ); else nonMediaBlock">
+
+            <div class="w-full bg-gray-100 flex items-center justify-center overflow-hidden rounded-t-xl"
+                 style="min-height:120px;">
+              <img [src]="res.resourceUrl"
+                   [alt]="res.originalName || 'Image'"
+                   class="img-contain"
+                   loading="lazy"
+                   (error)="handleImageError($event)" />
             </div>
+
+            <span class="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 bg-black/50 text-white text-[10px] font-bold uppercase tracking-wide rounded-full backdrop-blur-sm">
+              <span class="material-icons-round" style="font-size:10px">image</span>
+              Image
+            </span>
           </ng-container>
 
-          <!-- PDF Preview or Fallback Icon -->
-          <ng-template #pdfOrIconBlock>
-            <ng-container
-              *ngIf="
-                getFileExtension(res.resourceUrl) === 'pdf' && res.previewImage;
-                else iconPreview
-              "
-            >
-              <div
-                class="relative w-full h-40 bg-gray-50 overflow-hidden flex justify-center items-center"
-              >
-                <img
-                  [src]="res.previewImage"
-                  alt="PDF Preview"
-                  class="object-cover w-full h-full"
-                />
-                <div
-                  class="absolute bottom-1 right-2 bg-blue-600 text-white text-[10px] px-2 py-[1px] rounded-md"
-                >
-                  PDF Preview
-                </div>
+          <ng-template #nonMediaBlock>
+
+            <!-- ── VIDEO ──
+                 Native controls. Height is capped so very tall videos don't
+                 take over the page; width fills the card. -->
+            <ng-container *ngIf="isVideo(res); else pdfOrIconBlock">
+              <div class="w-full bg-gray-950 overflow-hidden rounded-t-xl">
+                <video [src]="getSafeUrl(res.resourceUrl)"
+                       controls
+                       preload="metadata"
+                       class="w-full object-contain"
+                       style="max-height:300px; display:block;"></video>
               </div>
+              <span class="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 bg-black/50 text-white text-[10px] font-bold uppercase tracking-wide rounded-full backdrop-blur-sm">
+                <span class="material-icons-round" style="font-size:10px">play_circle</span>
+                Video
+              </span>
             </ng-container>
-            <!-- Fallback Icon -->
-            <ng-template #iconPreview>
-              <div class="flex items-center gap-4 p-4 bg-gray-50">
-                <div
-                  class="p-3 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"
-                >
-                  <span class="material-icons text-3xl">
-                    {{
-                      getFileIcon(
-                        res.fileType || getFileExtension(res.resourceUrl || "")
-                      )
-                    }}
+
+            <ng-template #pdfOrIconBlock>
+
+              <!-- ── PDF with canvas thumbnail ──
+                   object-cover is fine here because it's a rendered raster
+                   thumbnail, not the source document. -->
+              <ng-container *ngIf="getFileExtension(res.resourceUrl) === 'pdf' && res.previewImage; else iconPreview">
+                <div class="relative w-full h-48 overflow-hidden rounded-t-xl">
+                  <img [src]="res.previewImage"
+                       alt="PDF preview"
+                       class="media-zoom w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  <span class="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-full">
+                    <span class="material-icons-round" style="font-size:10px">picture_as_pdf</span>
+                    PDF
                   </span>
                 </div>
-                <div class="flex flex-col">
-                  <p
-                    class="font-medium text-gray-900 text-sm truncate max-w-[180px]"
-                    [title]="res.originalName"
-                  >
-                    {{ res.originalName || getFileName(res.resourceUrl) }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ getFileExtension(res.resourceUrl).toUpperCase() }} •
-                    Shared File
-                  </p>
+              </ng-container>
+
+              <!-- ── ICON FALLBACK (doc, xls, zip, etc.) ──
+                   Shows file type icon + name + extension. Never shows the raw URL. -->
+              <ng-template #iconPreview>
+                <div class="w-full flex flex-col items-center justify-center gap-3 px-5 py-8 bg-gray-50 rounded-t-xl">
+                  <div class="w-16 h-16 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center flex-shrink-0">
+                    <span class="material-icons-round text-blue-600" style="font-size:30px">
+                      {{ getFileIcon(res.fileType || getFileExtension(res.resourceUrl || '')) }}
+                    </span>
+                  </div>
+                  <div class="text-center w-full">
+                    <!-- Original file name — never shows the cloud storage URL -->
+                    <p class="text-[13px] font-semibold text-gray-800 leading-snug break-words line-clamp-2"
+                       [title]="res.originalName">
+                      {{ res.originalName || 'Untitled file' }}
+                    </p>
+                    <p class="text-[11px] text-gray-400 uppercase tracking-wider mt-1">
+                      {{ getFileExtension(res.resourceUrl || '').toUpperCase() || 'File' }}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </ng-template>
+
             </ng-template>
           </ng-template>
-        </ng-template>
 
-        <!-- ✅ Footer -->
-        <div class="p-3 border-t border-gray-100 text-sm bg-white">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center space-x-2">
-              <img
-                [src]="
-                  res.sharedBy?.profile?.profileImage ||
-                  'https://ui-avatars.com/api/?name=' + res.sharedBy?.name
-                "
-                alt="{{ res.sharedBy?.name }}"
-                class="w-6 h-6 rounded-full object-cover"
-              />
-              <span class="text-xs text-gray-700 font-medium">{{
-                res.sharedBy?.name || "Unknown"
-              }}</span>
+        </div>
+        <!-- end media area -->
+
+        <!-- ══ CARD FOOTER ══ -->
+        <div class="p-3.5 border-t border-gray-100 bg-white flex flex-col gap-2.5 flex-1">
+
+          <!-- File name for image / video / pdf-with-preview
+               (icon-fallback already shows the name in its block above) -->
+          <p *ngIf="res.originalName && (
+                res.fileType === 'image' ||
+                ['jpg','jpeg','png','gif','svg','bmp','webp'].includes(
+                  getFileExtension(res.resourceUrl || '').toLowerCase()
+                ) ||
+                isVideo(res) ||
+                (getFileExtension(res.resourceUrl) === 'pdf' && res.previewImage)
+              )"
+             class="text-[13px] font-semibold text-gray-800 leading-snug break-words line-clamp-2"
+             [title]="res.originalName">
+            {{ res.originalName }}
+          </p>
+
+          <!-- Shared by + date -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <img [src]="res.sharedBy?.profile?.profileImage ||
+                          'https://ui-avatars.com/api/?name=' + (res.sharedBy?.name || 'U') + '&background=1f2937&color=ffffff&size=48'"
+                   [alt]="res.sharedBy?.name"
+                   class="w-6 h-6 rounded-lg object-cover flex-shrink-0 border border-gray-200" />
+              <span class="text-[12px] font-medium text-gray-700 truncate">
+                {{ res.sharedBy?.name || 'Unknown' }}
+              </span>
             </div>
-            <span class="text-xs text-gray-400">{{
-              res.createdAt | date : "short"
-            }}</span>
+            <span class="text-[11px] text-gray-400 flex-shrink-0">
+              {{ res.createdAt | date:'MMM d, y' }}
+            </span>
           </div>
 
-          <div class="flex justify-between items-center">
-            <div class="flex space-x-3 text-gray-500">
-              <span class="flex items-center space-x-1 hover:text-blue-500">
-                <span class="material-icons text-sm">thumb_up</span>
-                <span>{{ res.likesCount }}</span>
-              </span>
-              <span class="flex items-center space-x-1 hover:text-purple-500">
-                <span class="material-icons text-sm">chat_bubble_outline</span>
-                <span>{{ res.commentsCount }}</span>
-              </span>
+          <!-- Stats + download -->
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1 text-[12px] text-gray-400">
+                <span class="material-icons-round" style="font-size:14px">favorite_border</span>
+                <span>{{ res.likesCount || 0 }}</span>
+              </div>
+              <div class="flex items-center gap-1 text-[12px] text-gray-400">
+                <span class="material-icons-round" style="font-size:14px">chat_bubble_outline</span>
+                <span>{{ res.commentsCount || 0 }}</span>
+              </div>
             </div>
 
-            <a
-              [href]="res.resourceUrl"
-              [attr.download]="res.originalName"
-              target="_blank"
-              class="flex items-center space-x-1 text-blue-600 hover:text-blue-800 font-medium"
-            >
-              <span class="material-icons text-sm">download</span>
-              <span class="text-xs">Download</span>
+            <!-- Download uses originalName as filename, href is the cloud URL
+                 but it is never displayed as visible text to the user -->
+            <a [href]="res.resourceUrl"
+               [attr.download]="res.originalName"
+               target="_blank"
+               class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-950 hover:bg-gray-800 text-white text-[11.5px] font-semibold font-syne rounded-lg transition-all duration-150 shadow-sm"
+               (click)="$event.stopPropagation()">
+              <span class="material-icons-round" style="font-size:13px">download</span>
+              Download
             </a>
+
           </div>
         </div>
+
       </div>
     </div>
   </ng-container>
 
+  <!-- ══════════════════════════════════
+       EMPTY STATE
+       ══════════════════════════════════ -->
   <ng-template #empty>
-    <div class="flex flex-col items-center justify-center py-8 text-gray-400">
-      <span class="material-icons text-4xl mb-2">folder_open</span>
-      <p>No file resources shared yet.</p>
+    <div *ngIf="!loading"
+         class="anim-fade-up flex flex-col items-center justify-center text-center py-20 px-6 gap-4">
+      <div class="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+        <span class="material-icons-round text-gray-300" style="font-size:36px">folder_open</span>
+      </div>
+      <div>
+        <h4 class="font-syne text-[17px] font-extrabold text-gray-900 tracking-tight mb-1">No resources yet</h4>
+        <p class="text-[13px] text-gray-500 max-w-xs mx-auto leading-relaxed">
+          Files and documents shared in the group feed will appear here.
+        </p>
+      </div>
     </div>
   </ng-template>
+
 </div>
