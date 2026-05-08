@@ -1,126 +1,187 @@
-<!-- ═══════════════════════ MODALS (top-level) ═══════════════════════ -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-<app-edit-post *ngIf="showEditModal && selectedPostForEdit" [post]="selectedPostForEdit" [showModal]="showEditModal"
-  (close)="onCloseEditModal()" (save)="onPostSave($event)">
+<style>
+  .font-syne { font-family: 'Syne', sans-serif; }
+  .font-dm   { font-family: 'DM Sans', sans-serif; }
+
+  @keyframes fadeIn  { from { opacity: 0; }                              to { opacity: 1; } }
+  @keyframes fadeUp  { from { opacity: 0; transform: translateY(8px); }  to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(.96) translateY(-4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes modalUp { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+
+  .anim-fade-in  { animation: fadeIn  .18s ease both; }
+  .anim-fade-up  { animation: fadeUp  .24s ease both; }
+  .anim-scale-in { animation: scaleIn .18s ease both; }
+  .anim-modal    { animation: modalUp .24s cubic-bezier(.34,1.1,.64,1) both; }
+
+  .shimmer {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.5s ease infinite;
+  }
+
+  /* Post card stagger */
+  .post-card { animation: fadeUp .3s ease both; }
+  .post-card:nth-child(1) { animation-delay: .04s; }
+  .post-card:nth-child(2) { animation-delay: .08s; }
+  .post-card:nth-child(3) { animation-delay: .12s; }
+  .post-card:nth-child(4) { animation-delay: .16s; }
+  .post-card:nth-child(5) { animation-delay: .20s; }
+
+  /* Images: always object-contain — no cropping ever */
+  .post-media-img {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    background: #f9fafb;
+    max-height: 520px;
+  }
+
+  /* Hover-reveal for 3-dot menu */
+  .menu-reveal { opacity: 0; transition: opacity .15s ease; }
+  .post-card:hover .menu-reveal,
+  .menu-reveal:focus-within { opacity: 1; }
+
+  /* Slim scrollbar for horizontal strips */
+  .strip-scroll::-webkit-scrollbar { height: 3px; }
+  .strip-scroll::-webkit-scrollbar-track { background: transparent; }
+  .strip-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
+
+  /* Comment bubble tail */
+  .reply-bubble { background: #f9fafb; }
+</style>
+
+<!-- ═══ TOP-LEVEL MODALS ═══ -->
+<app-edit-post *ngIf="showEditModal && selectedPostForEdit"
+  [post]="selectedPostForEdit"
+  [showModal]="showEditModal"
+  (close)="onCloseEditModal()"
+  (save)="onPostSave($event)">
 </app-edit-post>
 
-<app-flag-post-modal *ngIf="showFlagModal && selectedPostToFlag" [postId]="selectedPostToFlag.id"
-  (submitFlag)="onSubmitFlag($event)" (closeModal)="onCloseFlagModal()">
+<app-flag-post-modal *ngIf="showFlagModal && selectedPostToFlag"
+  [postId]="selectedPostToFlag.id"
+  (submitFlag)="onSubmitFlag($event)"
+  (closeModal)="onCloseFlagModal()">
 </app-flag-post-modal>
 
 
-<!-- ═══════════════════════ MAIN GRID (feed + sidebar) ═══════════════════════ -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
+<!-- ═══ MAIN GRID ═══ -->
+<div class="font-dm grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
 
 
   <!-- ───────────────────────────────────────
        FEED  (col-span-2)
   ─────────────────────────────────────── -->
-  <div class="lg:col-span-2 space-y-4" infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="150"
-    (scrolled)="loadMorePosts()">
+  <div class="lg:col-span-2 flex flex-col gap-3"
+       infiniteScroll
+       [infiniteScrollDistance]="2"
+       [infiniteScrollThrottle]="150"
+       (scrolled)="loadMorePosts()">
 
-    <!-- Skeleton (initial load) -->
+    <!-- ── Skeleton (initial load) ── -->
     <ng-container *ngIf="isLoading && posts.length === 0">
       <div *ngFor="let _ of [1,2,3]"
-        class="animate-pulse bg-white rounded-xl border border-gray-200 p-4 space-y-3 shadow-sm">
-        <div class="flex items-start gap-3">
-          <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-3.5 bg-gray-200 rounded w-3/4"></div>
-            <div class="h-2.5 bg-gray-100 rounded w-1/2"></div>
+           class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 flex items-start gap-3">
+          <div class="shimmer w-10 h-10 rounded-xl flex-shrink-0"></div>
+          <div class="flex-1 flex flex-col gap-2 pt-1">
+            <div class="shimmer h-3.5 rounded w-3/5"></div>
+            <div class="shimmer h-2.5 rounded w-2/5"></div>
           </div>
         </div>
-        <div class="h-3 bg-gray-100 rounded w-5/6"></div>
-        <div class="h-3 bg-gray-100 rounded w-full"></div>
-        <div class="h-44 bg-gray-100 rounded-lg"></div>
+        <div class="px-4 pb-3 flex flex-col gap-2">
+          <div class="shimmer h-3 rounded w-5/6"></div>
+          <div class="shimmer h-3 rounded w-full"></div>
+          <div class="shimmer h-52 rounded-xl mt-1"></div>
+        </div>
       </div>
     </ng-container>
 
-    <!-- "Recommended for you" strip (top of feed) -->
+    <!-- ── "Recommended for you" strip ── -->
     <ng-container *ngIf="recommendedGeneralPosts.length > 0 && posts.length > 0">
       <div class="flex items-center gap-3 px-1">
-        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Recommended for
-          you</span>
+        <span class="text-[10.5px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Recommended for you</span>
         <div class="flex-1 h-px bg-gray-100"></div>
       </div>
       <ng-container *ngFor="let post of recommendedGeneralPosts.slice(0,2)">
-        <ng-container
-          *ngTemplateOutlet="postCard; context:{ post: post, badge: 'Recommended', badgeColor: 'blue' }"></ng-container>
+        <ng-container *ngTemplateOutlet="postCard; context:{ post: post, badge: 'Recommended', badgeColor: 'blue' }"></ng-container>
       </ng-container>
       <div class="h-px bg-gray-100"></div>
     </ng-container>
 
-<!-- People you may know (inline card) -->
-<div *ngIf="profiles.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-      <span class="material-icons text-blue-500 text-base">people_alt</span>
-      People you may connect with
-    </h3>
-    <span class="text-xs text-teal-600 cursor-pointer hover:underline" routerLink="/network">See all</span>
-  </div>
+    <!-- ── People you may know (inline) ── -->
+    <div *ngIf="profiles.length > 0"
+         class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2">
+          <span class="material-icons-round text-blue-600" style="font-size:16px">people_alt</span>
+          People you may connect with
+        </h3>
+        <a routerLink="/network" class="text-[11.5px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">See all</a>
+      </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-    <div *ngFor="let profile of profiles.slice(0,6)"
-      class="border border-gray-100 rounded-xl p-3 hover:shadow-sm transition group">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        <div *ngFor="let profile of profiles.slice(0,6)"
+             class="border border-gray-100 rounded-xl p-3 hover:border-gray-200 hover:shadow-sm transition-all duration-150">
 
-      <!-- Mobile: horizontal row | Desktop: vertical centered -->
-      <div class="flex items-center gap-3 lg:flex-col lg:items-center lg:text-center">
+          <!-- Mobile: row | Desktop: column -->
+          <div class="flex items-center gap-3 lg:flex-col lg:items-center lg:text-center">
+            <img [src]="profile.profileImage || 'assets/default-avatar.png'"
+                 class="w-11 h-11 rounded-xl object-cover flex-shrink-0 border border-gray-200" />
 
-        <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-          class="w-12 h-12 rounded-full object-cover shadow-sm flex-shrink-0"/>
+            <div class="flex-1 min-w-0 lg:flex lg:flex-col lg:items-center">
+              <p class="text-[13px] font-semibold text-gray-900 truncate lg:text-center">{{ profile.name }}</p>
+              <p class="text-[11.5px] text-gray-500 truncate">{{ profile.course || profile.academicLevel }}</p>
+              <p class="text-[11px] text-gray-400 mt-px">{{ truncateInstitutionName(profile.institution?.name) }}</p>
+              <div class="flex flex-wrap gap-1 mt-1.5 lg:justify-center">
+                <span *ngFor="let skill of profile.skills.slice(0,2)"
+                      class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">{{ skill }}</span>
+              </div>
+            </div>
 
-        <!-- Text info -->
-        <div class="flex-1 min-w-0 lg:flex lg:flex-col lg:items-center">
-          <p class="text-sm font-semibold text-gray-900 truncate lg:text-center">{{ profile.name }}</p>
-          <p class="text-xs text-gray-500 truncate">{{ profile.course || profile.academicLevel }}</p>
-          <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
-          <div class="flex flex-wrap gap-1 mt-1 lg:justify-center">
-            <span *ngFor="let skill of profile.skills.slice(0,2)"
-              class="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">
-              {{ skill }}
-            </span>
+            <div class="flex-shrink-0 lg:w-full lg:mt-2">
+              <button *ngIf="!isFollowing(profile.userId)"
+                      (click)="follow(profile.userId)"
+                      class="text-[11.5px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition lg:w-full">
+                + Follow
+              </button>
+              <button *ngIf="isFollowing(profile.userId)"
+                      (click)="unFollow(profile.userId)"
+                      class="text-[11.5px] font-medium text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition lg:w-full">
+                Following ✓
+              </button>
+            </div>
           </div>
         </div>
-
-        <!-- Follow button pushed to right on mobile, full width on desktop -->
-        <div class="flex-shrink-0 lg:w-full lg:mt-2">
-          <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-            class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition lg:w-full">
-            + Follow
-          </button>
-          <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
-            class="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition lg:w-full">
-            Following ✓
-          </button>
-        </div>
-
       </div>
     </div>
-  </div>
-</div>
-    <!-- Main feed with interleaved recommender content -->
+
+    <!-- ── Main feed with interleaved recommender content ── -->
     <ng-container *ngFor="let post of posts; let i = index">
 
       <ng-container *ngTemplateOutlet="postCard; context:{ post: post, badge: null, badgeColor: null }"></ng-container>
 
-      <!-- After every 4th post: People with shared interests -->
+      <!-- Every 4th: People with shared interests -->
       <ng-container *ngIf="(i + 1) % 4 === 0 && profilesByInterests.length > 0">
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-3">
-            <span class="material-icons text-rose-400 text-base">favorite_border</span>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+          <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2 mb-3">
+            <span class="material-icons-round text-rose-500" style="font-size:16px">favorite_border</span>
             People who share your interests
           </h3>
-          <div class="flex gap-4 overflow-x-auto pb-1">
+          <div class="strip-scroll flex gap-4 overflow-x-auto pb-1">
             <div *ngFor="let profile of profilesByInterests.slice(0,5)"
-              class="flex-shrink-0 flex flex-col items-center text-center w-24">
+                 class="flex-shrink-0 flex flex-col items-center text-center w-24">
               <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-                class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm mb-1" />
+                   class="w-12 h-12 rounded-xl object-cover border border-gray-200 mb-1.5" />
               <p class="text-[11px] font-semibold text-gray-800 truncate w-full">{{ profile.name }}</p>
               <span *ngFor="let interest of profile.interests.slice(0,1)"
-                class="text-[9px] bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-full my-1">{{ interest }}</span>
-              <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-                class="text-[10px] text-blue-600 border border-blue-200 rounded-full px-2 py-0.5 hover:bg-blue-50 transition mt-1">
+                    class="text-[9.5px] bg-rose-50 text-rose-500 px-1.5 py-0.5 rounded-full my-1">{{ interest }}</span>
+              <button *ngIf="!isFollowing(profile.userId)"
+                      (click)="follow(profile.userId)"
+                      class="text-[10.5px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-2 py-0.5 hover:bg-blue-50 transition mt-0.5">
                 + Follow
               </button>
             </div>
@@ -128,39 +189,34 @@
         </div>
       </ng-container>
 
-      <!-- After every 5th post: Academic pick -->
+      <!-- Every 5th: Academic pick -->
       <ng-container *ngIf="(i + 1) % 5 === 0 && recommendedAcademicPosts.length > 0">
         <div class="flex items-center gap-3 px-1">
-          <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-widest whitespace-nowrap">Academic
-            pick</span>
-          <div class="flex-1 h-px bg-indigo-50"></div>
+          <span class="text-[10.5px] font-bold text-indigo-500 uppercase tracking-widest whitespace-nowrap">Academic pick</span>
+          <div class="flex-1 h-px bg-indigo-100"></div>
         </div>
-        <ng-container
-          *ngTemplateOutlet="postCard; context:{ post: recommendedAcademicPosts[0], badge: 'Academic', badgeColor: 'indigo' }"></ng-container>
+        <ng-container *ngTemplateOutlet="postCard; context:{ post: recommendedAcademicPosts[0], badge: 'Academic', badgeColor: 'indigo' }"></ng-container>
       </ng-container>
 
-      <!-- After every 7th post: Suggested groups -->
+      <!-- Every 7th: Suggested groups -->
       <ng-container *ngIf="(i + 1) % 7 === 0 && suggestedGroups.length > 0">
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-3">
-            <span class="material-icons text-blue-500 text-base">groups</span>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+          <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2 mb-3">
+            <span class="material-icons-round text-blue-600" style="font-size:16px">groups</span>
             Groups you might like
           </h3>
-          <div class="space-y-3">
-            <div *ngFor="let group of suggestedGroups.slice(0,3)" class="flex items-center gap-3 group cursor-pointer">
-              <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100">
+          <div class="flex flex-col gap-2.5">
+            <div *ngFor="let group of suggestedGroups.slice(0,3)"
+                 class="flex items-center gap-3 group/grp cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-200">
                 <img *ngIf="group.coverImage" [src]="group.coverImage" class="w-full h-full object-cover" />
-                <span *ngIf="!group.coverImage" class="material-icons text-blue-500 text-lg">group</span>
+                <span *ngIf="!group.coverImage" class="material-icons-round text-gray-400" style="font-size:18px">group</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-semibold text-gray-800 truncate group-hover:text-blue-600 transition">{{
-                  group.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ group._count?.members || 0 }} members · {{ group.visibility }}
-                </p>
+                <p class="text-[13px] font-semibold text-gray-900 truncate group-hover/grp:text-blue-600 transition-colors">{{ group.name }}</p>
+                <p class="text-[11px] text-gray-400">{{ group._count?.members || 0 }} members · {{ group.visibility }}</p>
               </div>
-              <button
-                class="text-[11px] text-blue-600 font-semibold border border-blue-200 rounded-full px-3 py-1 hover:bg-blue-50 transition flex-shrink-0">
+              <button class="text-[11.5px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition flex-shrink-0">
                 Join
               </button>
             </div>
@@ -168,33 +224,32 @@
         </div>
       </ng-container>
 
-      <!-- After every 8th post: Opportunity pick -->
+      <!-- Every 8th: Opportunity -->
       <ng-container *ngIf="(i + 1) % 8 === 0 && recommendedOpportunityPosts.length > 0">
         <div class="flex items-center gap-3 px-1">
-          <span
-            class="text-[11px] font-bold text-emerald-500 uppercase tracking-widest whitespace-nowrap">Opportunity</span>
-          <div class="flex-1 h-px bg-emerald-50"></div>
+          <span class="text-[10.5px] font-bold text-emerald-600 uppercase tracking-widest whitespace-nowrap">Opportunity</span>
+          <div class="flex-1 h-px bg-emerald-100"></div>
         </div>
-        <ng-container
-          *ngTemplateOutlet="postCard; context:{ post: recommendedOpportunityPosts[0], badge: 'Opportunity', badgeColor: 'emerald' }"></ng-container>
+        <ng-container *ngTemplateOutlet="postCard; context:{ post: recommendedOpportunityPosts[0], badge: 'Opportunity', badgeColor: 'emerald' }"></ng-container>
       </ng-container>
 
-      <!-- After every 10th post: Classmates in same course -->
+      <!-- Every 10th: Classmates -->
       <ng-container *ngIf="(i + 1) % 10 === 0 && profilesByCourse.length > 0">
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-3">
-            <span class="material-icons text-amber-500 text-base">school</span>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+          <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2 mb-3">
+            <span class="material-icons-round text-amber-600" style="font-size:16px">school</span>
             Classmates in your course
           </h3>
-          <div class="flex gap-4 overflow-x-auto pb-1">
+          <div class="strip-scroll flex gap-4 overflow-x-auto pb-1">
             <div *ngFor="let profile of profilesByCourse.slice(0,5)"
-              class="flex-shrink-0 flex flex-col items-center text-center w-20">
+                 class="flex-shrink-0 flex flex-col items-center text-center w-20">
               <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-                class="w-11 h-11 rounded-full object-cover border-2 border-amber-100 mb-1" />
+                   class="w-11 h-11 rounded-xl object-cover border border-amber-100 mb-1.5" />
               <p class="text-[11px] font-semibold text-gray-800 truncate w-full">{{ profile.name }}</p>
-              <p class="text-[9px] text-gray-400">{{ profile.academicLevel }}</p>
-              <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-                class="mt-1 text-[10px] text-blue-600 border border-blue-200 rounded-full px-2 py-0.5 hover:bg-blue-50 transition">
+              <p class="text-[10px] text-gray-400">{{ profile.academicLevel }}</p>
+              <button *ngIf="!isFollowing(profile.userId)"
+                      (click)="follow(profile.userId)"
+                      class="mt-1 text-[10.5px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-2 py-0.5 hover:bg-blue-50 transition">
                 + Follow
               </button>
             </div>
@@ -204,18 +259,20 @@
 
     </ng-container>
 
-    <!-- Inline skeleton (load-more) -->
+    <!-- ── Load-more skeleton ── -->
     <ng-container *ngIf="isLoading && posts.length > 0">
       <div *ngFor="let _ of [1,2]"
-        class="animate-pulse bg-white rounded-xl border border-gray-200 p-4 space-y-2 shadow-sm">
-        <div class="h-3.5 bg-gray-200 rounded w-5/6"></div>
-        <div class="h-3 bg-gray-100 rounded w-full"></div>
+           class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-col gap-2.5">
+        <div class="shimmer h-3.5 rounded w-5/6"></div>
+        <div class="shimmer h-3 rounded w-full"></div>
+        <div class="shimmer h-3 rounded w-4/6"></div>
       </div>
     </ng-container>
 
+    <!-- ── End of feed ── -->
     <div *ngIf="nextCursor === null && !isLoading"
-      class="flex items-center justify-center gap-2 py-6 text-sm text-gray-400">
-      <span class="material-icons text-base">check_circle_outline</span>
+         class="flex items-center justify-center gap-2 py-8 text-[12.5px] text-gray-400">
+      <span class="material-icons-round" style="font-size:16px">check_circle_outline</span>
       You're all caught up
     </div>
 
@@ -227,164 +284,150 @@
   ─────────────────────────────────────── -->
   <div class="hidden lg:flex flex-col gap-4">
 
-<!-- Trending -->
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-  <h2 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-    <span class="material-icons text-orange-500 text-base">local_fire_department</span>
-    Trending
-  </h2>
-  <ol class="space-y-3 divide-y divide-gray-50">
-    <li *ngFor="let post of trendingPosts.slice(0,6); let i = index" (click)="goToPost(post.id)"
-      class="pt-3 first:pt-0 flex gap-3 cursor-pointer group items-start">
-      <span
-        class="text-xl font-black text-gray-100 group-hover:text-blue-200 transition leading-none mt-0.5 w-5 flex-shrink-0 select-none">
-        {{ i + 1 }}
-      </span>
-      <div class="flex-1 min-w-0">
-        <p
-          class="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition line-clamp-2 leading-snug">
-          {{ post.title }}
-        </p>
-        <p class="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1">
-          <span class="material-icons text-[10px]">favorite</span>
-          {{ post.likesCount || 0 }} · {{ post.author.name }}
-        </p>
-        <!-- Fallback: display content body when no file exists -->
-        <p *ngIf="!post.fileUrl && post.body" class="text-[10px] text-gray-500 mt-1 line-clamp-2">
-          {{ post.body }}
-        </p>
-      </div>
-      
-      <!-- Image thumbnail -->
-      <img *ngIf="isImagePost(post)" [src]="post.fileUrl"
-        class="w-12 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-100" />
-      
-      <!-- Video thumbnail with play icon -->
-      <div *ngIf="isVideoPost(post)" 
-        class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-gray-900 relative overflow-hidden">
-        <video class="w-full h-full object-cover" [src]="post.fileUrl"></video>
-        <div class="absolute inset-0 flex items-center justify-center bg-black/30">
-          <span class="material-icons text-white text-sm">play_arrow</span>
-        </div>
-      </div>
-      
-      <!-- PDF/document thumbnail -->
-      <div *ngIf="isPdfPost(post)" 
-        class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-red-50 flex items-center justify-center">
-        <span class="material-icons text-red-500 text-lg">picture_as_pdf</span>
-      </div>
-      
-      <!-- Unknown file type -->
-      <div *ngIf="getFileType(post) === 'unknown' && post.fileUrl" 
-        class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-gray-50 flex items-center justify-center">
-        <span class="material-icons text-gray-400 text-sm">insert_drive_file</span>
-      </div>
-    </li>
-  </ol>
-</div>
+    <!-- Trending -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <h2 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2 mb-3">
+        <span class="material-icons-round text-orange-500" style="font-size:16px">local_fire_department</span>
+        Trending
+      </h2>
+      <ol class="flex flex-col gap-0 divide-y divide-gray-50">
+        <li *ngFor="let post of trendingPosts.slice(0,6); let i = index"
+            (click)="goToPost(post.id)"
+            class="py-3 first:pt-0 last:pb-0 flex gap-3 cursor-pointer group/trend items-start">
+          <span class="text-[22px] font-black text-gray-100 group-hover/trend:text-blue-200 transition leading-none mt-0.5 w-5 flex-shrink-0 select-none">
+            {{ i + 1 }}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12.5px] font-semibold text-gray-800 group-hover/trend:text-blue-600 transition line-clamp-2 leading-snug">
+              {{ post.title }}
+            </p>
+            <p class="text-[10.5px] text-gray-400 mt-0.5 flex items-center gap-1">
+              <span class="material-icons-round" style="font-size:11px">favorite</span>
+              {{ post.likesCount || 0 }} · {{ post.author.name }}
+            </p>
+            <p *ngIf="!post.fileUrl && post.body" class="text-[10.5px] text-gray-500 mt-1 line-clamp-2">{{ post.body }}</p>
+          </div>
+
+          <!-- Thumbnail -->
+          <img *ngIf="isImagePost(post)" [src]="post.fileUrl"
+               class="w-12 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-100" />
+          <div *ngIf="isVideoPost(post)"
+               class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-gray-950 relative overflow-hidden">
+            <video class="w-full h-full object-cover" [src]="post.fileUrl"></video>
+            <div class="absolute inset-0 flex items-center justify-center bg-black/40">
+              <span class="material-icons-round text-white" style="font-size:14px">play_arrow</span>
+            </div>
+          </div>
+          <div *ngIf="isPdfPost(post)"
+               class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-red-50 flex items-center justify-center">
+            <span class="material-icons-round text-red-500" style="font-size:18px">picture_as_pdf</span>
+          </div>
+          <div *ngIf="getFileType(post) === 'unknown' && post.fileUrl"
+               class="w-12 h-10 rounded-lg flex-shrink-0 border border-gray-100 bg-gray-50 flex items-center justify-center">
+            <span class="material-icons-round text-gray-400" style="font-size:14px">insert_drive_file</span>
+          </div>
+        </li>
+      </ol>
+    </div>
 
     <!-- Institution peers -->
-    <div *ngIf="profilesByInstitution.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <div *ngIf="profilesByInstitution.length > 0" class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <span class="material-icons text-indigo-500 text-base">account_balance</span>
+        <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2">
+          <span class="material-icons-round text-indigo-500" style="font-size:16px">account_balance</span>
           From your institution
         </h3>
-        <span class="text-xs text-teal-600 cursor-pointer hover:underline" routerLink="/network">See all</span>
+        <a routerLink="/network" class="text-[11.5px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">See all</a>
       </div>
-      <div class="space-y-3">
+      <div class="flex flex-col gap-2.5">
         <div *ngFor="let profile of profilesByInstitution.slice(0,5)"
-          class="flex gap-3 border border-gray-100 rounded-xl p-3 hover:shadow-sm transition group">
+             class="flex gap-3 border border-gray-100 rounded-xl p-3 hover:border-gray-200 hover:shadow-sm transition-all duration-150">
           <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-            class="w-10 h-10 rounded-full object-cover shadow-sm flex-shrink-0" />
+               class="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-gray-200" />
           <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between flex-wrap gap-1">
-              <div>
-                <p class="text-sm font-semibold text-gray-900">{{ profile.name }}</p>
-                <p class="text-xs text-gray-500">{{ profile.course || profile.academicLevel }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
+            <div class="flex items-start justify-between gap-1 flex-wrap">
+              <div class="min-w-0">
+                <p class="text-[13px] font-semibold text-gray-900 truncate">{{ profile.name }}</p>
+                <p class="text-[11px] text-gray-500 truncate">{{ profile.course || profile.academicLevel }}</p>
+                <p class="text-[10.5px] text-gray-400">{{ truncateInstitutionName(profile.institution?.name) }}</p>
               </div>
-              <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-                class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
+              <button *ngIf="!isFollowing(profile.userId)"
+                      (click)="follow(profile.userId)"
+                      class="text-[11px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-2.5 py-1 hover:bg-blue-50 transition flex-shrink-0">
                 + Follow
               </button>
-              <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
-                class="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition flex-shrink-0">
+              <button *ngIf="isFollowing(profile.userId)"
+                      (click)="unFollow(profile.userId)"
+                      class="text-[11px] font-medium text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition flex-shrink-0">
                 Following ✓
               </button>
             </div>
-            <div class="flex flex-wrap gap-1 mt-1">
+            <div class="flex flex-wrap gap-1 mt-1.5">
               <span *ngFor="let skill of profile.skills.slice(0,2)"
-                class="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">{{ skill }}</span>
+                    class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">{{ skill }}</span>
             </div>
-            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
-            <div class="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-              <span>Joined {{ profile.createdAt | date:'MMM yyyy' }}</span>
-            </div>
+            <p class="text-[11px] text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Resource posts -->
-    <div *ngIf="recommendedResourcePosts.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-      <h3 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <span class="material-icons text-purple-500 text-base">library_books</span>
+    <!-- Resources for you -->
+    <div *ngIf="recommendedResourcePosts.length > 0" class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <h3 class="font-syne text-[13.5px] font-extrabold text-gray-950 tracking-tight flex items-center gap-2 mb-3">
+        <span class="material-icons-round text-violet-500" style="font-size:16px">library_books</span>
         Resources for you
       </h3>
-      <ul class="space-y-3 divide-y divide-gray-50">
-        <li *ngFor="let post of recommendedResourcePosts.slice(0,5)" (click)="goToPost(post.id)"
-          class="pt-3 first:pt-0 cursor-pointer group">
-          <p class="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition line-clamp-2 leading-snug">
-            {{ post.title }}
-          </p>
+      <ul class="flex flex-col divide-y divide-gray-50">
+        <li *ngFor="let post of recommendedResourcePosts.slice(0,5)"
+            (click)="goToPost(post.id)"
+            class="py-3 first:pt-0 last:pb-0 cursor-pointer group/res">
+          <p class="text-[12.5px] font-semibold text-gray-800 group-hover/res:text-blue-600 transition line-clamp-2 leading-snug">{{ post.title }}</p>
           <div class="flex items-center gap-1.5 mt-1">
-            <img [src]="post.author.profileImage || 'assets/default-avatar.png'"
-              class="w-4 h-4 rounded-full object-cover" />
-            <p class="text-[10px] text-gray-400">{{ post.author.name }} · {{ post.createdAt | timeago }}</p>
+            <img [src]="post.author.profileImage || 'assets/default-avatar.png'" class="w-4 h-4 rounded-full object-cover" />
+            <p class="text-[10.5px] text-gray-400">{{ post.author.name }} · {{ post.createdAt | timeago }}</p>
           </div>
         </li>
       </ul>
     </div>
 
     <!-- Same academic level -->
-    <div *ngIf="profilesByAcademicLevel.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <div *ngIf="profilesByAcademicLevel.length > 0" class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <span class="material-icons text-teal-500 text-base">military_tech</span>
+        <h3 class="font-syne text-[13.5px] font-bold text-gray-950 tracking-tight flex items-center gap-2">
+          <span class="material-icons-round text-teal-500" style="font-size:16px">military_tech</span>
           Same academic level
         </h3>
-        <span class="text-xs text-teal-600 cursor-pointer hover:underline" routerLink="/network">See all</span>
+        <a routerLink="/network" class="text-[11.5px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">See all</a>
       </div>
-      <div class="space-y-3">
+      <div class="flex flex-col gap-2.5">
         <div *ngFor="let profile of profilesByAcademicLevel.slice(0,4)"
-          class="flex gap-3 border border-gray-100 rounded-xl p-3 hover:shadow-sm transition group">
+             class="flex gap-3 border border-gray-100 rounded-xl p-3 hover:border-gray-200 hover:shadow-sm transition-all duration-150">
           <img [src]="profile.profileImage || 'assets/default-avatar.png'"
-            class="w-10 h-10 rounded-full object-cover shadow-sm flex-shrink-0" />
+               class="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-gray-200" />
           <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between flex-wrap gap-1">
-              <div>
-                <p class="text-sm font-semibold text-gray-900">{{ profile.name }}</p>
-                <p class="text-xs text-gray-500">{{ profile.course || profile.academicLevel }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ truncateInstitutionName(profile.institution?.name) }}</p>
+            <div class="flex items-start justify-between gap-1 flex-wrap">
+              <div class="min-w-0">
+                <p class="text-[13px] font-semibold text-gray-900 truncate">{{ profile.name }}</p>
+                <p class="text-[11px] text-gray-500 truncate">{{ profile.course || profile.academicLevel }}</p>
+                <p class="text-[10.5px] text-gray-400">{{ truncateInstitutionName(profile.institution?.name) }}</p>
               </div>
-              <button *ngIf="!isFollowing(profile.userId)" (click)="follow(profile.userId)"
-                class="text-xs font-semibold text-teal-600 border border-teal-300 rounded-full px-3 py-1 hover:bg-teal-50 transition flex-shrink-0">
+              <button *ngIf="!isFollowing(profile.userId)"
+                      (click)="follow(profile.userId)"
+                      class="text-[11px] font-semibold text-blue-600 border border-blue-200 rounded-lg px-2.5 py-1 hover:bg-blue-50 transition flex-shrink-0">
                 + Follow
               </button>
-              <button *ngIf="isFollowing(profile.userId)" (click)="unFollow(profile.userId)"
-                class="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-3 py-1 hover:bg-gray-50 transition flex-shrink-0">
+              <button *ngIf="isFollowing(profile.userId)"
+                      (click)="unFollow(profile.userId)"
+                      class="text-[11px] font-medium text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition flex-shrink-0">
                 Following ✓
               </button>
             </div>
-            <div class="flex flex-wrap gap-1 mt-1">
+            <div class="flex flex-wrap gap-1 mt-1.5">
               <span *ngFor="let skill of profile.skills.slice(0,2)"
-                class="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">{{ skill }}</span>
+                    class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">{{ skill }}</span>
             </div>
-            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
-            <div class="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-              <span>Joined {{ profile.createdAt | date:'MMM yyyy' }}</span>
-            </div>
+            <p class="text-[11px] text-gray-500 mt-1 line-clamp-1">{{ profile.bio }}</p>
           </div>
         </div>
       </div>
@@ -395,278 +438,294 @@
 </div><!-- /main grid -->
 
 
-<!-- ═══════════════════════ POST CARD TEMPLATE ═══════════════════════ -->
+<!-- ═══════════════════════════════════════════════════
+     POST CARD TEMPLATE
+     ═══════════════════════════════════════════════════ -->
 <ng-template #postCard let-post="post" let-badge="badge" let-badgeColor="badgeColor">
-  <article class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+  <article class="post-card bg-white border border-gray-200 hover:border-gray-300 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
 
-    <!-- Header -->
+    <!-- ── Header ── -->
     <div class="flex items-start gap-3 p-4 pb-0">
       <a [routerLink]="['/profile', post.author.id]" class="flex-shrink-0">
-        <img [src]="post.author.profileImage || 'assets/default-avatar.png'" loading="lazy" decoding="async"
-          class="w-10 h-10 rounded-full object-cover border border-gray-200 hover:opacity-90 transition" />
+        <img [src]="post.author.profileImage || 'assets/default-avatar.png'"
+             loading="lazy" decoding="async"
+             class="w-10 h-10 rounded-xl object-cover border border-gray-200 hover:opacity-90 transition" />
       </a>
       <div class="flex-1 min-w-0">
         <a [routerLink]="['/profile', post.author.id]"
-          class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition block truncate">
+           class="font-syne text-[14px] font-bold text-gray-950 hover:text-blue-600 transition-colors block truncate tracking-tight">
           {{ post.author.name }}
         </a>
-        <p class="text-xs text-gray-500 truncate">
-          {{ post.author.institution?.name || '' }}
-          <span *ngIf="post.author.academicLevel"> · {{ post.author.academicLevel }}</span>
+        <p class="text-[11.5px] text-gray-500 truncate">
+          {{ post.author.institution?.name || '' }}<span *ngIf="post.author.academicLevel"> · {{ post.author.academicLevel }}</span>
         </p>
         <p class="text-[11px] text-gray-400">{{ post.createdAt | timeago }}</p>
       </div>
 
-      <!-- Recommendation badge -->
-      <span *ngIf="badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5" [ngClass]="{
-          'bg-blue-50 text-blue-600':       badgeColor === 'blue',
-          'bg-indigo-50 text-indigo-600':   badgeColor === 'indigo',
-          'bg-emerald-50 text-emerald-600': badgeColor === 'emerald'
-        }">
+      <!-- Badge -->
+      <span *ngIf="badge"
+            class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
+            [ngClass]="{
+              'bg-blue-50 text-blue-600':       badgeColor === 'blue',
+              'bg-indigo-50 text-indigo-600':   badgeColor === 'indigo',
+              'bg-emerald-50 text-emerald-600': badgeColor === 'emerald'
+            }">
         {{ badge }}
       </span>
 
-<!-- Action menu -->
-<div class="relative ml-1 flex-shrink-0">
-  <button class="p-1.5 rounded-full hover:bg-gray-100 transition" (click)="toggleActionMenu($event, post.id)">
-    <span class="material-icons text-gray-400 text-xl">more_horiz</span>
-  </button>
+      <!-- 3-dot menu -->
+      <div class="relative ml-1 flex-shrink-0 menu-reveal">
+        <button class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                (click)="toggleActionMenu($event, post.id)">
+          <span class="material-icons-round" style="font-size:18px">more_horiz</span>
+        </button>
 
-  <div *ngIf="actionMenuOpen[post.id]"
-    class="post-dropdown absolute right-0 top-10 w-56 bg-white rounded-2xl shadow-2xl z-50 border border-gray-100 overflow-hidden py-1"
-    (click)="$event.stopPropagation()">
+        <div *ngIf="actionMenuOpen[post.id]"
+             class="post-dropdown anim-scale-in absolute right-0 top-10 w-52 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
+             (click)="$event.stopPropagation()">
 
-    <!-- Copy link -->
-    <button (click)="copyPostLink()"
-      class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-      <span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-        <span class="material-icons text-gray-500 text-base">link</span>
-      </span>
-      <span class="font-medium">Copy link</span>
-    </button>
+          <button (click)="copyPostLink()"
+                  class="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors">
+            <span class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-round text-gray-500" style="font-size:14px">link</span>
+            </span>
+            Copy link
+          </button>
 
-    <ng-container *ngIf="post.author.id === loggedInUserId">
-      <div class="h-px bg-gray-100 mx-4"></div>
+          <ng-container *ngIf="post.author.id === loggedInUserId">
+            <div class="h-px bg-gray-100 mx-3"></div>
+            <button (click)="openEditModal(post)"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <span class="material-icons-round text-blue-500" style="font-size:14px">edit</span>
+              </span>
+              Edit post
+            </button>
+            <button (click)="openDeleteModal(post)"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-red-600 hover:bg-red-50 transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                <span class="material-icons-round text-red-400" style="font-size:14px">delete_outline</span>
+              </span>
+              Delete post
+            </button>
+          </ng-container>
 
-      <!-- Edit -->
-      <button (click)="openEditModal(post)"
-        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-        <span class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <span class="material-icons text-blue-500 text-base">edit</span>
-        </span>
-        <span class="font-medium">Edit post</span>
-      </button>
-
-      <!-- Delete -->
-      <button (click)="openDeleteModal(post)"
-        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
-        <span class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
-          <span class="material-icons text-red-400 text-base">delete_outline</span>
-        </span>
-        <span class="font-medium">Delete post</span>
-      </button>
-    </ng-container>
-
-    <ng-container *ngIf="post.author.id !== loggedInUserId">
-      <div class="h-px bg-gray-100 mx-4"></div>
-
-      <!-- Report -->
-      <button (click)="openFlagModal(post)"
-        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-orange-600 hover:bg-orange-50 transition-colors">
-        <span class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-          <span class="material-icons text-orange-400 text-base">flag</span>
-        </span>
-        <span class="font-medium">Report post</span>
-      </button>
-    </ng-container>
-
-  </div>
-</div>
+          <ng-container *ngIf="post.author.id !== loggedInUserId">
+            <div class="h-px bg-gray-100 mx-3"></div>
+            <button (click)="openFlagModal(post)"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-orange-600 hover:bg-orange-50 transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <span class="material-icons-round text-orange-400" style="font-size:14px">flag</span>
+              </span>
+              Report post
+            </button>
+          </ng-container>
+        </div>
+      </div>
     </div>
 
-    <!-- Body -->
-    <div class="px-4 pt-3 cursor-pointer group" (click)="goToPost(post.id)">
-      <h2 class="text-sm font-semibold text-gray-900 mb-1.5 group-hover:text-blue-600 transition leading-snug">
+    <!-- ── Body ── -->
+    <div class="px-4 pt-3 pb-1 cursor-pointer group/body" (click)="goToPost(post.id)">
+      <h2 class="font-syne text-[14.5px] font-extrabold text-gray-950 tracking-tight leading-snug mb-1.5 group-hover/body:text-blue-600 transition-colors">
         {{ post.title }}
       </h2>
-      <p class="text-sm text-gray-600 leading-relaxed">
+      <p class="text-[13.5px] text-gray-600 leading-relaxed">
         {{ getPostPreview(post.body, post.id) }}
         <button *ngIf="(post.body?.split(' ')?.length || 0) > 10"
-          (click)="$event.stopPropagation(); toggleReadMore(post.id)"
-          class="text-blue-500 hover:underline font-medium ml-1 text-xs">
-          {{ isExpanded(post.id) ? 'see less' : '...see more' }}
+                (click)="$event.stopPropagation(); toggleReadMore(post.id)"
+                class="text-blue-500 hover:text-blue-600 font-semibold ml-1 text-[12px] transition-colors">
+          {{ isExpanded(post.id) ? 'see less' : '…see more' }}
         </button>
       </p>
     </div>
 
-    <!-- Type + Tags -->
-    <div class="px-4 pt-2.5 flex flex-wrap gap-1.5 items-center">
-      <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full" [ngClass]="{
-          'bg-blue-50 text-blue-600':       post.type === 'GENERAL',
-          'bg-indigo-50 text-indigo-600':   post.type === 'ACADEMIC',
-          'bg-purple-50 text-purple-600':   post.type === 'RESOURCE',
-          'bg-emerald-50 text-emerald-600': post.type === 'opportunity'
-        }">
+    <!-- ── Type badge + Tags ── -->
+    <div class="px-4 pt-2 pb-2 flex flex-wrap gap-1.5 items-center">
+      <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+            [ngClass]="{
+              'bg-blue-50 text-blue-600':       post.type === 'GENERAL',
+              'bg-indigo-50 text-indigo-600':   post.type === 'ACADEMIC',
+              'bg-violet-50 text-violet-600':   post.type === 'RESOURCE',
+              'bg-emerald-50 text-emerald-600': post.type === 'opportunity'
+            }">
         {{ post.type }}
       </span>
       <span *ngFor="let tag of (post.tags || []).slice(0,5)"
-        class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full hover:bg-gray-200 cursor-pointer transition">
+            class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors">
         #{{ tag }}
       </span>
     </div>
 
-    <!-- File Display based on type -->
-    <div *ngIf="post.fileUrl" class="mt-3 w-full overflow-hidden">
+    <!-- ── Media ──
+         KEY RULE: object-contain everywhere — no cropping, full image always shown.
+         The container uses min-height so tiny images still have breathing room.
+    ── -->
+    <div *ngIf="post.fileUrl" class="w-full">
 
-      <!-- Images -->
-      <div *ngIf="isImagePost(post)">
-        <img [src]="post.fileUrl" loading="lazy" decoding="async"
-          class="w-full object-cover cursor-pointer hover:opacity-97 transition" (click)="goToPost(post.id)" />
+      <!-- Image: full-width, object-contain, natural ratio, grey letterbox bg -->
+      <div *ngIf="isImagePost(post)"
+           class="w-full bg-gray-100 flex items-center justify-center overflow-hidden"
+           style="min-height: 120px;">
+        <img [src]="post.fileUrl"
+             loading="lazy"
+             decoding="async"
+             alt="{{ post.title }}"
+             class="post-media-img"
+             (click)="goToPost(post.id)" />
       </div>
 
-      <!-- Videos -->
-      <div *ngIf="isVideoPost(post)" class="relative bg-black rounded-lg overflow-hidden w-full">
-        <video controls preload="metadata" class="w-full h-auto max-h-[400px] object-contain cursor-pointer"
-          (click)="$event.stopPropagation()">
+      <!-- Video: constrained height, object-contain, dark bg -->
+      <div *ngIf="isVideoPost(post)"
+           class="w-full bg-gray-950 overflow-hidden">
+        <video controls
+               preload="metadata"
+               playsinline
+               class="w-full object-contain"
+               style="max-height: 480px; display: block;"
+               (click)="$event.stopPropagation()">
           <source [src]="post.fileUrl" type="video/mp4">
           <source [src]="post.fileUrl" type="video/quicktime">
-          <source [src]="post.fileUrl" type="video/x-msvideo">
           <source [src]="post.fileUrl" type="video/webm">
-          Your browser does not support the video tag.
         </video>
-
       </div>
 
-      <!-- PDFs -->
-      <div *ngIf="isPdfPost(post)" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <div class="flex items-center gap-3">
-          <span class="material-icons text-red-500 text-3xl">picture_as_pdf</span>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-gray-800 truncate">
-              {{ post.fileName || 'Document.pdf' }}
-            </p>
-            <p class="text-xs text-gray-500">PDF Document</p>
-          </div>
-          <a [href]="post.fileUrl" target="_blank"
-            class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition"
-            (click)="$event.stopPropagation()">
-            <span class="material-icons text-sm mr-1">open_in_new</span> View PDF
-          </a>
+      <!-- PDF -->
+      <div *ngIf="isPdfPost(post)"
+           class="mx-4 mb-3 flex items-center gap-3 px-4 py-3.5 bg-red-50 border border-red-100 rounded-xl">
+        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+          <span class="material-icons-round text-red-500" style="font-size:22px">picture_as_pdf</span>
         </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[13px] font-semibold text-gray-900 truncate">{{ post.fileName || 'Document.pdf' }}</p>
+          <p class="text-[11px] text-gray-500">PDF Document</p>
+        </div>
+        <a [href]="post.fileUrl" target="_blank"
+           class="inline-flex items-center gap-1 text-[12px] font-semibold text-blue-600 hover:text-blue-700 transition-colors flex-shrink-0"
+           (click)="$event.stopPropagation()">
+          <span class="material-icons-round" style="font-size:14px">open_in_new</span>View
+        </a>
       </div>
 
     </div>
 
-    <!-- Reaction stats row (LinkedIn-style) -->
+    <!-- ── Reaction counts ── -->
     <div *ngIf="(post.likesCount || 0) > 0 || (post.commentsCount || 0) > 0"
-      class="px-4 pt-2.5 flex items-center justify-between text-[11px] text-gray-400">
-      <span *ngIf="(post.likesCount || 0) > 0" class="flex items-center gap-1">
-        <span class="inline-flex items-center justify-center w-4 h-4 bg-red-500 rounded-full">
-          <span class="material-icons text-white" style="font-size:10px">favorite</span>
+         class="flex items-center justify-between px-4 pt-2.5 pb-1 text-[11.5px] text-gray-400">
+      <span *ngIf="(post.likesCount || 0) > 0" class="flex items-center gap-1.5">
+        <span class="inline-flex items-center justify-center w-4.5 h-4.5 bg-red-500 rounded-full" style="width:18px; height:18px;">
+          <span class="material-icons-round text-white" style="font-size:10px">favorite</span>
         </span>
         {{ post.likesCount | numberShort }}
       </span>
       <span *ngIf="(post.commentsCount || 0) > 0" class="ml-auto">
-        {{ post.commentsCount | numberShort }}
-        {{ (post.commentsCount || 0) === 1 ? 'comment' : 'comments' }}
+        {{ post.commentsCount | numberShort }} {{ (post.commentsCount || 0) === 1 ? 'comment' : 'comments' }}
       </span>
     </div>
 
-    <!-- Actions bar (full-width buttons like LinkedIn) -->
-    <div class="px-2 py-1 mt-1 border-t border-gray-100 flex items-center">
-      <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-gray-50 transition group"
-        (click)="togglePostLike(post)">
-        <span class="material-icons text-lg transition" [class.text-red-500]="post.likedByCurrentUser"
-          [class.text-gray-400]="!post.likedByCurrentUser">
+    <!-- ── Actions bar ── -->
+    <div class="flex items-center border-t border-gray-100 mx-4 mt-1">
+      <!-- Like -->
+      <button class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group/like"
+              (click)="togglePostLike(post)">
+        <span class="material-icons-round transition-all group-hover/like:scale-110 text-[18px]"
+              [class.text-red-500]="post.likedByCurrentUser"
+              [class.text-gray-400]="!post.likedByCurrentUser">
           {{ post.likedByCurrentUser ? 'favorite' : 'favorite_border' }}
         </span>
-        <span class="text-xs font-medium" [class.text-red-500]="post.likedByCurrentUser">
+        <span class="text-[12.5px] font-semibold"
+              [class.text-red-500]="post.likedByCurrentUser"
+              [class.text-gray-600]="!post.likedByCurrentUser">
           {{ post.likedByCurrentUser ? 'Liked' : 'Like' }}
         </span>
       </button>
-      <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-gray-50 transition"
-        (click)="toggleComments(post.id)">
-        <span class="material-icons text-lg text-gray-400">chat_bubble_outline</span>
-        <span class="text-xs font-medium text-gray-600">
-          Comment
-          <span *ngIf="post.commentsCount" class="ml-1 text-gray-400">({{ post.commentsCount }})</span>
+
+      <div class="w-px h-4 bg-gray-100"></div>
+
+      <!-- Comment -->
+      <button class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-gray-600 hover:text-blue-600 group/cmt"
+              (click)="toggleComments(post.id)">
+        <span class="material-icons-round text-[18px] group-hover/cmt:scale-110 transition-transform">chat_bubble_outline</span>
+        <span class="text-[12.5px] font-semibold">
+          Comment<span *ngIf="post.commentsCount" class="ml-1 font-normal text-gray-400">({{ post.commentsCount }})</span>
         </span>
       </button>
-      <button class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-gray-50 transition"
-        (click)="sharePost()">
-        <span class="material-icons text-lg text-gray-400">share</span>
-        <span class="text-xs font-medium text-gray-600">Share</span>
+
+      <div class="w-px h-4 bg-gray-100"></div>
+
+      <!-- Share -->
+      <button class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-gray-600 hover:text-blue-600 group/shr"
+              (click)="sharePost()">
+        <span class="material-icons-round text-[18px] group-hover/shr:scale-110 transition-transform">share</span>
+        <span class="text-[12.5px] font-semibold">Share</span>
       </button>
     </div>
 
-    <!-- Comments section -->
-    <div *ngIf="commentVisible[post.id]" class="border-t border-gray-100 px-4 pt-4 pb-3 space-y-3">
+    <!-- ── Comments section ── -->
+    <div *ngIf="commentVisible[post.id]" class="border-t border-gray-100 px-4 pt-4 pb-4 flex flex-col gap-4">
 
-      <div *ngIf="commentLoading[post.id]" class="flex items-center gap-2 text-xs text-gray-400 py-2">
-        <span class="material-icons animate-spin text-sm">refresh</span> Loading comments…
+      <div *ngIf="commentLoading[post.id]" class="flex items-center gap-2 text-[12px] text-gray-400 py-2">
+        <span class="material-icons-round animate-spin" style="font-size:15px">refresh</span>Loading comments…
       </div>
 
-      <!-- Empty State - No Comments -->
+      <!-- Empty comments -->
       <div *ngIf="!commentLoading[post.id] && (!comments[post.id] || comments[post.id].length === 0)"
-        class="flex flex-col items-center justify-center py-8 text-center">
-        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-          <span class="material-icons text-gray-400 text-3xl">chat_bubble_outline</span>
+           class="flex flex-col items-center justify-center py-8 text-center gap-2">
+        <div class="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+          <span class="material-icons-round text-gray-300" style="font-size:26px">chat_bubble_outline</span>
         </div>
-        <p class="text-sm font-medium text-gray-700 mb-1">No comments yet</p>
-        <p class="text-xs text-gray-400 mb-3">Be the first to share your thoughts</p>
-        <div class="flex items-center gap-2 text-xs text-blue-500">
-          <span class="material-icons text-sm">edit</span>
-          <span>Start the conversation</span>
-        </div>
+        <p class="font-syne text-[14px] font-bold text-gray-800">No comments yet</p>
+        <p class="text-[12px] text-gray-400">Be the first to share your thoughts</p>
       </div>
 
-      <!-- Comments List -->
-      <ng-container *ngIf="!commentLoading[post.id] && comments[post.id] && comments[post.id].length > 0">
-        <div *ngFor="let comment of comments[post.id]" class="group flex gap-2.5">
+      <!-- Comment list -->
+      <ng-container *ngIf="!commentLoading[post.id] && comments[post.id]?.length">
+        <div *ngFor="let comment of comments[post.id]"
+             class="group/cmt2 flex gap-2.5">
           <img [src]="comment.user.profile.profileImage || 'assets/default-avatar.png'"
-            class="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-gray-100 mt-0.5" />
+               class="w-8 h-8 rounded-xl object-cover flex-shrink-0 border border-gray-200 mt-0.5" />
           <div class="flex-1 min-w-0">
+
             <!-- Bubble -->
-            <div class="bg-gray-50 rounded-2xl px-3 py-2">
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-3.5 py-2.5">
               <div class="flex items-center justify-between gap-2 mb-0.5">
-                <p class="text-xs font-semibold text-gray-900">{{ comment.user.name }}</p>
-                <div class="flex items-center gap-1">
-                  <span class="text-[10px] text-gray-400">{{ comment.createdAt | timeago }}</span>
+                <p class="text-[12.5px] font-bold text-gray-900 font-syne">{{ comment.user.name }}</p>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10.5px] text-gray-400">{{ comment.createdAt | timeago }}</span>
                   <div *ngIf="isMyComment(comment)" class="relative">
                     <button (click)="toggleMenu(comment.id)"
-                      class="p-0.5 rounded-full hover:bg-gray-200 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
-                      <span class="material-icons text-gray-400 text-sm">more_vert</span>
+                            class="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-200 transition-colors opacity-0 group-hover/cmt2:opacity-100 focus:opacity-100">
+                      <span class="material-icons-round" style="font-size:14px">more_vert</span>
                     </button>
                     <div *ngIf="menuOpen[comment.id]"
-                      class="absolute right-0 mt-1 w-28 bg-white border border-gray-100 rounded-xl shadow-lg z-10 overflow-hidden">
+                         class="anim-scale-in absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden py-1">
                       <button (click)="openEditCommentModal(comment)"
-                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition">
-                        <span class="material-icons text-xs">edit</span> Edit
+                              class="w-full flex items-center gap-2 px-3 py-2.5 text-[12px] text-gray-700 hover:bg-gray-50 transition-colors">
+                        <span class="material-icons-round text-gray-400" style="font-size:13px">edit</span>Edit
                       </button>
                       <button (click)="openDeleteCommentModal(comment)"
-                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
-                        <span class="material-icons text-xs">delete_outline</span> Delete
+                              class="w-full flex items-center gap-2 px-3 py-2.5 text-[12px] text-red-600 hover:bg-red-50 transition-colors">
+                        <span class="material-icons-round text-red-400" style="font-size:13px">delete_outline</span>Delete
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <p class="text-xs text-gray-700 leading-relaxed break-words">{{ comment.body }}</p>
+              <p class="text-[13px] text-gray-700 leading-relaxed break-words">{{ comment.body }}</p>
             </div>
 
-            <!-- Inline text actions (LinkedIn-style: Like · Reply) -->
-            <div class="flex items-center gap-3 mt-1 pl-3 text-[11px] text-gray-400">
-              <button (click)="toggleLike(comment)" class="font-semibold hover:text-red-500 transition"
-                [class.text-red-500]="comment.isLikedByCurrentUser">
+            <!-- Like · Reply -->
+            <div class="flex items-center gap-3 mt-1.5 pl-1 text-[11.5px] text-gray-400">
+              <button (click)="toggleLike(comment)"
+                      class="font-semibold transition-colors"
+                      [class.text-red-500]="comment.isLikedByCurrentUser"
+                      [class.hover:text-red-500]="!comment.isLikedByCurrentUser">
                 {{ comment.isLikedByCurrentUser ? 'Liked' : 'Like' }}
-                <span *ngIf="(comment.likes || 0) > 0" class="ml-0.5 font-normal text-gray-400">· {{ comment.likes
-                  }}</span>
+                <span *ngIf="(comment.likes || 0) > 0" class="ml-0.5 font-normal text-gray-400">· {{ comment.likes }}</span>
               </button>
               <span class="text-gray-200">|</span>
               <button (click)="repliesVisible[comment.id] = !repliesVisible[comment.id]"
-                class="font-semibold hover:text-blue-500 transition flex items-center gap-1">
-                <span class="material-icons text-sm">reply</span>
-
+                      class="font-semibold hover:text-blue-500 transition-colors flex items-center gap-1">
+                <span class="material-icons-round" style="font-size:13px">reply</span>Reply
                 <span *ngIf="(comment.replies?.length || 0) > 0" class="font-normal text-gray-400">
                   · {{ comment.replies?.length }} {{ comment.replies?.length === 1 ? 'reply' : 'replies' }}
                 </span>
@@ -674,49 +733,52 @@
             </div>
 
             <!-- Replies -->
-            <div *ngIf="repliesVisible[comment.id]" class="mt-2 ml-2 space-y-2">
-              <div *ngFor="let reply of replies[comment.id]" class="flex gap-2 group">
+            <div *ngIf="repliesVisible[comment.id]" class="mt-2 ml-2 flex flex-col gap-2">
+              <div *ngFor="let reply of replies[comment.id]"
+                   class="group/rep flex gap-2">
                 <img [src]="reply.user.profile.profileImage || 'assets/default-avatar.png'"
-                  class="w-6 h-6 rounded-full object-cover flex-shrink-0 border border-gray-100 mt-0.5" />
-                <div class="bg-gray-50 rounded-2xl px-3 py-1.5 flex-1 min-w-0">
+                     class="w-7 h-7 rounded-lg object-cover flex-shrink-0 border border-gray-200 mt-0.5" />
+                <div class="reply-bubble flex-1 min-w-0 rounded-xl rounded-tl-sm px-3 py-2 border border-gray-200">
                   <div class="flex items-center justify-between gap-2 mb-0.5">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-[11px] font-semibold text-gray-800 truncate">{{ reply.user.name }}</span>
-                      <span class="text-[10px] text-gray-400 flex-shrink-0">{{ reply.createdAt | timeago }}</span>
-                    </div>
-                    <div *ngIf="isMyComment(reply)" class="relative flex-shrink-0">
-                      <button (click)="toggleMenu(reply.id)"
-                        class="p-0.5 rounded-full hover:bg-gray-200 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
-                        <span class="material-icons text-gray-400 text-sm">more_vert</span>
-                      </button>
-                      <div *ngIf="menuOpen[reply.id]"
-                        class="absolute right-0 mt-1 w-28 bg-white border border-gray-100 rounded-xl shadow-lg z-10 overflow-hidden">
-                        <button (click)="openEditReplyModal(reply)"
-                          class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition">
-                          <span class="material-icons text-xs">edit</span> Edit
+                    <span class="text-[11.5px] font-bold text-gray-900 font-syne truncate">{{ reply.user.name }}</span>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <span class="text-[10px] text-gray-400">{{ reply.createdAt | timeago }}</span>
+                      <div *ngIf="isMyComment(reply)" class="relative">
+                        <button (click)="toggleMenu(reply.id)"
+                                class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:bg-gray-200 transition-colors opacity-0 group-hover/rep:opacity-100 focus:opacity-100">
+                          <span class="material-icons-round" style="font-size:12px">more_vert</span>
                         </button>
-                        <button (click)="openDeleteReplyModal(reply)"
-                          class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
-                          <span class="material-icons text-xs">delete_outline</span> Delete
-                        </button>
+                        <div *ngIf="menuOpen[reply.id]"
+                             class="anim-scale-in absolute right-0 mt-1 w-28 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden py-1">
+                          <button (click)="openEditReplyModal(reply)"
+                                  class="w-full flex items-center gap-2 px-3 py-2 text-[11.5px] text-gray-700 hover:bg-gray-50 transition-colors">
+                            <span class="material-icons-round" style="font-size:12px">edit</span>Edit
+                          </button>
+                          <button (click)="openDeleteReplyModal(reply)"
+                                  class="w-full flex items-center gap-2 px-3 py-2 text-[11.5px] text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-icons-round" style="font-size:12px">delete_outline</span>Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <p class="text-[11px] text-gray-600 break-words leading-relaxed">{{ reply.body }}</p>
+                  <p class="text-[12px] text-gray-600 break-words leading-relaxed">{{ reply.body }}</p>
                 </div>
               </div>
 
-              <!-- Reply Input Section - Responsive -->
-              <div class="flex flex-col sm:flex-row gap-2 mt-2">
+              <!-- Reply input -->
+              <div class="flex gap-2 mt-1">
                 <img [src]="userProfile?.profileImage || 'assets/default-avatar.png'"
-                  class="w-6 h-6 rounded-full object-cover flex-shrink-0 hidden sm:block" />
-                <div class="flex-1 flex flex-col sm:flex-row gap-1.5">
-                  <textarea [(ngModel)]="replyInputs[comment.id]" placeholder="Write a reply…"
-                    class="flex-1 rounded-lg px-3 py-2 text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400 transition resize-none"
-                    rows="2"></textarea>
-                  <button (click)="submitReply(comment.id)" [disabled]="!replyInputs[comment.id]?.trim()"
-                    class="material-icons px-3 py-1.5 bg-blue-500 text-white rounded-full text-xs font-semibold hover:bg-blue-600 disabled:opacity-40 transition sm:self-start sm:mt-0 mt-1">
-                    reply
+                     class="w-7 h-7 rounded-lg object-cover flex-shrink-0 border border-gray-200 mt-0.5" />
+                <div class="flex-1 flex gap-1.5">
+                  <textarea [(ngModel)]="replyInputs[comment.id]"
+                            placeholder="Write a reply…"
+                            rows="1"
+                            class="flex-1 text-[12.5px] text-gray-800 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:bg-white focus:border-blue-400 focus:ring-[2px] focus:ring-blue-100 focus:outline-none transition-all resize-none placeholder:text-gray-400"></textarea>
+                  <button (click)="submitReply(comment.id)"
+                          [disabled]="!replyInputs[comment.id]?.trim()"
+                          class="w-9 h-9 flex items-center justify-center bg-gray-950 hover:bg-gray-800 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all self-end flex-shrink-0">
+                    <span class="material-icons-round" style="font-size:15px">send</span>
                   </button>
                 </div>
               </div>
@@ -725,17 +787,21 @@
         </div>
       </ng-container>
 
-      <!-- New comment input - Most compact -->
-      <div class="flex flex-col gap-2 mt-3 pt-3 border-t border-gray-50">
+      <!-- New comment input -->
+      <div class="flex flex-col gap-2 pt-3 border-t border-gray-100">
         <div class="flex gap-2.5">
           <img [src]="userProfile?.profileImage || 'assets/default-avatar.png'"
-            class="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-          <textarea [(ngModel)]="newComments[post.id]" placeholder="Add a comment…" rows="1"
-            class="flex-1 rounded-2xl px-4 py-2 text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"></textarea>
+               class="w-8 h-8 rounded-xl object-cover flex-shrink-0 border border-gray-200" />
+          <textarea [(ngModel)]="newComments[post.id]"
+                    placeholder="Add a comment…"
+                    rows="1"
+                    class="flex-1 text-[13px] text-gray-800 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus:bg-white focus:border-blue-400 focus:ring-[3px] focus:ring-blue-100 focus:outline-none transition-all resize-none placeholder:text-gray-400"></textarea>
         </div>
-        <button (click)="submitComment(post.id)" [disabled]="!newComments[post.id]?.trim()"
-          class="px-4 py-2 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition shadow-sm w-full">
-          Comment
+        <button (click)="submitComment(post.id)"
+                [disabled]="!newComments[post.id]?.trim()"
+                class="inline-flex items-center justify-center gap-1.5 py-2.5 bg-gray-950 hover:bg-gray-800 text-white text-[12.5px] font-semibold font-syne rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
+          <span class="material-icons-round" style="font-size:14px">send</span>
+          Post comment
         </button>
       </div>
 
@@ -744,32 +810,37 @@
 </ng-template>
 
 
-<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+<!-- ═══════════════════════════════════════════════════
+     MODALS
+     ═══════════════════════════════════════════════════ -->
 
 <!-- Delete Post -->
 <div *ngIf="showDeleteModal"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-  (click)="showDeleteModal = false">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" (click)="$event.stopPropagation()">
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 anim-fade-in"
+     style="background: rgba(0,0,0,.55); backdrop-filter: blur(4px);"
+     (click)="showDeleteModal = false">
+  <div class="anim-modal w-full sm:max-w-md bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden font-dm"
+       (click)="$event.stopPropagation()">
     <div class="h-1 bg-red-500"></div>
-    <div class="p-6 sm:p-8 text-center">
-      <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <span class="material-icons text-red-500 text-4xl">warning</span>
+    <div class="p-6 sm:p-7 flex flex-col items-center gap-4 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
+        <span class="material-icons-round text-red-500" style="font-size:28px">delete_outline</span>
       </div>
-      <h2 class="text-lg font-semibold text-gray-900 mb-1">Delete this post?</h2>
-      <p class="text-sm text-gray-500 mb-4 leading-relaxed">This action cannot be undone. This post will be permanently
-        removed.</p>
-      <div class="bg-amber-50 rounded-lg p-3 mb-6 flex items-start gap-2 border border-amber-100 text-left">
-        <span class="material-icons text-amber-500 text-sm mt-0.5 flex-shrink-0">info</span>
-        <p class="text-xs text-amber-800">All likes, comments, and shares will also be permanently deleted.</p>
+      <div>
+        <h2 class="font-syne text-[18px] font-extrabold text-gray-950 tracking-tight mb-1">Delete this post?</h2>
+        <p class="text-[13px] text-gray-500 leading-relaxed">This action cannot be undone. The post will be permanently removed.</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex items-start gap-2.5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-[12.5px] text-amber-800 text-left w-full">
+        <span class="material-icons-round text-amber-500 flex-shrink-0 mt-0.5" style="font-size:15px">info</span>
+        All likes, comments, and shares will also be permanently deleted.
+      </div>
+      <div class="flex gap-3 w-full">
         <button (click)="showDeleteModal = false"
-          class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition">
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
           Cancel
         </button>
         <button (click)="confirmDelete()"
-          class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition shadow-sm">
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-sm">
           Delete
         </button>
       </div>
@@ -779,26 +850,32 @@
 
 <!-- Edit Comment -->
 <div *ngIf="showCommentEditModal && editingCommentId"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" (click)="cancelEdit()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" (click)="$event.stopPropagation()">
-    <div class="h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-    <div class="p-6">
-      <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
-        <span class="material-icons text-blue-500 text-2xl">edit</span>
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 anim-fade-in"
+     style="background: rgba(0,0,0,.55); backdrop-filter: blur(4px);"
+     (click)="cancelEdit()">
+  <div class="anim-modal w-full sm:max-w-md bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden font-dm"
+       (click)="$event.stopPropagation()">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+      <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <span class="material-icons-round text-blue-600" style="font-size:17px">edit_note</span>
       </div>
-      <h3 class="text-base font-semibold text-gray-900 text-center mb-1">Edit comment</h3>
-      <p class="text-xs text-gray-500 text-center mb-4">Make your changes below</p>
-      <label class="block text-xs font-medium text-gray-700 mb-1.5">Your comment</label>
-      <textarea [(ngModel)]="editedComment" rows="4" autofocus placeholder="Edit your comment…"
-        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition"></textarea>
-      <div class="flex gap-3 mt-4">
+      <h3 class="font-syne text-[16px] font-extrabold text-gray-950 tracking-tight">Edit comment</h3>
+    </div>
+    <div class="p-5 flex flex-col gap-4">
+      <textarea [(ngModel)]="editedComment"
+                rows="4"
+                autofocus
+                placeholder="Edit your comment…"
+                class="w-full text-[13.5px] text-gray-800 border border-gray-200 rounded-xl px-4 py-3 focus:ring-[3px] focus:ring-blue-100 focus:border-blue-400 focus:outline-none resize-none transition-all placeholder:text-gray-400"></textarea>
+      <div class="flex gap-3 pt-1 border-t border-gray-100">
         <button (click)="cancelEdit()"
-          class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition">
+                class="flex-1 py-2.5 text-[13px] font-semibold font-syne text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
           Cancel
         </button>
         <button (click)="saveEdit()"
-          class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-sm flex items-center justify-center gap-2">
-          <span class="material-icons text-sm">save</span> Save changes
+                [disabled]="!editedComment.trim()"
+                class="flex-1 py-2.5 text-[13px] font-semibold font-syne text-white bg-gray-950 hover:bg-gray-800 rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+          Save changes
         </button>
       </div>
     </div>
@@ -807,23 +884,27 @@
 
 <!-- Delete Comment -->
 <div *ngIf="showCommentDeleteModal && commentToDelete"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" (click)="cancelDelete()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" (click)="$event.stopPropagation()">
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 anim-fade-in"
+     style="background: rgba(0,0,0,.55); backdrop-filter: blur(4px);"
+     (click)="cancelDelete()">
+  <div class="anim-modal w-full sm:max-w-sm bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden font-dm"
+       (click)="$event.stopPropagation()">
     <div class="h-1 bg-red-500"></div>
-    <div class="p-6 text-center">
-      <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
-        <span class="material-icons text-red-500 text-3xl">delete_outline</span>
+    <div class="p-6 flex flex-col items-center gap-4 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
+        <span class="material-icons-round text-red-500" style="font-size:28px">chat_bubble_outline</span>
       </div>
-      <h3 class="text-base font-semibold text-gray-900 mb-1">Delete comment?</h3>
-      <p class="text-sm text-gray-500 mb-4 leading-relaxed">This action cannot be undone. The comment will be
-        permanently removed.</p>
-      <div class="flex gap-3">
+      <div>
+        <h3 class="font-syne text-[18px] font-extrabold text-gray-950 tracking-tight mb-1">Delete comment?</h3>
+        <p class="text-[13px] text-gray-500 leading-relaxed">This comment will be permanently removed.</p>
+      </div>
+      <div class="flex gap-3 w-full">
         <button (click)="cancelDelete()"
-          class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition">
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
           Cancel
         </button>
         <button (click)="conformDelete()"
-          class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition shadow-sm">
+                class="flex-1 py-2.5 text-[13.5px] font-semibold font-syne text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-sm">
           Delete
         </button>
       </div>

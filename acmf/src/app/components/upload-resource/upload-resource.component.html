@@ -1,132 +1,322 @@
-<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-10 px-4">
-  
-    <!-- Container -->
-    <div class="max-w-2xl mx-auto">
-  
-      <!-- Header -->
-      <div class="mb-8 text-center">
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
-          Academic Resource Upload
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">
-          Share learning materials with community of students
-        </p>
-      </div>
-  
-      <!-- Card -->
-      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-  
-        <!-- Top accent bar -->
-        <div class="h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600"></div>
-  
-        <div class="p-6 space-y-5">
-  
-          <!-- Title -->
-          <div>
-            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Resource Title
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="title"
-              placeholder="e.g. Data Structures Lecture Notes"
-              class="mt-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
-            />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+<style>
+  .font-syne { font-family: 'Syne', sans-serif; }
+  .font-dm   { font-family: 'DM Sans', sans-serif; }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: translateY(-6px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .anim-fade-up { animation: fadeUp .32s ease both; }
+  .anim-spin    { animation: spin .7s linear infinite; }
+</style>
+
+<!-- ░░ SHELL ░░ -->
+<div class="font-dm min-h-screen bg-gray-50 relative flex items-start justify-center py-10 px-4 overflow-hidden">
+
+  <!-- Dot-grid background -->
+  <div class="dot-grid pointer-events-none fixed inset-0 z-0 opacity-40" aria-hidden="true"></div>
+  <!-- Rings -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div class="absolute -top-48 -right-28 w-[520px] h-[520px] rounded-full border border-gray-200 opacity-50"></div>
+    <div class="absolute -bottom-36 -left-24 w-[400px] h-[400px] rounded-full border border-gray-200 opacity-40"></div>
+  </div>
+
+  <!-- ░░ CARD ░░ -->
+  <div class="anim-fade-up relative w-full max-w-xl flex flex-col">
+
+    <!-- ── Page header ── -->
+    <div class="mb-7 text-center">
+      <p class="text-[11px] font-semibold uppercase tracking-[.12em] text-blue-600 mb-2">Academic Hub</p>
+      <h1 class="font-syne text-[28px] sm:text-[32px] font-bold text-gray-950 tracking-tight leading-tight">
+        Upload a Resource
+      </h1>
+      <p class="text-[13.5px] text-gray-500 mt-1.5 leading-relaxed">
+        Share learning materials with your community of students
+      </p>
+    </div>
+
+    <!-- ── Form card ── -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+
+      <!-- Thin accent bar (solid, no gradient) -->
+      <div class="h-[3px] bg-gray-950 w-full"></div>
+
+      <div class="p-6 sm:p-8 flex flex-col gap-5">
+
+        <!-- Toast: success -->
+        <div *ngIf="message && !message.toLowerCase().includes('fail') && !message.toLowerCase().includes('error')"
+             class="flex items-center gap-2.5 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[13px] font-medium text-emerald-700">
+          <span class="material-icons-round text-emerald-600 flex-shrink-0" style="font-size:17px">check_circle</span>
+          <span class="flex-1">{{ message }}</span>
+        </div>
+
+        <!-- Toast: error -->
+        <div *ngIf="message && (message.toLowerCase().includes('fail') || message.toLowerCase().includes('error'))"
+             class="flex items-center gap-2.5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-[13px] font-medium text-red-700">
+          <span class="material-icons-round text-red-600 flex-shrink-0" style="font-size:17px">error_outline</span>
+          <span class="flex-1">{{ message }}</span>
+        </div>
+
+        <!-- ── Resource Title ── -->
+        <div class="flex flex-col gap-1.5">
+          <label class="flex items-center gap-1.5 text-[13px] font-semibold text-gray-700">
+            Resource Title
+            <span class="text-red-500 text-[15px] leading-none">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <span class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none" style="font-size:17px">title</span>
+            <input type="text"
+                   [(ngModel)]="title"
+                   placeholder="e.g. Data Structures Lecture Notes"
+                   class="w-full pl-10 pr-4 py-3 text-[14px] text-gray-900 bg-gray-50 border border-gray-200 rounded-xl outline-none placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-100 transition-all duration-150" />
           </div>
-  
-          <!-- Type -->
-          <div>
-            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Resource Type
-            </label>
-            <select
-              [(ngModel)]="type"
-              class="mt-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
-            >
-              <option [value]="MaterialType.NOTES">Lecture Notes</option>
-              <option [value]="MaterialType.PAST_PAPER">Past Papers</option>
-              <option [value]="MaterialType.ASSIGNMENT">Assignments</option>
-            </select>
-          </div>
-  
-          <!-- File Upload -->
-          <div>
-            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Upload File
-            </label>
-  
-            <div class="mt-2 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center 
-                        hover:border-blue-400 transition cursor-pointer">
-  
-              <input
-                type="file"
-                (change)="onFileSelected($event)"
-                class="hidden"
-                id="fileInput"
-              />
-  
-              <label for="fileInput" class="cursor-pointer">
-                <div class="text-gray-600">
-                  <span class="material-icons text-3xl text-gray-400">cloud_upload</span>
-                  <p class="mt-2 text-sm font-medium">
-                    Click to upload or drag and drop
-                  </p>
-                  <p class="text-xs text-gray-400 mt-1">
-                    PDF, DOCX, PPT (max 20MB)
-                  </p>
+          <p class="text-[12px] text-gray-400">Give your resource a clear, descriptive title</p>
+        </div>
+
+        <!-- ── Resource Type — custom dropdown ── -->
+        <div class="flex flex-col gap-1.5" data-dropdown="type">
+          <label class="text-[13px] font-semibold text-gray-700">Resource Type</label>
+
+          <div class="relative">
+
+            <!-- Trigger -->
+            <button type="button"
+                    (click)="typeDropdownOpen = !typeDropdownOpen"
+                    class="w-full flex items-center gap-3 px-3.5 py-3 bg-gray-50 border border-gray-200 rounded-xl text-left transition-all duration-150 outline-none focus:ring-[3px]"
+                    [ngClass]="typeDropdownOpen
+                      ? 'bg-white border-blue-500 ring-[3px] ring-blue-100'
+                      : 'hover:border-gray-300 hover:bg-gray-100'">
+
+              <!-- Colour tile for selected type -->
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150"
+                   [ngClass]="{
+                     'bg-blue-100':   type === MaterialType.NOTES,
+                     'bg-violet-100': type === MaterialType.PAST_PAPER,
+                     'bg-amber-100':  type === MaterialType.ASSIGNMENT
+                   }">
+                <span class="material-icons-round text-[18px]"
+                      [ngClass]="{
+                        'text-blue-600':   type === MaterialType.NOTES,
+                        'text-violet-600': type === MaterialType.PAST_PAPER,
+                        'text-amber-600':  type === MaterialType.ASSIGNMENT
+                      }">
+                  {{ type === MaterialType.NOTES ? 'menu_book' : type === MaterialType.PAST_PAPER ? 'history_edu' : 'assignment' }}
+                </span>
+              </div>
+
+              <!-- Label -->
+              <div class="flex-1 min-w-0">
+                <p class="text-[14px] font-semibold text-gray-900 leading-tight">
+                  {{ type === MaterialType.NOTES ? 'Lecture Notes' : type === MaterialType.PAST_PAPER ? 'Past Papers' : 'Assignments' }}
+                </p>
+                <p class="text-[11px] text-gray-400 leading-tight mt-px">
+                  {{ type === MaterialType.NOTES ? 'Class notes, summaries & study guides'
+                     : type === MaterialType.PAST_PAPER ? 'Previous exam papers & mark schemes'
+                     : 'Coursework tasks & project briefs' }}
+                </p>
+              </div>
+
+              <!-- Chevron -->
+              <span class="material-icons-round text-gray-400 flex-shrink-0 transition-transform duration-200"
+                    style="font-size:18px"
+                    [style.transform]="typeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'">
+                expand_more
+              </span>
+            </button>
+
+            <!-- Options panel -->
+            <div *ngIf="typeDropdownOpen"
+                 class="absolute left-0 right-0 top-[calc(100%+6px)] z-30 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+                 style="animation: scaleIn .18s ease both;">
+
+              <!-- NOTES -->
+              <button type="button"
+                      (click)="type = MaterialType.NOTES; typeDropdownOpen = false"
+                      class="w-full flex items-center gap-3 px-3.5 py-3 text-left transition-colors duration-100 group"
+                      [ngClass]="type === MaterialType.NOTES
+                        ? 'bg-blue-50'
+                        : 'hover:bg-gray-50'">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                     [ngClass]="type === MaterialType.NOTES ? 'bg-blue-100' : 'bg-gray-100 group-hover:bg-blue-50'">
+                  <span class="material-icons-round text-[19px]"
+                        [ngClass]="type === MaterialType.NOTES ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'">
+                    menu_book
+                  </span>
                 </div>
-              </label>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13.5px] font-semibold leading-tight"
+                     [ngClass]="type === MaterialType.NOTES ? 'text-blue-700' : 'text-gray-800'">
+                    Lecture Notes
+                  </p>
+                  <p class="text-[11.5px] text-gray-400 mt-px">Class notes, summaries & study guides</p>
+                </div>
+                <span *ngIf="type === MaterialType.NOTES"
+                      class="material-icons-round text-blue-600 flex-shrink-0" style="font-size:17px">check_circle</span>
+              </button>
+
+              <div class="h-px bg-gray-100 mx-3"></div>
+
+              <!-- PAST PAPER -->
+              <button type="button"
+                      (click)="type = MaterialType.PAST_PAPER; typeDropdownOpen = false"
+                      class="w-full flex items-center gap-3 px-3.5 py-3 text-left transition-colors duration-100 group"
+                      [ngClass]="type === MaterialType.PAST_PAPER
+                        ? 'bg-violet-50'
+                        : 'hover:bg-gray-50'">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                     [ngClass]="type === MaterialType.PAST_PAPER ? 'bg-violet-100' : 'bg-gray-100 group-hover:bg-violet-50'">
+                  <span class="material-icons-round text-[19px]"
+                        [ngClass]="type === MaterialType.PAST_PAPER ? 'text-violet-600' : 'text-gray-500 group-hover:text-violet-500'">
+                    history_edu
+                  </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13.5px] font-semibold leading-tight"
+                     [ngClass]="type === MaterialType.PAST_PAPER ? 'text-violet-700' : 'text-gray-800'">
+                    Past Papers
+                  </p>
+                  <p class="text-[11.5px] text-gray-400 mt-px">Previous exam papers & mark schemes</p>
+                </div>
+                <span *ngIf="type === MaterialType.PAST_PAPER"
+                      class="material-icons-round text-violet-600 flex-shrink-0" style="font-size:17px">check_circle</span>
+              </button>
+
+              <div class="h-px bg-gray-100 mx-3"></div>
+
+              <!-- ASSIGNMENT -->
+              <button type="button"
+                      (click)="type = MaterialType.ASSIGNMENT; typeDropdownOpen = false"
+                      class="w-full flex items-center gap-3 px-3.5 py-3 text-left transition-colors duration-100 group"
+                      [ngClass]="type === MaterialType.ASSIGNMENT
+                        ? 'bg-amber-50'
+                        : 'hover:bg-gray-50'">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                     [ngClass]="type === MaterialType.ASSIGNMENT ? 'bg-amber-100' : 'bg-gray-100 group-hover:bg-amber-50'">
+                  <span class="material-icons-round text-[19px]"
+                        [ngClass]="type === MaterialType.ASSIGNMENT ? 'text-amber-600' : 'text-gray-500 group-hover:text-amber-500'">
+                    assignment
+                  </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13.5px] font-semibold leading-tight"
+                     [ngClass]="type === MaterialType.ASSIGNMENT ? 'text-amber-700' : 'text-gray-800'">
+                    Assignments
+                  </p>
+                  <p class="text-[11.5px] text-gray-400 mt-px">Coursework tasks & project briefs</p>
+                </div>
+                <span *ngIf="type === MaterialType.ASSIGNMENT"
+                      class="material-icons-round text-amber-600 flex-shrink-0" style="font-size:17px">check_circle</span>
+              </button>
+
             </div>
           </div>
-  
-          <!-- Divider -->
-          <div class="flex items-center gap-3">
-            <div class="h-px bg-gray-200 flex-1"></div>
-            <span class="text-xs text-gray-400">OR</span>
-            <div class="h-px bg-gray-200 flex-1"></div>
-          </div>
-  
-          <!-- URL -->
-          <div>
-            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              External File URL
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="fileUrl"
-              placeholder="https://drive.google.com/..."
-              class="mt-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
-            />
-          </div>
-  
-          <!-- Submit -->
-          <button
-            (click)="submit()"
-            [disabled]="loading"
-            class="w-full py-3 rounded-xl font-semibold text-white 
-                   bg-gradient-to-r from-blue-600 to-indigo-600 
-                   hover:from-blue-700 hover:to-indigo-700 
-                   transition active:scale-[0.99] disabled:opacity-60"
-          >
-            {{ loading ? 'Uploading resource...' : 'Share Academic Resource' }}
-          </button>
-  
-          <!-- Message -->
-          <p *ngIf="message"
-             class="text-center text-sm text-green-600 font-medium">
-            {{ message }}
-          </p>
-  
         </div>
+
+        <!-- ── File Upload dropzone ── -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[13px] font-semibold text-gray-700">Upload File</label>
+
+          <div class="border-2 border-dashed border-gray-300 rounded-2xl transition-all duration-150 overflow-hidden"
+               [ngClass]="file ? 'border-emerald-400 bg-emerald-50' : 'hover:border-blue-300 hover:bg-gray-50 cursor-pointer'"
+               (click)="!file && fileInputEl.click()"
+               (dragover)="$event.preventDefault()"
+               (drop)="onDrop($event)">
+
+            <input type="file"
+                   #fileInputEl
+                   (change)="onFileSelected($event)"
+                   class="hidden"
+                   accept=".pdf,.doc,.docx,.ppt,.pptx" />
+
+            <!-- Empty state -->
+            <div *ngIf="!file" class="flex flex-col items-center justify-center gap-2.5 py-10 px-6 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center">
+                <span class="material-icons-round text-gray-400" style="font-size:28px">cloud_upload</span>
+              </div>
+              <div>
+                <p class="font-syne text-[14px] font-bold text-gray-800">Drop your file here</p>
+                <p class="text-[12.5px] text-gray-500 mt-0.5">
+                  or <button type="button"
+                              (click)="$event.stopPropagation(); fileInputEl.click()"
+                              class="text-blue-600 font-semibold underline underline-offset-2 hover:text-blue-700 transition-colors">browse files</button>
+                </p>
+              </div>
+              <p class="text-[11.5px] text-gray-400">PDF · DOCX · PPT — max 20 MB</p>
+            </div>
+
+            <!-- File selected state -->
+            <div *ngIf="file" class="flex items-center gap-3 px-4 py-4">
+              <div class="w-11 h-11 rounded-xl bg-white border border-emerald-200 shadow-sm flex items-center justify-center flex-shrink-0">
+                <span class="material-icons-round text-emerald-600" style="font-size:22px">
+                  {{ file.name.endsWith('.pdf') ? 'picture_as_pdf' : file.name.endsWith('.ppt') || file.name.endsWith('.pptx') ? 'slideshow' : 'description' }}
+                </span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13.5px] font-semibold text-gray-900 truncate">{{ file.name }}</p>
+                <p class="text-[11.5px] text-gray-500 mt-0.5">{{ (file.size / 1024 / 1024) | number:'1.1-1' }} MB</p>
+              </div>
+              <button type="button"
+                      (click)="$event.stopPropagation(); file = null"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
+                <span class="material-icons-round" style="font-size:17px">close</span>
+              </button>
+            </div>
+
+          </div>
+          <p class="text-[12px] text-gray-400">Accepted formats: PDF, DOCX, PPT, PPTX</p>
+        </div>
+
+        <!-- ── Divider ── -->
+        <div class="flex items-center gap-3">
+          <div class="h-px bg-gray-200 flex-1"></div>
+          <span class="text-[11.5px] font-semibold text-gray-400 uppercase tracking-widest">or</span>
+          <div class="h-px bg-gray-200 flex-1"></div>
+        </div>
+
+        <!-- ── External URL ── -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[13px] font-semibold text-gray-700">External File URL</label>
+          <div class="relative flex items-center">
+            <span class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none" style="font-size:17px">link</span>
+            <input type="url"
+                   [(ngModel)]="fileUrl"
+                   placeholder="https://drive.google.com/…"
+                   class="w-full pl-10 pr-4 py-3 text-[14px] text-gray-900 bg-gray-50 border border-gray-200 rounded-xl outline-none placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-100 transition-all duration-150" />
+          </div>
+          <p class="text-[12px] text-gray-400">Google Drive, OneDrive, Dropbox, or any direct link</p>
+        </div>
+
+        <!-- ── Submit ── -->
+        <button (click)="submit()"
+                [disabled]="loading || !title || (!file && !fileUrl)"
+                class="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-gray-950 hover:bg-gray-800 text-white text-[14px] font-semibold font-syne rounded-xl transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm mt-1">
+          <span *ngIf="loading" class="anim-spin w-4 h-4 rounded-full border-2 border-white/30 border-t-white flex-shrink-0"></span>
+          <span *ngIf="!loading" class="material-icons-round" style="font-size:17px">upload</span>
+          {{ loading ? 'Uploading resource…' : 'Share Academic Resource' }}
+        </button>
+
       </div>
-  
-      <!-- Footer hint -->
-      <p class="text-center text-xs text-gray-400 mt-6">
-        Ensure materials comply with institutional academic guidelines
-      </p>
-  
     </div>
+
+    <!-- ── Footer hint ── -->
+    <p class="text-center text-[12px] text-gray-400 mt-5 flex items-center justify-center gap-1.5">
+      <span class="material-icons-round" style="font-size:14px">shield</span>
+      Ensure materials comply with institutional academic guidelines
+    </p>
+
   </div>
+</div>

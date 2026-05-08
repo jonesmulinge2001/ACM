@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Inject,
+  PLATFORM_ID,
+  EventEmitter,
+  Output,
+} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -10,13 +18,13 @@ import { GlobalSearchService } from '../../services/global-search.service';
 import { GlobalSearchResult } from '../../interfaces';
 import { Subject, debounceTime, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { isPlatformBrowser } from '@angular/common'; 
+import { isPlatformBrowser } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 import { NotificationComponent } from '../notifications/notifications.component';
-import { SettingsPanelComponent } from "../../settings/settings-panel/settings-panel.component";
+import { SettingsPanelComponent } from '../../settings/settings-panel/settings-panel.component';
 import { ConversationsService } from '../../services/conversations.service';
 import { DmChatComponent } from '../dm-chat/dm-chat/dm-chat.component';
-import { IntentModalComponent } from "../intent-modal/intent-modal.component";
+import { IntentModalComponent } from '../intent-modal/intent-modal.component';
 
 @Component({
   selector: 'app-navbar',
@@ -28,8 +36,8 @@ import { IntentModalComponent } from "../intent-modal/intent-modal.component";
     NotificationComponent,
     SettingsPanelComponent,
     DmChatComponent,
-    IntentModalComponent
-],
+    IntentModalComponent,
+  ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -41,12 +49,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
   unreadCount: number = 0;
   logoutModalOpen: boolean = false;
   searchQuery: string = '';
-  searchResults: GlobalSearchResult = { profiles: [], posts: [], resources: [] };
+  searchResults: GlobalSearchResult = {
+    profiles: [],
+    posts: [],
+    resources: [],
+  };
   loading: boolean = false;
   searchPanelOpen: boolean = false;
 
   window = window;
-  
+
   private socketSub?: Subscription;
   private searchSubject = new Subject<string>();
   private notificationSub?: Subscription;
@@ -58,7 +70,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // Add computed properties
   totalUnreadMessages: number = 0;
-  
+
   // Chat modal properties
   activeConversationId: string | null = null;
   chatModalOpen: boolean = false;
@@ -69,8 +81,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   showIntentModal: boolean = false;
   @Output() openIntent = new EventEmitter<void>();
 
-  
-  
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -94,7 +104,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.searchSubject
       .pipe(
         debounceTime(300),
-        switchMap(query => {
+        switchMap((query) => {
           this.loading = true;
           return this.searchService.search(query);
         })
@@ -104,7 +114,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.searchResults = {
             profiles: res.profiles || [],
             posts: res.posts || [],
-            resources: res.resources || []
+            resources: res.resources || [],
           };
           this.loading = false;
           this.searchPanelOpen = true;
@@ -112,21 +122,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
         error: () => {
           this.loading = false;
           this.searchResults = { profiles: [], posts: [], resources: [] };
-        }
+        },
       });
 
     if (this.isLoggedIn) {
       this.profileService.getMyProfile().subscribe({
         next: (profile: Profile) => {
           this.userName = profile.name;
-          this.userImage = profile.profileImage || 'https://via.placeholder.com/40';
+          this.userImage =
+            profile.profileImage || 'https://via.placeholder.com/40';
         },
         error: () => console.error(),
       });
 
       // Subscribe to notification unread count
       this.notificationSub = this.notificationService.unreadCount$.subscribe(
-        count => {
+        (count) => {
           this.unreadCount = count;
         }
       );
@@ -136,7 +147,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.socketSub?.unsubscribe();
     this.notificationSub?.unsubscribe();
-    document.removeEventListener('click', this.closeMenuOnOutsideClick.bind(this));
+    document.removeEventListener(
+      'click',
+      this.closeMenuOnOutsideClick.bind(this)
+    );
   }
 
   // Search methods
@@ -163,8 +177,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   viewAllResults(): void {
     this.closeSearchPanel();
-    this.router.navigate(['/search'], { 
-      queryParams: { q: this.searchQuery } 
+    this.router.navigate(['/search'], {
+      queryParams: { q: this.searchQuery },
     });
   }
 
@@ -184,13 +198,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   closeMenuOnOutsideClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    
+
     // Close search panel if clicking outside
     const isInsideSearch = target.closest('.search-container');
     if (!isInsideSearch) {
       this.searchPanelOpen = false;
     }
-    
+
     // Close menu if clicking outside
     const isInsideMenu = target.closest('.profile-dropdown-container');
     if (!isInsideMenu && this.menuOpen) {
@@ -213,7 +227,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navigateToResource(resourceId: string) {
     // TODO: specific resource detail
-    this.router.navigate(['/resources']); 
+    this.router.navigate(['/resources']);
   }
 
   toggleSettingsPanel() {
@@ -228,31 +242,31 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.conversationsService.list().subscribe({
       next: (convos: any[]) => {
         console.log('Loaded conversations raw:', convos);
-        
+
         // Map the backend response to match our interface
-        this.recentConversations = convos.map(convo => ({
+        this.recentConversations = convos.map((convo) => ({
           id: convo.conversationId || convo.id, // Map conversationId to id
           title: convo.title,
           isGroup: convo.isGroup,
           participants: convo.participants,
           lastMessage: convo.lastMessage,
-          unreadCount: convo.unreadCount || 0
+          unreadCount: convo.unreadCount || 0,
         }));
-        
+
         // console.log('Mapped conversations:', this.recentConversations);
         this.calculateTotalUnreadMessages();
       },
       error: (err) => {
         // console.error('Error fetching recent conversations', err);
         // this.toastr.error('Failed to load conversations');
-      }
+      },
     });
   }
 
   // Add this method to calculate total unread messages
   calculateTotalUnreadMessages(): void {
     this.totalUnreadMessages = this.recentConversations.reduce(
-      (acc, c) => acc + (c.unreadCount || 0), 
+      (acc, c) => acc + (c.unreadCount || 0),
       0
     );
   }
@@ -262,13 +276,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (convo.title) {
       return convo.title;
     }
-    
+
     // Filter out current user and join names
     const otherParticipantNames = convo.participants
-      .filter(p => p.name !== this.userName)
-      .map(p => p.name)
+      .filter((p) => p.name !== this.userName)
+      .map((p) => p.name)
       .join(', ');
-    
+
     return otherParticipantNames || 'Unknown';
   }
 
@@ -277,10 +291,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (convo.isGroup) {
       return 'https://via.placeholder.com/40'; // Default for groups
     }
-    
+
     const userId = localStorage.getItem('userid');
-    const otherParticipant = convo.participants.find(p => p.id !== userId);
-    
+    const otherParticipant = convo.participants.find((p) => p.id !== userId);
+
     return otherParticipant?.profileImage || 'https://via.placeholder.com/40';
   }
 
@@ -290,39 +304,36 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   openConversation(conversationId: string): void {
     this.recentPanelOpen = false;
-  
+
     if (!conversationId || conversationId.trim() === '') {
       // console.error('Invalid conversation ID:', conversationId);
       // this.toastr.error('Cannot open conversation: Invalid ID');
       return;
     }
-  
+
     this.activeConversationId = conversationId;
     this.chatModalOpen = true;
-  
+
     //  TELL LAYOUT CHAT IS OPEN
     this.chatOpened.emit();
   }
-  
 
   closeChatModal(): void {
     this.chatModalOpen = false;
     this.activeConversationId = null;
-  
+
     //  TELL LAYOUT CHAT IS CLOSED
     this.chatClosed.emit();
   }
-
 
   viewAllMessages(): void {
     this.recentPanelOpen = false;
     this.router.navigate(['/messages']);
   }
 
-openIntentModal() {
-  this.openIntent.emit();
-}
-  
+  openIntentModal() {
+    this.openIntent.emit();
+  }
 
   logOut(): void {
     localStorage.removeItem('token');

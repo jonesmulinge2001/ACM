@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-group-members',
   standalone: true,
-  imports: [CommonModule, DmChatComponent,FormsModule, HttpClientModule],
+  imports: [CommonModule,FormsModule, HttpClientModule],
   templateUrl: './group-members.component.html',
 })
 export class GroupMembersComponent implements OnInit, OnChanges {
