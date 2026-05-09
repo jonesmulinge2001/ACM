@@ -22,6 +22,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Create', link: '/create', icon: 'add_circle', activeIcon: 'edit' },
     { label: 'Academic', link: '/academic-resource', icon: 'video_library', activeIcon: 'play_circle' },
     { label: 'Groups', link: '/groups', icon: 'handshake', activeIcon: 'group' },
+    { label: 'Resources', link: '/resources', icon: 'handshake', activeIcon: 'group' },
   ];
 
   private readonly HIDDEN_NAV_ROUTES = ['/create', '/post/create', '/groups/create'];

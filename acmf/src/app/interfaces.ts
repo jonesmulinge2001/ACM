@@ -896,3 +896,24 @@ export interface AcademicResourceResponse {
     createdAt: string;
   };
 }
+
+export interface Resource {
+  id: string;
+  title: string;
+  fileUrl: string;
+  fileType: string;
+  uploaderId: string;
+  institutionId: string;
+  course: string;
+  isApproved: boolean;
+  approvedAt: string | null;
+  isDeleted: boolean;
+  downloadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateResourceDto {
+  title?: string;
+  fileUrl?: string;
+}

@@ -34,6 +34,7 @@ import { SearchResultsComponent } from './components/search-results/search-resul
 import { VideoManagerComponent } from './unitok/video-manager/video-manager.component';
 import { VideoDetailComponent } from './unitok/video-detail/video-detail.component';
 import { UploadResourceComponent } from './components/upload-resource/upload-resource.component';
+import { ResourcesListComponent } from './components/resources-list/resources-list.component';
 
 export const routes: Routes = [
   // ==== Public routes (no layout) ====
@@ -58,6 +59,7 @@ export const routes: Routes = [
       { path: 'update-profile', component: UpdateProfileComponent },
       { path: 'profile/:id', component: StudentProfileComponent },
       { path: 'network', component: NetworkComponent },
+      { path: 'resources', component: ResourcesListComponent },
       // { path: 'resources', component: ResourcesComponent },
       { path: 'videos', component: VideoManagerComponent },
       { path: 'create', component: PostComponent },

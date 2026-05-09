@@ -1,0 +1,144 @@
+<div class="min-h-screen bg-[#f3f2ef] py-8 px-4">
+
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto mb-8">
+      <h1 class="text-2xl font-semibold text-gray-900">
+        Academic Resources
+      </h1>
+      <p class="text-gray-500 mt-1 text-sm">
+        Discover and share study materials across institutions
+      </p>
+    </div>
+  
+    <!-- Search -->
+    <div class="max-w-7xl mx-auto mb-8">
+      <div class="relative">
+        <span class="material-icons absolute left-4 top-3 text-gray-400">
+          search
+        </span>
+  
+        <input
+          [(ngModel)]="searchTerm"
+          (input)="search()"
+          type="text"
+          placeholder="Search by title or course..."
+          class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    </div>
+  
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center text-gray-500 py-12">
+      Loading resources...
+    </div>
+  
+    <!-- Grid -->
+    <div
+      *ngIf="!loading"
+      class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6"
+    >
+  
+      <div
+        *ngFor="let resource of filteredResources"
+        class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden"
+      >
+  
+        <!-- Top -->
+        <div class="p-5 border-b border-gray-100">
+  
+          <div class="flex justify-between items-start">
+  
+            <div class="flex items-center gap-3">
+  
+              <div
+                class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center"
+              >
+                <span class="material-icons text-blue-600">
+                  {{ getFileIcon(resource.fileType) }}
+                </span>
+              </div>
+  
+              <div>
+                <h3 class="font-semibold text-gray-900 line-clamp-1">
+                  {{ resource.title }}
+                </h3>
+  
+                <p class="text-sm text-gray-500">
+                  {{ resource.course }}
+                </p>
+              </div>
+  
+            </div>
+  
+            <!-- Owner actions -->
+            <div
+              *ngIf="isOwner(resource)"
+              class="flex gap-2"
+            >
+              <button
+                (click)="edit(resource)"
+                class="text-gray-500 hover:text-blue-600"
+              >
+                <span class="material-icons text-[20px]">edit</span>
+              </button>
+  
+              <button
+                (click)="delete(resource.id)"
+                class="text-gray-500 hover:text-red-600"
+              >
+                <span class="material-icons text-[20px]">delete</span>
+              </button>
+            </div>
+  
+          </div>
+        </div>
+  
+        <!-- Body -->
+        <div class="p-5">
+  
+          <div class="flex justify-between mb-4">
+  
+            <span
+              class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700"
+            >
+              {{ getFileType(resource.fileType) }}
+            </span>
+  
+            <span
+              class="text-xs px-3 py-1 rounded-full"
+              [ngClass]="resource.isApproved
+                ? 'bg-green-100 text-green-700'
+                : 'bg-yellow-100 text-yellow-700'"
+            >
+              {{ resource.isApproved ? 'Approved' : 'Pending' }}
+            </span>
+  
+          </div>
+  
+          <div class="text-sm text-gray-500 mb-5">
+            {{ resource.downloadCount }} downloads
+          </div>
+  
+          <button
+            *ngIf="resource.isApproved"
+            (click)="download(resource.id)"
+            class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+          >
+            Download
+          </button>
+  
+        </div>
+  
+      </div>
+  
+    </div>
+  
+    <!-- Empty state -->
+    <div
+      *ngIf="!loading && filteredResources.length === 0"
+      class="text-center py-20 text-gray-500"
+    >
+      No resources found
+    </div>
+  
+  </div>
