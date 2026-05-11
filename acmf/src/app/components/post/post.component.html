@@ -1,213 +1,557 @@
-<!-- Modal Backdrop -->
-<div *ngIf="showModal"
-  class="modal-backdrop fixed inset-0 z-40 flex items-end sm:items-center justify-center transition-all duration-300 ease-out"
-  style="background: rgba(0,0,0,0.6);"
-  (click)="closeModal()">
+<link
+  href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+  rel="stylesheet"
+/>
 
-  <!-- Modal Content -->
-  <div class="relative z-50 w-full sm:max-w-2xl transform transition-all duration-300 ease-out animate-slideUp
-               pb-[env(safe-area-inset-bottom)]"
-    (click)="$event.stopPropagation()">
-    <form [formGroup]="postForm" (ngSubmit)="submitPost()"
-      class="bg-white sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh] rounded-t-2xl">
+<style>
+  .font-syne {
+    font-family: "Syne", sans-serif;
+  }
+  .font-dm {
+    font-family: "DM Sans", sans-serif;
+  }
 
-      <!-- Success Message Banner -->
-      <div *ngIf="showSuccessMessage"
-        class="mx-4 sm:mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 animate-slideDown flex-shrink-0">
-        <span class="material-icons text-green-600 flex-shrink-0">check_circle</span>
-        <p class="text-sm font-medium text-green-800 flex-1">{{ successMessage }}</p>
-        <button type="button" (click)="clearMessages()" class="text-green-600 hover:text-green-800 flex-shrink-0">
-          <span class="material-icons text-sm">close</span>
+  @keyframes sheetUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes dialogIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes toastIn {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Mobile: bottom sheet slides up */
+  @media (max-width: 639px) {
+    .modal-sheet {
+      animation: sheetUp 0.28s cubic-bezier(0.34, 1.05, 0.64, 1) both;
+    }
+  }
+  /* Desktop: dialog scales in */
+  @media (min-width: 640px) {
+    .modal-sheet {
+      animation: dialogIn 0.24s cubic-bezier(0.34, 1.1, 0.64, 1) both;
+    }
+  }
+
+  .anim-fade-in {
+    animation: fadeIn 0.18s ease both;
+  }
+  .anim-toast {
+    animation: toastIn 0.2s ease both;
+  }
+  .anim-spin {
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* Category strip: hide scrollbar on mobile */
+  .cat-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .cat-strip {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Tag pill hover */
+  .tag-pill:hover .tag-remove {
+    opacity: 1;
+  }
+  .tag-remove {
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+  }
+</style>
+
+<!-- ░░ BACKDROP ░░ -->
+<div
+  *ngIf="showModal"
+  class="modal-backdrop font-dm fixed inset-0 z-40 flex items-end sm:items-center justify-center anim-fade-in"
+  style="background: rgba(0, 0, 0, 0.58); backdrop-filter: blur(4px)"
+  (click)="closeModal()"
+>
+  <!-- ░░ MODAL SHEET ░░
+       Mobile  : full-width bottom sheet, no side gap, rounded-t-2xl
+       Desktop : contained sm:max-w-2xl dialog, rounded-2xl, sm:p-4 gutter -->
+  <div
+    class="modal-sheet relative z-50 w-full sm:max-w-2xl sm:mx-4 flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[92dvh] sm:max-h-[88vh] pb-[env(safe-area-inset-bottom)]"
+    (click)="$event.stopPropagation()"
+  >
+    <form
+      [formGroup]="postForm"
+      (ngSubmit)="submitPost()"
+      class="flex flex-col flex-1 min-h-0"
+      novalidate
+    >
+      <!-- ── Drag handle (mobile only) ── -->
+      <div class="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+        <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+      </div>
+
+      <!-- ── Toasts ── -->
+      <div
+        class="px-4 sm:px-6 pt-3 flex flex-col gap-2 flex-shrink-0 empty:hidden"
+      >
+        <div
+          *ngIf="showSuccessMessage"
+          class="anim-toast flex items-center gap-2.5 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[13px] font-medium text-emerald-700"
+        >
+          <span
+            class="material-icons-round text-emerald-600 flex-shrink-0"
+            style="font-size: 17px"
+            >check_circle</span
+          >
+          <span class="flex-1">{{ successMessage }}</span>
+          <button
+            type="button"
+            (click)="clearMessages()"
+            class="opacity-60 hover:opacity-100 transition-opacity flex items-center flex-shrink-0"
+          >
+            <span class="material-icons-round" style="font-size: 15px"
+              >close</span
+            >
+          </button>
+        </div>
+        <div
+          *ngIf="showErrorMessage"
+          class="anim-toast flex items-center gap-2.5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-[13px] font-medium text-red-700"
+        >
+          <span
+            class="material-icons-round text-red-600 flex-shrink-0"
+            style="font-size: 17px"
+            >error_outline</span
+          >
+          <span class="flex-1">{{ errorMessage }}</span>
+          <button
+            type="button"
+            (click)="clearMessages()"
+            class="opacity-60 hover:opacity-100 transition-opacity flex items-center flex-shrink-0"
+          >
+            <span class="material-icons-round" style="font-size: 15px"
+              >close</span
+            >
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Header ── -->
+      <div
+        class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 flex-shrink-0"
+      >
+        <h2
+          class="font-syne text-[17px] font-bold text-gray-950 tracking-tight"
+        >
+          Share Knowledge
+        </h2>
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          aria-label="Close"
+        >
+          <span class="material-icons-round" style="font-size: 18px"
+            >close</span
+          >
         </button>
       </div>
 
-      <!-- Error Message Banner -->
-      <div *ngIf="showErrorMessage"
-        class="mx-4 sm:mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 animate-slideDown flex-shrink-0">
-        <span class="material-icons text-red-600 flex-shrink-0">error</span>
-        <p class="text-sm font-medium text-red-800 flex-1">{{ errorMessage }}</p>
-        <button type="button" (click)="clearMessages()" class="text-red-600 hover:text-red-800 flex-shrink-0">
-          <span class="material-icons text-sm">close</span>
-        </button>
-      </div>
-
-      <!-- Header -->
-      <div class="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 flex-shrink-0">
-        <h2 class="text-base sm:text-xl font-semibold text-gray-900">Share knowledge</h2>
-        <button type="button" (click)="closeModal()"
-          class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
-          aria-label="Close modal">
-          <span class="material-icons text-xl">close</span>
-        </button>
-      </div>
-
-      <!-- Scrollable body -->
-      <div class="overflow-y-auto flex-1">
-
-        <!-- User Info -->
-        <div class="px-4 sm:px-6 pt-4 pb-3 flex items-center space-x-3">
-          <img [src]="profile?.profileImage || 'assets/default-avatar.png'"
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover object-center border border-gray-200 flex-shrink-0"
-            [alt]="profile?.name || 'User'" />
+      <!-- ── Scrollable body ── -->
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <!-- User info -->
+        <div class="px-4 sm:px-6 pt-4 pb-3 flex items-center gap-3">
+          <img
+            [src]="profile?.profileImage || 'assets/default-avatar.png'"
+            class="w-11 h-11 rounded-xl object-cover border border-gray-200 flex-shrink-0"
+            [alt]="profile?.name || 'User'"
+          />
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-gray-900 text-sm sm:text-base truncate">{{ profile?.name || 'User' }}</p>
-            <p class="text-xs sm:text-sm text-gray-500 truncate">
-              {{ profile?.academicLevel }} · {{ profile?.institution?.name || 'University Student' }}
+            <p
+              class="font-syne text-[14px] font-bold text-gray-950 truncate tracking-tight"
+            >
+              {{ profile?.name || "User" }}
+            </p>
+            <p class="text-[11.5px] text-gray-500 truncate">
+              {{ profile?.academicLevel
+              }}<span *ngIf="profile?.institution?.name">
+                · {{ profile?.institution?.name }}</span
+              >
             </p>
           </div>
         </div>
 
-        <!-- Post Input Area -->
-        <div class="px-4 sm:px-6 py-3">
-          <textarea formControlName="content" rows="4"
+        <!-- Content textarea -->
+        <div class="px-4 sm:px-6 pb-3">
+          <textarea
+            formControlName="content"
+            rows="5"
             placeholder="What do you want to talk about?"
-            class="w-full border-none focus:ring-0 text-gray-900 placeholder-gray-400 text-base resize-none p-0 focus:outline-none"
-            [class.text-red-500]="isInvalid('content')"></textarea>
-          <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('content')">
-            {{ getErrorMessage('content') }}
-          </div>
+            class="w-full border-none focus:ring-0 focus:outline-none text-[15px] text-gray-900 placeholder:text-gray-400 resize-none leading-relaxed bg-transparent"
+            [class.text-red-500]="isInvalid('content')"
+          ></textarea>
+          <p
+            *ngIf="isInvalid('content')"
+            class="flex items-center gap-1 text-[12px] text-red-600 mt-0.5"
+          >
+            <span class="material-icons-round" style="font-size: 13px"
+              >info</span
+            >{{ getErrorMessage("content") }}
+          </p>
         </div>
 
-        <!-- Title Field -->
+        <!-- Title field -->
         <div class="px-4 sm:px-6 pb-4">
-          <input formControlName="title" type="text" placeholder="Add a title (optional)"
-            class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            [class.border-red-300]="isInvalid('title')" />
-          <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('title')">
-            {{ getErrorMessage('title') }}
+          <div class="relative flex items-center">
+            <span
+              class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none"
+              style="font-size: 16px"
+              >title</span
+            >
+            <input
+              formControlName="title"
+              type="text"
+              placeholder="Add a title (optional)"
+              maxlength="200"
+              class="w-full pl-10 pr-16 py-2.5 text-[13.5px] text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-100 transition-all duration-150"
+              [ngClass]="
+                isInvalid('title')
+                  ? 'border-red-400 ring-[3px] ring-red-100'
+                  : ''
+              "
+            />
+            <span
+              class="absolute right-3.5 text-[11px] text-gray-400 pointer-events-none"
+            >
+              {{ postForm.get("title")?.value?.length || 0
+              }}<em class="not-italic opacity-50">/200</em>
+            </span>
           </div>
-          <div class="text-gray-400 text-xs mt-1 flex justify-between" *ngIf="!isInvalid('title')">
-            <span>Make your post more discoverable with a title</span>
-            <span>{{ postForm.get('title')?.value?.length || 0 }}/200</span>
-          </div>
+          <p
+            *ngIf="isInvalid('title')"
+            class="flex items-center gap-1 text-[12px] text-red-600 mt-1"
+          >
+            <span class="material-icons-round" style="font-size: 13px"
+              >info</span
+            >{{ getErrorMessage("title") }}
+          </p>
+          <p
+            *ngIf="!isInvalid('title')"
+            class="text-[11.5px] text-gray-400 mt-1"
+          >
+            A title helps others find your post
+          </p>
         </div>
 
-        <!-- Category Selection -->
+        <!-- Category selection -->
         <div class="px-4 sm:px-6 pb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-medium text-gray-700">Post category</label>
-            <span class="text-xs text-gray-400">Choose the right category</span>
+          <div class="flex items-center justify-between mb-2.5">
+            <label class="text-[13px] font-semibold text-gray-700"
+              >Post category</label
+            >
+            <span class="text-[11px] text-gray-400">Choose the right type</span>
           </div>
-          <!-- scrollable row on mobile -->
-          <div class="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible no-scrollbar">
-            <button *ngFor="let category of categories" type="button"
-              (click)="postForm.get('category')?.setValue(category.value)"
-              class="flex-shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1.5"
-              [ngClass]="postForm.get('category')?.value === category.value
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
-              <span class="material-icons text-sm">{{ category.icon }}</span>
-              <span class="whitespace-nowrap">{{ category.label }}</span>
+
+          <div
+            class="cat-strip flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible"
+          >
+            <button
+              *ngFor="let cat of categories"
+              type="button"
+              (click)="postForm.get('category')?.setValue(cat.value)"
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold font-syne transition-all duration-150 whitespace-nowrap"
+              [ngClass]="
+                postForm.get('category')?.value === cat.value
+                  ? getCategoryActiveClass(cat.value)
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              "
+            >
+              <span class="material-icons-round" style="font-size: 15px">{{
+                cat.icon
+              }}</span>
+              {{ cat.label }}
             </button>
           </div>
         </div>
 
-        <!-- Tags Section -->
+        <!-- Tags section -->
         <div class="px-4 sm:px-6 pb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-medium text-gray-700">Add tags</label>
-            <span class="text-xs text-gray-400">{{ tags.length }}/10 topics</span>
+          <div class="flex items-center justify-between mb-2.5">
+            <label class="text-[13px] font-semibold text-gray-700">Tags</label>
+            <span class="text-[11px] text-gray-400">{{ tags.length }}/10</span>
           </div>
 
-          <div class="flex flex-wrap gap-2 mb-3" *ngIf="tags.length > 0">
-            <span *ngFor="let tag of tags; index as i"
-              class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-all duration-200">
-              <span class="font-medium">#{{ tag }}</span>
-              <button type="button" (click)="removeTag(i)"
-                class="text-gray-500 hover:text-red-500 ml-1 transition-colors" aria-label="Remove tag">
-                <span class="material-icons text-sm">close</span>
+          <!-- Existing tags -->
+          <div *ngIf="tags.length > 0" class="flex flex-wrap gap-1.5 mb-3">
+            <span
+              *ngFor="let tag of tags; let i = index"
+              class="tag-pill inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg text-[12.5px] font-medium hover:bg-gray-200 transition-colors"
+            >
+              <span>#{{ tag }}</span>
+              <button
+                type="button"
+                (click)="removeTag(i)"
+                class="tag-remove text-gray-500 hover:text-red-500 flex items-center transition-colors"
+                aria-label="Remove tag"
+              >
+                <span class="material-icons-round" style="font-size: 13px"
+                  >close</span
+                >
               </button>
             </span>
           </div>
 
+          <!-- Tag input -->
           <div class="flex items-center gap-2">
-            <input formControlName="tagInput" type="text"
-              placeholder="Type a tag and press Enter or Add"
-              class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              (keyup.enter)="addTag()" [class.border-red-300]="isInvalid('tagInput')" />
-            <button type="button" (click)="addTag()"
-              class="flex-shrink-0 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              [disabled]="!postForm.get('tagInput')?.value || tags.length >= 10">
+            <div class="flex-1 relative flex items-center">
+              <span
+                class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none"
+                style="font-size: 15px"
+                >tag</span
+              >
+              <input
+                formControlName="tagInput"
+                type="text"
+                placeholder="Type a tag and press Enter"
+                class="w-full pl-10 pr-4 py-2.5 text-[13.5px] text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-100 transition-all duration-150"
+                [ngClass]="
+                  isInvalid('tagInput')
+                    ? 'border-red-400 ring-[3px] ring-red-100'
+                    : ''
+                "
+                (keyup.enter)="addTag()"
+              />
+            </div>
+            <button
+              type="button"
+              (click)="addTag()"
+              [disabled]="!postForm.get('tagInput')?.value || tags.length >= 10"
+              class="px-4 py-2.5 text-[13px] font-semibold font-syne bg-gray-950 hover:bg-gray-800 text-white rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 whitespace-nowrap flex-shrink-0"
+            >
               Add
             </button>
           </div>
 
-          <div class="text-red-500 text-xs mt-1" *ngIf="isInvalid('tagInput')">
-            {{ getErrorMessage('tagInput') }}
-          </div>
-          <div class="text-gray-400 text-xs mt-1" *ngIf="!isInvalid('tagInput') && tags.length >= 10">
-            Maximum 10 tags reached
-          </div>
+          <p
+            *ngIf="isInvalid('tagInput')"
+            class="flex items-center gap-1 text-[12px] text-red-600 mt-1"
+          >
+            <span class="material-icons-round" style="font-size: 13px"
+              >info</span
+            >{{ getErrorMessage("tagInput") }}
+          </p>
+          <p
+            *ngIf="tags.length >= 10"
+            class="text-[11.5px] text-amber-600 mt-1 flex items-center gap-1"
+          >
+            <span class="material-icons-round" style="font-size: 13px"
+              >info</span
+            >Maximum 10 tags reached
+          </p>
         </div>
 
-        <!-- Media Upload Section -->
-        <div class="px-4 sm:px-6 pb-4">
+        <!-- Media upload -->
+        <div class="px-4 sm:px-6 pb-5">
+          <label class="text-[13px] font-semibold text-gray-700 mb-2.5 block"
+            >Attach media</label
+          >
+
+          <!-- Drop zone -->
           <div
-            class="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer"
-            (click)="triggerFileUpload()">
-            <input type="file" #fileInput hidden (change)="onFileSelected($event)"
-              accept="image/*,video/*,application/pdf,.doc,.docx,.txt,.ppt,.pptx" />
-            <span class="material-icons text-4xl sm:text-6xl text-gray-400 mb-2">cloud_upload</span>
-            <p class="text-sm text-gray-600 mb-1">Tap to upload an image, video, or document</p>
-            <p class="text-xs text-gray-400 hidden sm:block">Images (PNG, JPG, GIF) | Videos (MP4, MOV) | PDFs up to 50MB</p>
-            <p class="text-xs text-gray-400 sm:hidden">PNG, JPG, MP4, PDF · max 50MB</p>
-          </div>
+            class="border-2 border-dashed border-gray-300 rounded-2xl transition-all duration-150 hover:border-blue-300 hover:bg-blue-50/30 cursor-pointer"
+            (click)="triggerFileUpload()"
+          >
+            <input
+              type="file"
+              #fileInput
+              hidden
+              (change)="onFileSelected($event)"
+              accept="image/*,video/*,application/pdf,.doc,.docx,.txt,.ppt,.pptx"
+            />
 
-          <!-- File Preview -->
-          <div *ngIf="selectedFile" class="mt-3 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-            <div *ngIf="selectedFileType === 'image' && selectedFilePreview"
-              class="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-              <img [src]="selectedFilePreview" alt="Preview" class="w-full h-full object-cover">
+            <div
+              *ngIf="!selectedFile"
+              class="flex flex-col items-center justify-center gap-2 py-8 px-4 text-center"
+            >
+              <div
+                class="w-14 h-14 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-center"
+              >
+                <span
+                  class="material-icons-round text-gray-400"
+                  style="font-size: 26px"
+                  >cloud_upload</span
+                >
+              </div>
+              <div>
+                <p class="text-[13.5px] font-semibold text-gray-700">
+                  Tap to upload a file
+                </p>
+                <p class="text-[11.5px] text-gray-400 mt-0.5">
+                  Images · Videos · PDFs · Documents — max 50 MB
+                </p>
+              </div>
             </div>
-            <div *ngIf="selectedFileType === 'video'"
-              class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-white">videocam</span>
+
+            <!-- File preview -->
+            <div *ngIf="selectedFile" class="flex items-center gap-3 px-4 py-4">
+              <!-- Image thumbnail -->
+              <div
+                *ngIf="selectedFileType === 'image' && selectedFilePreview"
+                class="w-12 h-12 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0"
+              >
+                <img
+                  [src]="selectedFilePreview"
+                  alt="Preview"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <!-- Video icon -->
+              <div
+                *ngIf="selectedFileType === 'video'"
+                class="w-12 h-12 rounded-xl bg-gray-950 flex items-center justify-center flex-shrink-0"
+              >
+                <span
+                  class="material-icons-round text-white"
+                  style="font-size: 22px"
+                  >videocam</span
+                >
+              </div>
+              <!-- PDF icon -->
+              <div
+                *ngIf="selectedFileType === 'pdf'"
+                class="w-12 h-12 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0"
+              >
+                <span
+                  class="material-icons-round text-red-500"
+                  style="font-size: 22px"
+                  >picture_as_pdf</span
+                >
+              </div>
+              <!-- Doc icon -->
+              <div
+                *ngIf="!selectedFileType || selectedFileType === 'document'"
+                class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0"
+              >
+                <span
+                  class="material-icons-round text-blue-600"
+                  style="font-size: 22px"
+                  >description</span
+                >
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <p class="text-[13.5px] font-semibold text-gray-900 truncate">
+                  {{ selectedFile.name }}
+                </p>
+                <p class="text-[11.5px] text-gray-500">
+                  {{ (selectedFile.size / 1024).toFixed(1) }} KB ·
+                  {{ getFileTypeLabel() }}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                (click)="$event.stopPropagation(); removeFile()"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+              >
+                <span class="material-icons-round" style="font-size: 17px"
+                  >close</span
+                >
+              </button>
             </div>
-            <div *ngIf="selectedFileType === 'pdf'"
-              class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-red-600">picture_as_pdf</span>
-            </div>
-            <div *ngIf="!selectedFileType || selectedFileType === 'document'"
-              class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-blue-600">description</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900 truncate">{{ selectedFile.name }}</p>
-              <p class="text-xs text-gray-500">{{ (selectedFile.size / 1024).toFixed(1) }} KB · {{ getFileTypeLabel() }}</p>
-            </div>
-            <button type="button" (click)="removeFile()"
-              class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0" aria-label="Remove file">
-              <span class="material-icons text-base">close</span>
-            </button>
           </div>
         </div>
+      </div>
+      <!-- end scrollable body -->
 
-      </div><!-- end scrollable body -->
-
-      <!-- Footer — always visible, never hidden -->
-      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center gap-3 flex-shrink-0">
-        <button type="button" (click)="triggerFileUpload()"
-          class="p-2 hover:bg-gray-200 rounded-full transition-all duration-200 text-gray-600 hover:text-blue-600"
-          title="Add media">
-          <span class="material-icons">add_photo_alternate</span>
+      <!-- ── Sticky footer ── -->
+      <div
+        class="flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 py-3.5 border-t border-gray-100 bg-white"
+      >
+        <!-- Quick attach -->
+        <button
+          type="button"
+          (click)="triggerFileUpload()"
+          class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-blue-600 transition-colors"
+          title="Attach file"
+        >
+          <span class="material-icons-round" style="font-size: 18px"
+            >add_photo_alternate</span
+          >
         </button>
 
-        <div class="flex gap-2 sm:gap-3 ml-auto">
-          <button type="button" (click)="closeModal()"
-            class="px-4 sm:px-5 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200 whitespace-nowrap">
+        <!-- Character count -->
+        <span class="text-[11.5px] text-gray-400 flex-1 hidden sm:block">
+          {{ postForm.get("content")?.value?.length || 0
+          }}<em class="not-italic opacity-60">/5000</em>
+        </span>
+
+        <div class="flex gap-2 ml-auto">
+          <!-- Cancel -->
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold font-syne rounded-xl transition-colors duration-150 whitespace-nowrap"
+          >
             Cancel
           </button>
-          <button [disabled]="postForm.invalid || isSubmitting || !hasContent()" type="submit"
-            class="px-5 sm:px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm whitespace-nowrap">
-            <span *ngIf="!isSubmitting">Share</span>
-            <span *ngIf="isSubmitting" class="flex items-center gap-2">
-              <span class="material-icons animate-spin text-sm">autorenew</span>
-              <span class="hidden sm:inline">Sharing...</span>
-            </span>
+
+          <!-- Share -->
+          <button
+            type="submit"
+            [disabled]="postForm.invalid || isSubmitting || !hasContent()"
+            class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-950 hover:bg-gray-800 text-white text-[13px] font-semibold font-syne rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-sm whitespace-nowrap"
+          >
+            <span
+              *ngIf="isSubmitting"
+              class="anim-spin w-4 h-4 rounded-full border-2 border-white/30 border-t-white flex-shrink-0"
+            ></span>
+            <span
+              *ngIf="!isSubmitting"
+              class="material-icons-round"
+              style="font-size: 15px"
+              >send</span
+            >
+            {{ isSubmitting ? "Sharing…" : "Share" }}
           </button>
         </div>
       </div>
-
     </form>
   </div>
 </div>

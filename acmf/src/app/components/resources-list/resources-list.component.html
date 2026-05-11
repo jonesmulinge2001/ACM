@@ -1,19 +1,47 @@
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+  rel="stylesheet"
+/>
 
 <style>
-  .font-syne { font-family: 'Syne', sans-serif; }
-  .font-dm   { font-family: 'DM Sans', sans-serif; }
+  .font-syne {
+    font-family: "Syne", sans-serif;
+  }
+  .font-dm {
+    font-family: "DM Sans", sans-serif;
+  }
 
   .dot-grid {
     background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
     background-size: 28px 28px;
   }
 
-  @keyframes fadeUp  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes shimmer { 0% { background-position:-600px 0; } 100% { background-position:600px 0; } }
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      background-position: -600px 0;
+    }
+    100% {
+      background-position: 600px 0;
+    }
+  }
 
-  .anim-fade-up { animation: fadeUp .3s ease both; }
+  .anim-fade-up {
+    animation: fadeUp 0.3s ease both;
+  }
 
   .shimmer {
     background: linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%);
@@ -21,31 +49,53 @@
     animation: shimmer 1.5s ease infinite;
   }
 
-  .resource-card { animation: fadeUp .3s ease both; }
+  .resource-card {
+    animation: fadeUp 0.3s ease both;
+  }
 </style>
 
 <!-- ░░ SHELL ░░ -->
 <div class="font-dm min-h-screen bg-gray-50 relative">
-
   <!-- Dot grid background -->
-  <div class="dot-grid pointer-events-none fixed inset-0 z-0 opacity-40 hidden sm:block" aria-hidden="true"></div>
+  <div
+    class="dot-grid pointer-events-none fixed inset-0 z-0 opacity-40 hidden sm:block"
+    aria-hidden="true"
+  ></div>
 
   <div class="relative max-w-7xl mx-auto px-0 sm:px-6 py-0 sm:py-8">
-
     <!-- ── Page header card ── -->
-    <div class="bg-white border-b sm:border sm:rounded-2xl border-gray-200 sm:shadow-sm px-4 sm:px-8 py-5 sm:mb-4 mb-3">
+    <div
+      class="bg-white border-b sm:border sm:rounded-2xl border-gray-200 sm:shadow-sm px-4 sm:px-8 py-5 sm:mb-4 mb-3"
+    >
       <div class="flex items-center gap-2 mb-1">
-        <span class="material-icons-round text-blue-600" style="font-size:14px">auto_stories</span>
-        <span class="font-syne text-[11px] font-bold uppercase tracking-widest text-gray-400">Library</span>
+        <span class="material-icons-round text-blue-600" style="font-size: 14px"
+          >auto_stories</span
+        >
+        <span
+          class="font-syne text-[11px] font-bold uppercase tracking-widest text-gray-400"
+          >Library</span
+        >
       </div>
-      <h1 class="font-syne text-[20px] sm:text-[22px] font-bold text-gray-950 tracking-tight leading-tight">Academic Resources</h1>
-      <p class="text-[13px] text-gray-500 mt-0.5">Discover and share study materials across institutions</p>
+      <h1
+        class="font-syne text-[20px] sm:text-[22px] font-bold text-gray-950 tracking-tight leading-tight"
+      >
+        Academic Resources
+      </h1>
+      <p class="text-[13px] text-gray-500 mt-0.5">
+        Discover and share study materials across institutions
+      </p>
     </div>
 
     <!-- ── Search bar ── -->
-    <div class="bg-white border-b sm:border sm:rounded-2xl border-gray-200 sm:shadow-sm px-4 sm:px-8 py-4 sm:mb-4 mb-3">
+    <div
+      class="bg-white border-b sm:border sm:rounded-2xl border-gray-200 sm:shadow-sm px-4 sm:px-8 py-4 sm:mb-4 mb-3"
+    >
       <div class="relative flex items-center">
-        <span class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none" style="font-size:17px">search</span>
+        <span
+          class="material-icons-round absolute left-3.5 text-gray-400 pointer-events-none"
+          style="font-size: 17px"
+          >search</span
+        >
         <input
           [(ngModel)]="searchTerm"
           (input)="search()"
@@ -57,9 +107,14 @@
     </div>
 
     <!-- ── Loading skeleton ── -->
-    <div *ngIf="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 px-0 sm:px-0">
-      <div *ngFor="let _ of [1,2,3,4,5,6]"
-           class="bg-white sm:rounded-2xl border-b sm:border border-gray-200 sm:shadow-sm overflow-hidden">
+    <div
+      *ngIf="loading"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 px-0 sm:px-0"
+    >
+      <div
+        *ngFor="let _ of [1, 2, 3, 4, 5, 6]"
+        class="bg-white sm:rounded-2xl border-b sm:border border-gray-200 sm:shadow-sm overflow-hidden"
+      >
         <div class="p-5 border-b border-gray-100 flex items-center gap-3">
           <div class="shimmer w-12 h-12 rounded-xl flex-shrink-0"></div>
           <div class="flex-1 flex flex-col gap-2">
@@ -92,45 +147,67 @@
         <div class="p-5 border-b border-gray-100">
           <div class="flex justify-between items-start gap-3">
             <div class="flex items-center gap-3 flex-1 min-w-0">
-
               <!-- File icon -->
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                   [ngClass]="{
-                     'bg-red-50':   resource.fileType.includes('pdf'),
-                     'bg-blue-50':  resource.fileType.includes('image'),
-                     'bg-violet-50':resource.fileType.includes('word'),
-                     'bg-gray-100': !resource.fileType.includes('pdf') && !resource.fileType.includes('image') && !resource.fileType.includes('word')
-                   }">
-                <span class="material-icons-round text-[20px]"
-                      [ngClass]="{
-                        'text-red-500':    resource.fileType.includes('pdf'),
-                        'text-blue-500':   resource.fileType.includes('image'),
-                        'text-violet-500': resource.fileType.includes('word'),
-                        'text-gray-500':   !resource.fileType.includes('pdf') && !resource.fileType.includes('image') && !resource.fileType.includes('word')
-                      }">
+              <div
+                class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                [ngClass]="{
+                  'bg-red-50': resource.fileType.includes('pdf'),
+                  'bg-blue-50': resource.fileType.includes('image'),
+                  'bg-violet-50': resource.fileType.includes('word'),
+                  'bg-gray-100':
+                    !resource.fileType.includes('pdf') &&
+                    !resource.fileType.includes('image') &&
+                    !resource.fileType.includes('word')
+                }"
+              >
+                <span
+                  class="material-icons-round text-[20px]"
+                  [ngClass]="{
+                    'text-red-500': resource.fileType.includes('pdf'),
+                    'text-blue-500': resource.fileType.includes('image'),
+                    'text-violet-500': resource.fileType.includes('word'),
+                    'text-gray-500':
+                      !resource.fileType.includes('pdf') &&
+                      !resource.fileType.includes('image') &&
+                      !resource.fileType.includes('word')
+                  }"
+                >
                   {{ getFileIcon(resource.fileType) }}
                 </span>
               </div>
 
               <div class="min-w-0">
-                <h3 class="font-syne text-[14px] font-bold text-gray-950 line-clamp-1 leading-tight">{{ resource.title }}</h3>
-                <p class="text-[12.5px] text-gray-500 mt-0.5 truncate">{{ resource.course }}</p>
+                <h3
+                  class="font-syne text-[14px] font-bold text-gray-950 line-clamp-1 leading-tight"
+                >
+                  {{ resource.title }}
+                </h3>
+                <p class="text-[12.5px] text-gray-500 mt-0.5 truncate">
+                  {{ resource.course }}
+                </p>
               </div>
             </div>
 
             <!-- Owner actions -->
-            <div *ngIf="isOwner(resource)" class="flex items-center gap-1 flex-shrink-0">
+            <div
+              *ngIf="isOwner(resource)"
+              class="flex items-center gap-1 flex-shrink-0"
+            >
               <button
                 (click)="edit(resource)"
                 class="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150"
               >
-                <span class="material-icons-round" style="font-size:16px">edit</span>
+                <span class="material-icons-round" style="font-size: 16px"
+                  >edit</span
+                >
               </button>
               <button
                 (click)="delete(resource.id)"
                 class="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
               >
-                <span class="material-icons-round" style="font-size:16px">delete</span>
+                <span class="material-icons-round" style="font-size: 16px"
+                  >delete</span
+                >
               </button>
             </div>
           </div>
@@ -140,22 +217,34 @@
         <div class="p-5">
           <!-- Badges -->
           <div class="flex items-center justify-between mb-4">
-            <span class="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2.5 py-1 rounded-xl bg-gray-100 text-gray-600">
-              <span class="material-icons-round" style="font-size:12px">insert_drive_file</span>
+            <span
+              class="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2.5 py-1 rounded-xl bg-gray-100 text-gray-600"
+            >
+              <span class="material-icons-round" style="font-size: 12px"
+                >insert_drive_file</span
+              >
               {{ getFileType(resource.fileType) }}
             </span>
             <span
               class="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2.5 py-1 rounded-xl"
-              [ngClass]="resource.isApproved ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'"
+              [ngClass]="
+                resource.isApproved
+                  ? 'bg-emerald-50 text-emerald-600'
+                  : 'bg-amber-50 text-amber-600'
+              "
             >
-              <span class="material-icons-round" style="font-size:12px">{{ resource.isApproved ? 'check_circle' : 'schedule' }}</span>
+              <span class="material-icons-round" style="font-size: 12px">{{
+                resource.isApproved ? "check_circle" : "schedule"
+              }}</span>
               {{ resource.isApproved ? "Approved" : "Pending" }}
             </span>
           </div>
 
           <!-- Download count -->
           <p class="flex items-center gap-1.5 text-[12.5px] text-gray-400 mb-4">
-            <span class="material-icons-round" style="font-size:14px">download</span>
+            <span class="material-icons-round" style="font-size: 14px"
+              >download</span
+            >
             {{ resource.downloadCount }} downloads
           </p>
 
@@ -165,7 +254,9 @@
             (click)="download(resource.id)"
             class="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-gray-950 hover:bg-gray-800 text-white text-[13px] font-semibold font-syne rounded-xl transition-all duration-150 shadow-sm"
           >
-            <span class="material-icons-round" style="font-size:15px">download</span>
+            <span class="material-icons-round" style="font-size: 15px"
+              >download</span
+            >
             Download
           </button>
 
@@ -185,17 +276,28 @@
       *ngIf="!loading && filteredResources.length === 0"
       class="bg-white sm:rounded-2xl border-b sm:border border-gray-200 sm:shadow-sm mx-0 sm:mx-0"
     >
-      <div class="flex flex-col items-center justify-center py-20 px-6 gap-3 text-center">
-        <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-1">
-          <span class="material-icons-round text-gray-300" style="font-size:28px">search_off</span>
+      <div
+        class="flex flex-col items-center justify-center py-20 px-6 gap-3 text-center"
+      >
+        <div
+          class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-1"
+        >
+          <span
+            class="material-icons-round text-gray-300"
+            style="font-size: 28px"
+            >search_off</span
+          >
         </div>
-        <p class="font-syne font-bold text-[14px] text-gray-500">No resources found</p>
-        <p class="text-[12.5px] text-gray-400 leading-relaxed">Try adjusting your search term</p>
+        <p class="font-syne font-bold text-[14px] text-gray-500">
+          No resources found
+        </p>
+        <p class="text-[12.5px] text-gray-400 leading-relaxed">
+          Try adjusting your search term
+        </p>
       </div>
     </div>
 
     <!-- Bottom spacer on sm+ -->
     <div class="sm:h-8"></div>
-
   </div>
 </div>
