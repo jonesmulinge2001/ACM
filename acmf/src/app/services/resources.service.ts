@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Resource, UpdateResourceDto } from '../interfaces';
 
@@ -24,6 +24,11 @@ export class ResourcesService {
   getOne(id: string): Observable<Resource> {
     return this.http.get<Resource>(`${this.baseUrl}/${id}`);
   }
+
+    // GET PREVIEW URL — reuses the download endpoint directly
+    getPreviewUrl(id: string): Observable<string> {
+      return of(`${this.baseUrl}/${id}/download`);
+    }
 
   // DOWNLOAD
   download(id: string): void {
